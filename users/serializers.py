@@ -26,5 +26,5 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         return value
     def validate_phone_number(self, value):
         if value and not (value.isdigit() and value.startswith('0')):
-            raise serializers.ValidationError("Phone number must contain only digits and not start with 0.")
+            raise serializers.ValidationError("Phone number must contain only digits and start with 0.")
         return value
