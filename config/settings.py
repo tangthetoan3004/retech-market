@@ -20,13 +20,14 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'drf_spectacular',
     'corsheaders',
     'rest_framework_simplejwt',
     'django_filters',
     'users',
     'products',
     'orders',
-    'tradein'
+    'tradein',
 ]
 
 MIDDLEWARE = [
@@ -108,8 +109,18 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'users.User'
 
 REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
 }
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Retech Market API',
+    'DESCRIPTION': 'API documentation for Retech Market functionality',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_REQUEST': True,
+}
+
 CORS_ALLOW_ALL_ORIGINS = True
