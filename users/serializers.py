@@ -28,3 +28,26 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         if value and not (value.isdigit() and value.startswith('0')):
             raise serializers.ValidationError("Phone number must contain only digits and start with 0.")
         return value
+    
+class ChangePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True)
+
+    def validate_old_password(self, value):
+        user = self.context['request'].user
+        if not user.check_password(value):
+            raise serializers.ValidationError("Mật khẩu cũ không đúng")
+        return value
+    
+    def validate(self, data):
+        if data['old_password'] == data['new_password']:
+            raise serializers.ValidationError("Mật khẩu mới phải khác mật khẩu cũ")
+        if len(data['new_password']) < 8:
+            raise serializers.ValidationError("Mật khẩu mới phải có ít nhất 8 ký tự")
+        return data
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'email', 'phone_number', 'first_name', 'last_name', 'address', 'date_joined')
+        read_only_fields = ('id', 'username', 'email', 'date_joined')
