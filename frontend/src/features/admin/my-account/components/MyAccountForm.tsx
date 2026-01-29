@@ -8,65 +8,99 @@ export default function MyAccountForm({ initialValues, onSubmit, submitting }) {
       email: "",
       phone: "",
       avatar: "",
-      ...initialValues
+      ...(initialValues || {}),
     };
   }, [initialValues]);
 
-  const [fullName, setFullName] = useState(init.fullName || "");
-  const [email, setEmail] = useState(init.email || "");
-  const [phone, setPhone] = useState(init.phone || "");
-  const [password, setPassword] = useState("");
-  const [avatarFile, setAvatarFile] = useState(null);
+  const [form, setForm] = useState(() => ({
+    fullName: init.fullName || "",
+    email: init.email || "",
+    phone: init.phone || "",
+    password: "",
+    avatarFile: null,
+  }));
+
+  const inputCls =
+    "w-full rounded-xl border border-slate-800 bg-slate-900/60 px-4 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/60";
 
   const submit = (ev) => {
     ev.preventDefault();
     onSubmit({
-      fullName,
-      email,
-      phone,
-      password,
-      avatarFile
+      fullName: form.fullName,
+      email: form.email,
+      phone: form.phone,
+      password: form.password,
+      avatarFile: form.avatarFile,
     });
   };
 
   return (
-    <form onSubmit={submit} className="border rounded p-4 bg-white space-y-3">
-      <input
-        className="w-full border rounded px-3 py-2"
-        placeholder="Họ tên"
-        value={fullName}
-        onChange={(x) => setFullName(x.target.value)}
-        required
-      />
+    <form
+      onSubmit={submit}
+      className="bg-slate-900/70 border border-slate-800 rounded-2xl p-5 md:p-6 space-y-4 shadow-sm"
+    >
+      <div className="grid md:grid-cols-2 gap-4">
+        <div>
+          <div className="text-sm font-medium text-slate-300 mb-2">Họ tên</div>
+          <input
+            className={inputCls}
+            placeholder="Nhập họ tên"
+            value={form.fullName}
+            onChange={(e) => setForm((p) => ({ ...p, fullName: e.target.value }))}
+            required
+          />
+        </div>
 
-      <input
-        className="w-full border rounded px-3 py-2"
-        placeholder="Email"
-        value={email}
-        onChange={(x) => setEmail(x.target.value)}
-        required
-      />
+        <div>
+          <div className="text-sm font-medium text-slate-300 mb-2">Email</div>
+          <input
+            className={inputCls}
+            placeholder="Nhập email"
+            value={form.email}
+            onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
+            required
+          />
+        </div>
 
-      <input
-        className="w-full border rounded px-3 py-2"
-        placeholder="Số điện thoại"
-        value={phone}
-        onChange={(x) => setPhone(x.target.value)}
-      />
+        <div>
+          <div className="text-sm font-medium text-slate-300 mb-2">Số điện thoại</div>
+          <input
+            className={inputCls}
+            placeholder="Nhập số điện thoại"
+            value={form.phone}
+            onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
+          />
+        </div>
 
-      <input
-        className="w-full border rounded px-3 py-2"
-        placeholder="Mật khẩu mới"
-        type="password"
-        value={password}
-        onChange={(x) => setPassword(x.target.value)}
-      />
+        <div>
+          <div className="text-sm font-medium text-slate-300 mb-2">Mật khẩu mới</div>
+          <input
+            className={inputCls}
+            placeholder="Để trống nếu không đổi"
+            type="password"
+            value={form.password}
+            onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))}
+          />
+        </div>
+      </div>
 
-      <ImageUpload label="Avatar" value={init.avatar || ""} onChange={setAvatarFile} />
+      <div>
+        <ImageUpload
+          label="Avatar"
+          value={init.avatar || ""}
+          onChange={(file) => setForm((p) => ({ ...p, avatarFile: file }))}
+        />
+      </div>
 
-      <button className="border rounded px-3 py-2" disabled={submitting} type="submit">
-        {submitting ? "Đang lưu..." : "Lưu"}
-      </button>
+      <div className="flex justify-end">
+        <button
+          className="inline-flex items-center justify-center rounded-xl bg-blue-600 hover:bg-blue-600/90 text-white px-4 py-2.5 text-sm font-medium disabled:opacity-60"
+          disabled={submitting}
+          type="submit"
+        >
+          {submitting ? "Đang lưu..." : "Lưu thay đổi"}
+        </button>
+      </div>
     </form>
   );
 }

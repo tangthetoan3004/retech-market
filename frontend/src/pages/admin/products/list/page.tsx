@@ -1,310 +1,365 @@
-import { useEffect, useMemo, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { changeProductStatus, changeProductsMulti, deleteProduct, getProducts } from "../../../../services/admin/products/productsService";
-import { showAlert } from "../../../../features/ui/uiSlice";
-import FilterStatus from "../../../../shared/ui/FilterStatus/FilterStatus";
-import SearchBox from "../../../../shared/ui/SearchBox/SearchBox";
-import SortSelect from "../../../../shared/ui/SortSelect/SortSelect";
-import Pagination from "../../../../shared/ui/Pagination/Pagination";
+import { motion } from "motion/react";
+import { useEffect, useState } from "react";
+import { Plus, Search, Filter, MoreVertical, Edit, Trash2, Eye } from "lucide-react";
+import { toast } from "sonner";
+import React from "react";
+import { Button } from "../../../../components/ui/button";
+import { Input } from "../../../../components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../../components/ui/table";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../../../../components/ui/dropdown-menu";
+import { GradeBadge } from "../../../../components/retech/GradeBadge";
+import { StatusPill } from "../../../../components/retech/StatusPill";
 
-function has(perms, key) {
-  return Array.isArray(perms) && perms.includes(key);
-}
+import CreateProductDialog from "./CreateProductDialog";
+import EditProductDialog from "./EditProductDialog";
 
-export default function ProductsListPage() {
-  const dispatch = useDispatch();
-  const perms = useSelector((s) => s.auth.permissions);
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../../../../components/ui/alert-dialog";
 
-  const [sp, setSp] = useSearchParams();
+// Đổi đúng path + tên hàm theo service cũ của bạn
+import {
+  getProducts,      // (params?) => { items | products | data }
+  createProduct,    // (payload) => ...
+  updateProduct,    // (id, payload) => ...
+  deleteProduct,    // (id) => ...
+} from "../../../../services/admin/products/productsService";
 
-  const page = Number(sp.get("page") || "1");
-  const status = sp.get("status") || "";
-  const keyword = sp.get("keyword") || "";
-  const sortKey = sp.get("sortKey") || "";
-  const sortValue = sp.get("sortValue") || "";
+type Product = {
+  id: string;
+  name: string;
+  brand: string;
+  category: string;
+  price: number;
+  originalPrice?: number;
+  grade: "A" | "B" | "C";
+  image: string;
+  warranty?: string;
+  batteryHealth?: number;
+  storage?: string;
+  ram?: string;
+  condition?: string;
+  inStock: boolean;
+  stock: number;
+  description?: string;
+  specs?: any;
+};
 
-  const sortPacked = useMemo(() => {
-    if (!sortKey || !sortValue) return "";
-    return `${sortKey}-${sortValue}`;
-  }, [sortKey, sortValue]);
-
+export default function ProductsManagement() {
+  const [rows, setRows] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
-  const [rows, setRows] = useState([]);
-  const [pagination, setPagination] = useState({ page: 1, totalPages: 1 });
 
-  const [selected, setSelected] = useState({});
-  const [positions, setPositions] = useState({});
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showForm, setShowForm] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
-  const setParam = (key, value, resetPage) => {
-    const next = new URLSearchParams(sp);
-    if (value === "" || value === null || value === undefined) next.delete(key);
-    else next.set(key, String(value));
-    if (resetPage) next.set("page", "1");
-    setSp(next);
-  };
+  const [formData, setFormData] = useState<Partial<Product>>({
+    name: "",
+    brand: "",
+    category: "smartphones",
+    price: 0,
+    originalPrice: 0,
+    grade: "A",
+    image: "https://images.unsplash.com/photo-1678652197831-2d180705cd2c?w=800",
+    warranty: "12 months",
+    batteryHealth: 95,
+    storage: "",
+    ram: "",
+    condition: "",
+    inStock: true,
+    stock: 0,
+    description: "",
+    specs: {},
+  });
 
-  const fetchList = async () => {
+  const fetchProducts = async () => {
     setLoading(true);
     try {
-      const data = await getProducts({
-        page,
-        status,
-        keyword,
-        sortKey,
-        sortValue
-      });
-
-      const items = data.products || data.items || data.records || [];
-      const pg = data.objectPagination || data.pagination || data.paging || {};
-
-      setRows(items);
-      setPagination({
-        page: Number(pg.currentPage || pg.page || page),
-        totalPages: Number(pg.totalPage || pg.totalPages || pg.pages || 1)
-      });
-
-      const nextPos = {};
-      items.forEach((it) => {
-        nextPos[it._id] = it.position;
-      });
-      setPositions(nextPos);
-      setSelected({});
-    } catch (err) {
-      dispatch(showAlert({ type: "error", message: err.message }));
+      const data: any = await getProducts({});
+      const list =
+        data?.items ??
+        data?.products ??
+        data?.data?.items ??
+        data?.data?.products ??
+        [];
+      setRows(Array.isArray(list) ? list : []);
+    } catch (err: any) {
+      toast.error(err?.message || "Load products failed");
+      setRows([]);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchList();
-  }, [page, status, keyword, sortKey, sortValue]);
+    fetchProducts();
+  }, []);
 
-  const toggleAll = (checked) => {
-    const next = {};
-    if (checked) rows.forEach((r) => (next[r._id] = true));
-    setSelected(next);
+  const filteredProducts = rows.filter((product) =>
+    (product.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (product.brand || "").toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const resetForm = () => {
+    setEditingProduct(null);
+    setFormData({
+      name: "",
+      brand: "",
+      category: "smartphones",
+      price: 0,
+      originalPrice: 0,
+      grade: "A",
+      image: "https://images.unsplash.com/photo-1678652197831-2d180705cd2c?w=800",
+      warranty: "12 months",
+      batteryHealth: 95,
+      storage: "",
+      ram: "",
+      condition: "",
+      inStock: true,
+      stock: 0,
+      description: "",
+      specs: {},
+    });
   };
 
-  const toggleOne = (id, checked) => {
-    setSelected((prev) => ({ ...prev, [id]: checked }));
+  const handleEdit = (product: Product) => {
+    setEditingProduct(product);
+    setFormData(product);
+    setShowForm(true);
   };
 
-  const changeStatus = async (it) => {
+  const handleDelete = async (productId: string) => {
     try {
-      const next = it.status === "active" ? "inactive" : "active";
-      await changeProductStatus(it._id, next);
-      dispatch(showAlert({ type: "success", message: "Đã đổi trạng thái" }));
-      fetchList();
-    } catch (err) {
-      dispatch(showAlert({ type: "error", message: err.message }));
+      await deleteProduct(productId);
+      toast.success("Product deleted successfully");
+      setDeleteConfirm(null);
+      fetchProducts();
+    } catch (err: any) {
+      toast.error(err?.message || "Delete failed");
     }
   };
 
-  const removeOne = async (it) => {
-    const ok = confirm("Bạn có chắc muốn xóa sản phẩm này?");
-    if (!ok) return;
-    try {
-      await deleteProduct(it._id);
-      dispatch(showAlert({ type: "success", message: "Đã xoá" }));
-      fetchList();
-    } catch (err) {
-      dispatch(showAlert({ type: "error", message: err.message }));
-    }
-  };
-
-  const bulk = async (type) => {
-    const ids = Object.keys(selected).filter((k) => selected[k]);
-    if (ids.length === 0) {
-      alert("Vui lòng chọn ít nhất một bản ghi!");
-      return;
-    }
-
-    if (type === "delete-all") {
-      const ok = confirm("Bạn có chắc muốn xóa những sản phẩm này?");
-      if (!ok) return;
-    }
-
-    let payload = { type, ids };
-
-    if (type === "change-position") {
-      payload = {
-        type,
-        ids: ids.map((id) => `${id}-${positions[id] || 1}`)
-      };
-    }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
     try {
-      await changeProductsMulti(payload);
-      dispatch(showAlert({ type: "success", message: "Đã thực hiện thao tác" }));
-      fetchList();
-    } catch (err) {
-      dispatch(showAlert({ type: "error", message: err.message }));
+      if (editingProduct) {
+        await updateProduct(editingProduct.id, formData);
+        toast.success("Product updated successfully");
+      } else {
+        await createProduct(formData);
+        toast.success("Product created successfully");
+      }
+
+      setShowForm(false);
+      resetForm();
+      fetchProducts();
+    } catch (err: any) {
+      toast.error(err?.message || "Save failed");
     }
   };
-
-  const allChecked = rows.length > 0 && rows.every((r) => selected[r._id]);
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between gap-3">
-        <h1 className="text-xl font-semibold">Danh sách sản phẩm</h1>
-        {has(perms, "products_create") ? (
-          <Link className="border rounded px-3 py-2 text-sm bg-white" to="/admin/products/create">
-            + Thêm mới
-          </Link>
-        ) : null}
-      </div>
+    <div className="min-h-screen bg-slate-950 text-slate-100 p-4 md:p-6 lg:p-8">
+      <div className="space-y-6">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">Products Management</h1>
+            <p className="text-slate-400">Manage your product catalog</p>
+          </div>
 
-      <div className="border rounded p-3 bg-white space-y-3">
-        <FilterStatus
-          value={status}
-          onChange={(v) => setParam("status", v, true)}
-        />
+          <Button
+            className="bg-blue-600 hover:bg-blue-600/90 text-white"
+            onClick={() => {
+              resetForm();
+              setShowForm(true);
+            }}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Product
+          </Button>
+        </div>
 
-        <SearchBox
-          value={keyword}
-          onSubmit={(v) => setParam("keyword", v, true)}
-        />
+        <div className="flex items-center gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Input
+              placeholder="Search products..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 bg-slate-900/60 border-slate-800 text-slate-100 placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-blue-500"
+            />
+          </div>
 
-        <SortSelect
-          value={sortPacked}
-          onChange={(packed) => {
-            if (!packed) {
-              setParam("sortKey", "", true);
-              setParam("sortValue", "", true);
-              return;
-            }
-            const [k, v] = packed.split("-");
-            setParam("sortKey", k, true);
-            setParam("sortValue", v, true);
+          <Button
+            variant="outline"
+            className="border-slate-800 bg-slate-900/40 hover:bg-slate-900/70 text-slate-100"
+          >
+            <Filter className="h-4 w-4 mr-2" />
+            Filters
+          </Button>
+        </div>
+
+        <div className="bg-slate-900/70 border border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+          <Table>
+            <TableHeader>
+              <TableRow className="border-b border-slate-800 bg-slate-900/80 hover:bg-slate-900/80">
+                <TableHead className="text-slate-300">Product</TableHead>
+                <TableHead className="text-slate-300">Category</TableHead>
+                <TableHead className="text-slate-300">Price</TableHead>
+                <TableHead className="text-slate-300">Grade</TableHead>
+                <TableHead className="text-slate-300">Stock</TableHead>
+                <TableHead className="text-slate-300">Status</TableHead>
+                <TableHead className="text-right text-slate-300">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+
+            <TableBody>
+              {loading ? (
+                <TableRow className="hover:bg-transparent">
+                  <TableCell colSpan={7} className="py-10 text-center text-slate-400">
+                    Loading...
+                  </TableCell>
+                </TableRow>
+              ) : (
+                <>
+                  {filteredProducts.map((product) => (
+                    <motion.tr
+                      key={product.id}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="border-b border-slate-800/60 last:border-b-0 hover:bg-slate-800/30 transition-colors"
+                    >
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={product.image}
+                            alt={product.name}
+                            className="w-12 h-12 rounded-lg object-cover border border-slate-800"
+                          />
+                          <div className="min-w-0">
+                            <p className="font-medium truncate">{product.name}</p>
+                            <p className="text-sm text-slate-400 truncate">{product.brand}</p>
+                          </div>
+                        </div>
+                      </TableCell>
+
+                      <TableCell className="capitalize text-slate-200">{product.category}</TableCell>
+
+                      <TableCell>
+                        <div>
+                          <p className="font-medium">${product.price}</p>
+                          {product.originalPrice ? (
+                            <p className="text-xs text-slate-400 line-through">${product.originalPrice}</p>
+                          ) : null}
+                        </div>
+                      </TableCell>
+
+                      <TableCell>
+                        <GradeBadge grade={product.grade} showTooltip={false} />
+                      </TableCell>
+
+                      <TableCell className="text-slate-200">{product.stock}</TableCell>
+
+                      <TableCell>
+                        <StatusPill status={product.inStock ? "in stock" : "out of stock"} />
+                      </TableCell>
+
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="hover:bg-slate-800/40 text-slate-200">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+
+                          <DropdownMenuContent align="end" className="bg-slate-900 border-slate-800 text-slate-100">
+                            <DropdownMenuItem className="focus:bg-slate-800/50">
+                              <Eye className="h-4 w-4 mr-2" />
+                              View Details
+                            </DropdownMenuItem>
+
+                            <DropdownMenuItem onClick={() => handleEdit(product)} className="focus:bg-slate-800/50">
+                              <Edit className="h-4 w-4 mr-2" />
+                              Edit
+                            </DropdownMenuItem>
+
+                            <DropdownMenuItem
+                              onClick={() => setDeleteConfirm(product.id)}
+                              className="text-red-400 focus:bg-red-500/10 focus:text-red-300"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </motion.tr>
+                  ))}
+
+                  {filteredProducts.length === 0 ? (
+                    <TableRow className="hover:bg-transparent">
+                      <TableCell colSpan={7} className="py-10 text-center text-slate-400">
+                        No products found.
+                      </TableCell>
+                    </TableRow>
+                  ) : null}
+                </>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+
+        <CreateProductDialog
+          open={showForm && !editingProduct}
+          onOpenChange={(v) => {
+            if (!v) setShowForm(false);
           }}
-          onClear={() => {
-            setParam("sortKey", "", true);
-            setParam("sortValue", "", true);
-          }}
+          formData={formData}
+          setFormData={setFormData}
+          onSubmit={handleSubmit}
         />
-      </div>
 
-      <div className="border rounded p-3 bg-white flex flex-wrap gap-2 items-center">
-        <button className="border rounded px-3 py-2 text-sm" type="button" onClick={() => bulk("active")}>
-          Active
-        </button>
-        <button className="border rounded px-3 py-2 text-sm" type="button" onClick={() => bulk("inactive")}>
-          Inactive
-        </button>
-        <button className="border rounded px-3 py-2 text-sm" type="button" onClick={() => bulk("change-position")}>
-          Đổi vị trí
-        </button>
-        <button className="border rounded px-3 py-2 text-sm" type="button" onClick={() => bulk("delete-all")}>
-          Xoá
-        </button>
-      </div>
+        <EditProductDialog
+          open={showForm && !!editingProduct}
+          onOpenChange={(v) => {
+            if (!v) setShowForm(false);
+          }}
+          formData={formData}
+          setFormData={setFormData}
+          onSubmit={handleSubmit}
+        />
 
-      <div className="border rounded bg-white overflow-auto">
-        <table className="min-w-full text-sm">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="p-2">
-                <input
-                  type="checkbox"
-                  checked={allChecked}
-                  onChange={(e) => toggleAll(e.target.checked)}
-                />
-              </th>
-              <th className="p-2 text-left">Hình ảnh</th>
-              <th className="p-2 text-left">Tiêu đề</th>
-              <th className="p-2 text-left">Giá</th>
-              <th className="p-2 text-left">Vị trí</th>
-              <th className="p-2 text-left">Trạng thái</th>
-              <th className="p-2 text-left">Hành động</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr>
-                <td className="p-3" colSpan={7}>
-                  Đang tải...
-                </td>
-              </tr>
-            ) : rows.length === 0 ? (
-              <tr>
-                <td className="p-3" colSpan={7}>
-                  Không có dữ liệu
-                </td>
-              </tr>
-            ) : (
-              rows.map((it) => (
-                <tr key={it._id} className="border-t">
-                  <td className="p-2">
-                    <input
-                      type="checkbox"
-                      checked={!!selected[it._id]}
-                      onChange={(e) => toggleOne(it._id, e.target.checked)}
-                    />
-                  </td>
-                  <td className="p-2">
-                    {it.thumbnail ? (
-                      <img src={it.thumbnail} alt={it.title || ""} className="w-24" />
-                    ) : null}
-                  </td>
-                  <td className="p-2">{it.title || ""}</td>
-                  <td className="p-2">{it.price}</td>
-                  <td className="p-2">
-                    <input
-                      className="border rounded px-2 py-1 w-20"
-                      type="number"
-                      min={1}
-                      value={positions[it._id] ?? it.position ?? 1}
-                      onChange={(e) =>
-                        setPositions((p) => ({
-                          ...p,
-                          [it._id]: Number(e.target.value)
-                        }))
-                      }
-                    />
-                  </td>
-                  <td className="p-2">
-                    {has(perms, "products_edit") ? (
-                      <button
-                        className={`px-2 py-1 rounded text-xs border ${it.status === "active" ? "bg-green-50" : "bg-red-50"}`}
-                        type="button"
-                        onClick={() => changeStatus(it)}
-                      >
-                        {it.status === "active" ? "Hoạt động" : "Dừng"}
-                      </button>
-                    ) : (
-                      it.status
-                    )}
-                  </td>
-                  <td className="p-2 flex gap-2 flex-wrap">
-                    <Link className="border rounded px-2 py-1 text-xs" to={`/admin/products/detail/${it._id}`}>
-                      Chi tiết
-                    </Link>
-                    {has(perms, "products_edit") ? (
-                      <Link className="border rounded px-2 py-1 text-xs" to={`/admin/products/edit/${it._id}`}>
-                        Sửa
-                      </Link>
-                    ) : null}
-                    {has(perms, "products_delete") ? (
-                      <button className="border rounded px-2 py-1 text-xs" type="button" onClick={() => removeOne(it)}>
-                        Xóa
-                      </button>
-                    ) : null}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+        <AlertDialog open={!!deleteConfirm} onOpenChange={() => setDeleteConfirm(null)}>
+          <AlertDialogContent className="bg-slate-950 border-slate-800 text-slate-100">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-slate-100">Are you sure?</AlertDialogTitle>
+              <AlertDialogDescription className="text-slate-400">
+                This action cannot be undone. This will permanently delete the product from your catalog.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel className="border-slate-800 bg-slate-900/40 hover:bg-slate-900/70 text-slate-100">
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => deleteConfirm && handleDelete(deleteConfirm)}
+                className="bg-red-600 hover:bg-red-600/90 text-white"
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
-
-      <Pagination
-        page={pagination.page || page}
-        totalPages={pagination.totalPages || 1}
-        onPage={(p) => setParam("page", p, false)}
-      />
     </div>
   );
 }

@@ -1,6 +1,14 @@
 const BASE_URL = import.meta.env.VITE_API_URL || "";
 
-function buildQuery(params) {
+type RequestOptions = {
+  method?: string;
+  params?: Record<string, any>;
+  body?: any;
+  headers?: Record<string, any>;
+  credentials?: "include" | "omit" | "same-origin";
+};
+
+function buildQuery(params?: Record<string, any>) {
   if (!params) return "";
   const usp = new URLSearchParams();
   Object.entries(params).forEach(([k, v]) => {
@@ -11,24 +19,53 @@ function buildQuery(params) {
   return qs ? `?${qs}` : "";
 }
 
-function normalizePath(path) {
+function normalizePath(path: string) {
   return String(path).replace(/^\/+/, "");
 }
 
-export default async function request(path, { method = "GET", params, body, headers } = {}) {
+function getClientAuthToken(): string | null {
+  try {
+    const raw = localStorage.getItem("client_auth");
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    return data?.token || null;
+  } catch {
+    return null;
+  }
+}
+
+function unwrapApiData(payload: any) {
+  // backend dùng CustomJSONRenderer: {status, code, message, data}
+  if (payload && typeof payload === "object" && "status" in payload && "data" in payload) {
+    return (payload as any).data;
+  }
+  return payload;
+}
+
+export default async function request(path: string, options: RequestOptions = {}) {
+  const { method = "GET", params, body, headers, credentials = "include" } = options;
+
   const url = `${BASE_URL}/${normalizePath(path)}${buildQuery(params)}`;
 
-  const init = {
+  const finalHeaders: Record<string, any> = { ...(headers || {}) };
+
+  // Auto attach JWT Bearer
+  const token = getClientAuthToken();
+  if (token && !finalHeaders.Authorization && !finalHeaders.authorization) {
+    finalHeaders.Authorization = `Bearer ${token}`;
+  }
+
+  const init: any = {
     method,
-    credentials: "include",
-    headers: { ...(headers || {}) }
+    credentials,
+    headers: finalHeaders
   };
 
   if (body !== undefined && body !== null) {
     if (body instanceof FormData) {
       init.body = body;
     } else {
-      init.headers["Content-Type"] = init.headers["Content-Type"] || "application/json";
+      if (!finalHeaders["Content-Type"]) finalHeaders["Content-Type"] = "application/json";
       init.body = typeof body === "string" ? body : JSON.stringify(body);
     }
   }
@@ -37,29 +74,31 @@ export default async function request(path, { method = "GET", params, body, head
 
   const contentType = res.headers.get("content-type") || "";
   const isJson = contentType.includes("application/json");
-  const data = isJson ? await res.json().catch(() => null) : await res.text().catch(() => "");
+  const rawData = isJson ? await res.json().catch(() => null) : await res.text().catch(() => "");
 
   if (!res.ok) {
     const message =
-      (data && (data.message || data.error)) ||
+      (rawData && (rawData.message || rawData.error)) ||
+      (rawData && typeof rawData === "object" ? JSON.stringify(rawData) : "") ||
       `Request failed (${res.status} ${res.statusText})`;
-    const err = new Error(message);
+
+    const err: any = new Error(message);
     err.status = res.status;
-    err.data = data;
+    err.data = rawData;
     throw err;
   }
 
-  return data;
+  return unwrapApiData(rawData);
 }
 
-export const get = (path, options) =>
+export const get = (path: string, options?: Omit<RequestOptions, "method" | "body">) =>
   request(path, { ...(options || {}), method: "GET" });
 
-export const post = (path, body, options) =>
+export const post = (path: string, body?: any, options?: Omit<RequestOptions, "method" | "body">) =>
   request(path, { ...(options || {}), method: "POST", body });
 
-export const patch = (path, body, options) =>
+export const patch = (path: string, body?: any, options?: Omit<RequestOptions, "method" | "body">) =>
   request(path, { ...(options || {}), method: "PATCH", body });
 
-export const del = (path, options) =>
+export const del = (path: string, options?: Omit<RequestOptions, "method" | "body">) =>
   request(path, { ...(options || {}), method: "DELETE" });

@@ -1,26 +1,27 @@
 import { get, patch, post } from "../../../utils/request";
 
 export const getMyInfo = async () => {
-  const result = await get("/api/user/info");
+  const result = await get("/api/users/profile/");
   return result;
 };
 
-export const updateMyInfo = async (formData) => {
-  const result = await patch("/api/user/info", formData);
+export const updateMyInfo = async (formData: any) => {
+  const result = await patch("/api/users/profile/", formData);
   return result;
 };
 
-export const forgotPassword = async (options) => {
+// Backend Django hiện chưa có các endpoint này (sẽ 404).
+export const forgotPassword = async (options: any) => {
   const result = await post("/api/user/password/forgot", options);
   return result;
 };
 
-export const verifyOtp = async (options) => {
+export const verifyOtp = async (options: any) => {
   const result = await post("/api/user/password/otp", options);
   return result;
 };
 
-export const resetPassword = async (options) => {
+export const resetPassword = async (options: any) => {
   const result = await post("/api/user/password/reset", options);
   return result;
 };

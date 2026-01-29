@@ -51,12 +51,24 @@ export default function AccountsCreatePage() {
     }
   };
 
-  if (loading) return <div>Đang tải...</div>;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-slate-100 p-4 md:p-6 lg:p-8">
+        <div className="text-slate-400">Đang tải...</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-3">
-      <h1 className="text-xl font-semibold">Thêm mới tài khoản</h1>
-      <AccountForm roles={roles} onSubmit={onSubmit} submitting={submitting} />
+    <div className="min-h-screen bg-slate-950 text-slate-100 p-4 md:p-6 lg:p-8">
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">Thêm mới tài khoản</h1>
+          <p className="text-slate-400">Tạo tài khoản mới cho hệ thống</p>
+        </div>
+
+        <AccountForm initialValues={{}} roles={roles} onSubmit={onSubmit} submitting={submitting} />
+      </div>
     </div>
   );
 }

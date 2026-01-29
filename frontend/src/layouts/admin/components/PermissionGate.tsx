@@ -1,7 +1,7 @@
 import { useSelector } from "react-redux";
 
 export default function PermissionGate({ children }) {
-  const permissions = useSelector((s) => s.auth.permissions);
+  const permissions = useSelector((s: any) => s.auth.permissions);
   const ok = Array.isArray(permissions) && permissions.length > 0;
 
   if (!ok) {
