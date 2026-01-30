@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import { getProductCategoriesTree } from "../../services/client/products-category/productsCategoryService";
@@ -23,6 +23,11 @@ export default function ClientLayout() {
     };
     run();
   }, [dispatch]);
+
+  const { pathname } = useLocation();
+  const noLayout = pathname.startsWith("/user/login") || pathname.startsWith("/user/register") || pathname.startsWith("/user/password/forgot") || pathname.startsWith("/user/password/otp");
+
+  if (noLayout) return <Outlet />;
 
   return (
     <div className="min-h-screen flex flex-col">

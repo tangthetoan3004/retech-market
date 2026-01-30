@@ -20,7 +20,6 @@ function toNumber(v: any) {
 
 export default function ProductsPage() {
   const dispatch = useDispatch();
-  // const navigate = useNavigate();
   const params = useParams();
 
   const [products, setProducts] = useState<any[]>([]);
@@ -28,13 +27,25 @@ export default function ProductsPage() {
 
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [sortBy, setSortBy] = useState("featured");
+
+  // --- FIX: price filter auto-fit theo dữ liệu ---
+  const [priceMax, setPriceMax] = useState<number>(3000);
   const [priceRange, setPriceRange] = useState<number[]>([0, 3000]);
+
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [selectedGrades, setSelectedGrades] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
     params?.slug ? [String(params.slug)] : []
   );
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+
+  const priceStep = useMemo(() => {
+    const max = toNumber(priceMax) || 3000;
+    if (max <= 3000) return 100;
+    if (max <= 100000) return 1000;
+    if (max <= 1000000) return 10000;
+    return 100000;
+  }, [priceMax]);
 
   useEffect(() => {
     setSelectedCategories(params?.slug ? [String(params.slug)] : []);
@@ -46,6 +57,7 @@ export default function ProductsPage() {
       try {
         const payload: any = {};
         if (params?.slug) payload.category = String(params.slug);
+
         const data = await getProducts(payload);
         const list = Array.isArray(data?.products)
           ? data.products
@@ -54,7 +66,18 @@ export default function ProductsPage() {
           : Array.isArray(data)
           ? data
           : [];
+
         setProducts(list);
+
+        // --- FIX: tính max price từ list rồi set range ---
+        const maxPrice = list.reduce((mx: number, p: any) => {
+          const price = toNumber(p?.priceNew ?? p?.price ?? p?.salePrice);
+          return price > mx ? price : mx;
+        }, 0);
+
+        const newMax = maxPrice > 0 ? maxPrice : 3000;
+        setPriceMax(newMax);
+        setPriceRange([0, newMax]);
       } catch (e: any) {
         dispatch(showAlert({ type: "error", message: e?.message || "Không tải được sản phẩm", timeout: 3000 }));
       } finally {
@@ -101,7 +124,7 @@ export default function ProductsPage() {
     setSelectedBrands([]);
     setSelectedGrades([]);
     setSelectedCategories(params?.slug ? [String(params.slug)] : []);
-    setPriceRange([0, 3000]);
+    setPriceRange([0, priceMax || 3000]);
   };
 
   const activeFiltersCount = selectedBrands.length + selectedGrades.length + selectedCategories.length;
@@ -137,10 +160,16 @@ export default function ProductsPage() {
 
     switch (sortBy) {
       case "price-asc":
-        filtered.sort((a, b) => toNumber(a?.priceNew ?? a?.price ?? a?.salePrice) - toNumber(b?.priceNew ?? b?.price ?? b?.salePrice));
+        filtered.sort(
+          (a, b) =>
+            toNumber(a?.priceNew ?? a?.price ?? a?.salePrice) - toNumber(b?.priceNew ?? b?.price ?? b?.salePrice)
+        );
         break;
       case "price-desc":
-        filtered.sort((a, b) => toNumber(b?.priceNew ?? b?.price ?? b?.salePrice) - toNumber(a?.priceNew ?? a?.price ?? a?.salePrice));
+        filtered.sort(
+          (a, b) =>
+            toNumber(b?.priceNew ?? b?.price ?? b?.salePrice) - toNumber(a?.priceNew ?? a?.price ?? a?.salePrice)
+        );
         break;
       case "name":
         filtered.sort((a, b) => String(a?.title ?? a?.name ?? "").localeCompare(String(b?.title ?? b?.name ?? "")));
@@ -202,9 +231,16 @@ export default function ProductsPage() {
 
       <div>
         <h3 className="font-semibold mb-3">
-          Price Range: ${priceRange[0]} - ${priceRange[1]}
+          Price Range: {priceRange[0]} - {priceRange[1]}
         </h3>
-        <Slider min={0} max={3000} step={100} value={priceRange} onValueChange={setPriceRange} className="mt-4" />
+        <Slider
+          min={0}
+          max={priceMax || 3000}
+          step={priceStep}
+          value={priceRange}
+          onValueChange={setPriceRange}
+          className="mt-4"
+        />
       </div>
 
       {activeFiltersCount > 0 && (
@@ -359,7 +395,7 @@ export default function ProductsPage() {
                           <div className="flex-1 min-w-0">
                             <div className="font-semibold line-clamp-2">{p?.title || p?.name}</div>
                             <div className="mt-2 text-lg font-bold">
-                              ${toNumber(p?.priceNew ?? p?.price ?? p?.salePrice)}
+                              {toNumber(p?.priceNew ?? p?.price ?? p?.salePrice)}
                             </div>
                           </div>
                         </div>
