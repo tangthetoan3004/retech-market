@@ -10,7 +10,6 @@ export const updateMyInfo = async (formData: any) => {
   return result;
 };
 
-// Backend Django hiện chưa có các endpoint này (sẽ 404).
 export const forgotPassword = async (options: any) => {
   const result = await post("/api/user/password/forgot", options);
   return result;

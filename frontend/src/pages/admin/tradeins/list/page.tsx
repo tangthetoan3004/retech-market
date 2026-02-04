@@ -1,3 +1,4 @@
+// src/pages/admin/tradeins/list/page.tsx
 import React, { useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { motion } from "motion/react";
@@ -12,24 +13,37 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import ConfirmTradeInDialog from "./ConfirmTradeInDialog";
 import TradeInDetailDialog from "./TradeInDetailDialog";
 
-type TradeInStatus = "pending" | "reviewing" | "approved" | "rejected";
+export type TradeInStatus = "PENDING" | "SUBMITTED" | "APPROVED" | "REJECTED";
 
-type TradeInItem = {
+export type TradeInItem = {
   id: string;
+
   customerName: string;
   customerPhone?: string;
+
   productName: string;
   offeredPrice: number;
   condition?: string;
+
   createdAt?: string;
   status: TradeInStatus;
+
+  userId?: number | string;
+
+  deviceName?: string;
+  estimatedPrice?: number;
+
+  isPowerOn?: boolean;
+  screenOk?: boolean;
+  bodyOk?: boolean;
+  batteryPercentage?: number;
 };
 
 const statusPillClass: Record<TradeInStatus, string> = {
-  pending: "bg-amber-500/10 text-amber-400",
-  reviewing: "bg-sky-500/10 text-sky-400",
-  approved: "bg-emerald-500/10 text-emerald-400",
-  rejected: "bg-red-500/10 text-red-400",
+  PENDING: "bg-amber-500/10 text-amber-400",
+  SUBMITTED: "bg-sky-500/10 text-sky-400",
+  APPROVED: "bg-emerald-500/10 text-emerald-400",
+  REJECTED: "bg-red-500/10 text-red-400",
 };
 
 function StatusPillLite({ status }: { status: TradeInStatus }) {
@@ -40,6 +54,39 @@ function StatusPillLite({ status }: { status: TradeInStatus }) {
   );
 }
 
+function normalizeStatus(s: any): TradeInStatus {
+  const v = String(s ?? "PENDING").toUpperCase();
+  if (v === "PENDING" || v === "SUBMITTED" || v === "APPROVED" || v === "REJECTED") return v;
+  return "PENDING";
+}
+
+function toBool(v: any, fallback = false) {
+  if (typeof v === "boolean") return v;
+  if (typeof v === "number") return v !== 0;
+  if (typeof v === "string") return ["true", "1", "yes", "y"].includes(v.toLowerCase());
+  return fallback;
+}
+
+function toNum(v: any, fallback = 0) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+function buildCondition(x: any) {
+  const isPowerOn = toBool(x?.is_power_on ?? x?.isPowerOn, true);
+  const screenOk = toBool(x?.screen_ok ?? x?.screenOk, true);
+  const bodyOk = toBool(x?.body_ok ?? x?.bodyOk, true);
+  const battery = toNum(x?.battery_percentage ?? x?.batteryPercentage ?? 0, 0);
+
+  const parts: string[] = [];
+  parts.push(isPowerOn ? "Power ON" : "No Power");
+  parts.push(screenOk ? "Screen OK" : "Screen Broken");
+  parts.push(bodyOk ? "Body OK" : "Body Dented");
+  parts.push(`Battery ${battery}%`);
+
+  return { text: parts.join(" • "), isPowerOn, screenOk, bodyOk, battery };
+}
+
 export default function TradeInsListPage() {
   const storeTradeIns = useSelector((s: any) => {
     const raw =
@@ -48,21 +95,67 @@ export default function TradeInsListPage() {
       s.tradeIn?.items ??
       s.tradeins ??
       s.tradeIns ??
+      s.trade_in?.items ??
+      s.trade_in ??
       [];
     return Array.isArray(raw) ? raw : [];
   });
 
   const mappedFromStore: TradeInItem[] = useMemo(() => {
-    return storeTradeIns.map((x: any) => ({
-      id: String(x.id ?? x._id ?? x.tradeInId ?? 0),
-      customerName: x.customerName ?? x.fullName ?? x.name ?? "—",
-      customerPhone: x.customerPhone ?? x.phone ?? "",
-      productName: x.productName ?? x.deviceName ?? x.title ?? "—",
-      offeredPrice: Number(x.offeredPrice ?? x.offerPrice ?? x.price ?? 0),
-      condition: x.condition ?? x.note ?? "",
-      createdAt: x.createdAt ?? x.date ?? "",
-      status: (x.status ?? "pending") as TradeInStatus,
-    }));
+    return storeTradeIns.map((x: any) => {
+      const id = String(x.id ?? x._id ?? x.trade_in_id ?? x.tradeInId ?? 0);
+
+      const userObj = x.user ?? x.customer ?? null;
+      const userId = x.user_id ?? x.userId ?? userObj?.id ?? userObj?._id ?? x.user ?? undefined;
+
+      const customerName =
+        x.customerName ??
+        x.full_name ??
+        x.fullName ??
+        userObj?.full_name ??
+        userObj?.fullName ??
+        userObj?.name ??
+        userObj?.username ??
+        (userId ? `User #${userId}` : "—");
+
+      const customerPhone =
+        x.customerPhone ??
+        x.phone_number ??
+        x.phoneNumber ??
+        userObj?.phone_number ??
+        userObj?.phoneNumber ??
+        userObj?.phone ??
+        "";
+
+      const deviceName = String(x.device_name ?? x.deviceName ?? x.productName ?? x.title ?? "—");
+      const estimatedPrice = toNum(
+        x.estimated_price ?? x.estimatedPrice ?? x.offeredPrice ?? x.offerPrice ?? x.price ?? 0
+      );
+
+      const c = buildCondition(x);
+
+      return {
+        id,
+        userId,
+        customerName,
+        customerPhone,
+
+        deviceName,
+        estimatedPrice,
+
+        productName: deviceName,
+        offeredPrice: estimatedPrice,
+
+        condition: c.text,
+        createdAt: String(x.created_at ?? x.createdAt ?? x.date ?? ""),
+        status: normalizeStatus(x.status),
+
+        isPowerOn: c.isPowerOn,
+        screenOk: c.screenOk,
+        bodyOk: c.bodyOk,
+        batteryPercentage: c.battery,
+      };
+    });
   }, [storeTradeIns]);
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -86,7 +179,8 @@ export default function TradeInsListPage() {
         !q ||
         r.customerName.toLowerCase().includes(q) ||
         r.productName.toLowerCase().includes(q) ||
-        (r.customerPhone ?? "").toLowerCase().includes(q);
+        (r.customerPhone ?? "").toLowerCase().includes(q) ||
+        String(r.userId ?? "").toLowerCase().includes(q);
 
       const matchStatus = statusFilter === "all" ? true : r.status === statusFilter;
       return matchQ && matchStatus;
@@ -101,7 +195,7 @@ export default function TradeInsListPage() {
 
   const approve = async (id: string) => {
     try {
-      setStatusLocal(id, "approved");
+      setStatusLocal(id, "APPROVED");
       toast.success("Approved trade-in request");
     } catch (err: any) {
       toast.error(err?.message || "Approve failed");
@@ -110,7 +204,7 @@ export default function TradeInsListPage() {
 
   const reject = async (id: string) => {
     try {
-      setStatusLocal(id, "rejected");
+      setStatusLocal(id, "REJECTED");
       toast.success("Rejected trade-in request");
     } catch (err: any) {
       toast.error(err?.message || "Reject failed");
@@ -149,7 +243,7 @@ export default function TradeInsListPage() {
           <Button
             variant="outline"
             className="border-slate-800 bg-slate-900/40 hover:bg-slate-900/70 text-slate-100"
-            onClick={() => setStatusFilter((p) => (p === "all" ? "pending" : "all"))}
+            onClick={() => setStatusFilter((p) => (p === "all" ? "PENDING" : "all"))}
           >
             <Filter className="h-4 w-4 mr-2" />
             {statusFilter === "all" ? "All status" : `Status: ${statusFilter}`}
@@ -214,7 +308,7 @@ export default function TradeInsListPage() {
                         <DropdownMenuItem
                           className="focus:bg-slate-800/50"
                           onClick={() => setConfirm({ id: it.id, type: "approve" })}
-                          disabled={it.status === "approved"}
+                          disabled={it.status === "APPROVED"}
                         >
                           <CheckCircle2 className="h-4 w-4 mr-2 text-emerald-400" />
                           Approve
@@ -223,7 +317,7 @@ export default function TradeInsListPage() {
                         <DropdownMenuItem
                           className="focus:bg-slate-800/50"
                           onClick={() => setConfirm({ id: it.id, type: "reject" })}
-                          disabled={it.status === "rejected"}
+                          disabled={it.status === "REJECTED"}
                         >
                           <XCircle className="h-4 w-4 mr-2 text-red-400" />
                           Reject

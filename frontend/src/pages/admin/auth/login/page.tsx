@@ -5,6 +5,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import React from "react";
 
+import { setClientAuth } from "../../../../features/client/auth/clientAuthSlice";
+
 import { Button } from "../../../../components/ui/button";
 import { Input } from "../../../../components/ui/input";
 import { Label } from "../../../../components/ui/label";
@@ -81,7 +83,8 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const data = await loginAdmin({ email, password });
-      dispatch(setAuth(data));
+      dispatch(setClientAuth({ user: data.user, token: data.token, refresh: data.refresh }));
+      dispatch(setAuth({ user: data.user, permissions: DEV_PERMISSIONS }));
       dispatch(showAlert({ type: "success", message: "Đăng nhập admin thành công", timeout: 2000 }));
       navigate("/admin/dashboard", { replace: true });
     } catch (err: any) {

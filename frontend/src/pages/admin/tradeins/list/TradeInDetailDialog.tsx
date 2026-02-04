@@ -1,26 +1,6 @@
 import React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../../../../components/ui/dialog";
-import { Button } from "../../../../components/ui/button";
-
-type TradeInStatus = "pending" | "reviewing" | "approved" | "rejected";
-
-type TradeInItem = {
-  id: string;
-  customerName: string;
-  customerPhone?: string;
-  productName: string;
-  offeredPrice: number;
-  condition?: string;
-  createdAt?: string;
-  status: TradeInStatus;
-};
-
-const statusPillClass: Record<TradeInStatus, string> = {
-  pending: "bg-amber-500/10 text-amber-400",
-  reviewing: "bg-sky-500/10 text-sky-400",
-  approved: "bg-emerald-500/10 text-emerald-400",
-  rejected: "bg-red-500/10 text-red-400",
-};
+import type { TradeInItem } from "./types";
 
 export default function TradeInDetailDialog({
   open,
@@ -32,57 +12,76 @@ export default function TradeInDetailDialog({
   item: TradeInItem | null;
 }) {
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl bg-slate-950 border-slate-800 text-slate-100">
+    <Dialog open={open} onOpenChange={(v) => (!v ? onClose() : null)}>
+      <DialogContent className="bg-slate-950 border-slate-800 text-slate-100 max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-slate-100">Trade-In Detail</DialogTitle>
+          <DialogTitle>Trade-In Details</DialogTitle>
         </DialogHeader>
 
         {!item ? (
-          <div className="text-slate-400">No data.</div>
+          <div className="text-slate-400">No data</div>
         ) : (
           <div className="space-y-4">
-            <div className="bg-slate-900/70 border border-slate-800 rounded-2xl p-4 space-y-3">
-              <div className="flex flex-wrap gap-3">
-                <span className="text-sm text-slate-400">Customer:</span>
-                <span className="text-sm font-medium">{item.customerName}</span>
-              </div>
-              <div className="flex flex-wrap gap-3">
-                <span className="text-sm text-slate-400">Phone:</span>
-                <span className="text-sm font-medium">{item.customerPhone || "—"}</span>
-              </div>
-              <div className="flex flex-wrap gap-3">
-                <span className="text-sm text-slate-400">Device:</span>
-                <span className="text-sm font-medium">{item.productName}</span>
-              </div>
-              <div className="flex flex-wrap gap-3">
-                <span className="text-sm text-slate-400">Offer:</span>
-                <span className="text-sm font-medium">${item.offeredPrice}</span>
-              </div>
-              <div className="flex flex-wrap gap-3">
-                <span className="text-sm text-slate-400">Condition:</span>
-                <span className="text-sm font-medium">{item.condition || "—"}</span>
-              </div>
-              <div className="flex flex-wrap gap-3">
-                <span className="text-sm text-slate-400">Created:</span>
-                <span className="text-sm font-medium">{item.createdAt || "—"}</span>
-              </div>
-              <div className="flex flex-wrap gap-3 items-center">
-                <span className="text-sm text-slate-400">Status:</span>
-                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${statusPillClass[item.status]}`}>
-                  {item.status}
-                </span>
+            <div className="rounded-lg border border-slate-800 bg-slate-900/40 p-4">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <div className="text-slate-400 mb-1">Customer</div>
+                  <div className="font-medium">{item.customerName}</div>
+                </div>
+                <div>
+                  <div className="text-slate-400 mb-1">Phone</div>
+                  <div className="font-medium">{item.customerPhone || "—"}</div>
+                </div>
+                <div>
+                  <div className="text-slate-400 mb-1">User ID</div>
+                  <div className="font-medium">{item.userId ?? "—"}</div>
+                </div>
+                <div>
+                  <div className="text-slate-400 mb-1">Created</div>
+                  <div className="font-medium">{item.createdAt || "—"}</div>
+                </div>
               </div>
             </div>
 
-            <div className="flex justify-end">
-              <Button
-                variant="outline"
-                className="border-slate-800 bg-slate-900/40 hover:bg-slate-900/70 text-slate-100"
-                onClick={onClose}
-              >
-                Close
-              </Button>
+            <div className="rounded-lg border border-slate-800 bg-slate-900/40 p-4">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <div className="text-slate-400 mb-1">Device</div>
+                  <div className="font-medium">{item.productName}</div>
+                </div>
+                <div>
+                  <div className="text-slate-400 mb-1">Estimated price</div>
+                  <div className="font-medium">${item.offeredPrice}</div>
+                </div>
+                <div>
+                  <div className="text-slate-400 mb-1">Status</div>
+                  <div className="font-medium">{item.status}</div>
+                </div>
+                <div>
+                  <div className="text-slate-400 mb-1">Battery</div>
+                  <div className="font-medium">{item.batteryPercentage ?? "—"}%</div>
+                </div>
+              </div>
+
+              <div className="mt-4 text-sm">
+                <div className="text-slate-400 mb-1">Condition</div>
+                <div className="font-medium">{item.condition || "—"}</div>
+              </div>
+
+              <div className="mt-4 grid grid-cols-3 gap-2 text-sm">
+                <div className="rounded-md border border-slate-800 bg-slate-950/40 p-2">
+                  <div className="text-slate-400 mb-1">Power</div>
+                  <div className="font-medium">{item.isPowerOn ? "ON" : "OFF"}</div>
+                </div>
+                <div className="rounded-md border border-slate-800 bg-slate-950/40 p-2">
+                  <div className="text-slate-400 mb-1">Screen</div>
+                  <div className="font-medium">{item.screenOk ? "OK" : "Broken"}</div>
+                </div>
+                <div className="rounded-md border border-slate-800 bg-slate-950/40 p-2">
+                  <div className="text-slate-400 mb-1">Body</div>
+                  <div className="font-medium">{item.bodyOk ? "OK" : "Dented"}</div>
+                </div>
+              </div>
             </div>
           </div>
         )}

@@ -32,6 +32,7 @@ import SettingsGeneralPage from "../pages/admin/settings/general/page";
 import TradeInsListPage from "../pages/admin/tradeins/list/page";
 
 import RequireAdminAuth from "./admin/_guards/RequireAdminAuth";
+import OrdersListPage from "../pages/admin/order/list/page";
 
 export const adminRoutes: RouteObject[] = [
   {
@@ -73,7 +74,8 @@ export const adminRoutes: RouteObject[] = [
           { path: "my-account/edit", element: <MyAccountEditPage /> },
 
           { path: "settings/general", element: <SettingsGeneralPage /> },
-          { path: "tradeins", element: <TradeInsListPage /> }
+          { path: "tradeins", element: <TradeInsListPage /> },
+          { path: "orders", element: <OrdersListPage /> },
         ]
       }
     ]

@@ -1,55 +1,154 @@
-import { useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { createProductCategory, getProductCategoryTree } from "../../../../services/admin/products-category/productCategoryService";
-import { showAlert } from "../../../../features/ui/uiSlice";
-import ProductCategoryForm from "../../../../features/admin/product-category/components/ProductCategoryForm";
+import { useMemo, useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { toast } from "sonner";
+
+import { Button } from "../../../../components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../../../../components/ui/card";
+import { Input } from "../../../../components/ui/input";
+import { Label } from "../../../../components/ui/label";
+import React from "react";
+
+import { createCategory } from "../../../../services/admin/products-category/productCategoryService";
+
+function slugifyLite(input: string) {
+  const s = (input || "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+  return s;
+}
 
 export default function ProductCategoryCreatePage() {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const [loading, setLoading] = useState(false);
-  const [tree, setTree] = useState([]);
+  const [saving, setSaving] = useState(false);
+  const [name, setName] = useState("");
+  const [slug, setSlug] = useState("");
+  const [icon, setIcon] = useState<File | null>(null);
 
-  useEffect(() => {
-    const run = async () => {
-      setLoading(true);
-      try {
-        const data = await getProductCategoryTree();
-        setTree(data.records || data.categories || data.tree || []);
-      } catch (err) {
-        dispatch(showAlert({ type: "error", message: err.message }));
-      } finally {
-        setLoading(false);
-      }
-    };
-    run();
-  }, []);
+  const previewUrl = useMemo(() => {
+    if (icon) return URL.createObjectURL(icon);
+    return "";
+  }, [icon]);
 
-  const onSubmit = async (values) => {
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const finalName = name.trim();
+    const finalSlug = (slug || slugifyLite(finalName)).trim();
+
+    if (!finalName) {
+      toast.error("Name is required");
+      return;
+    }
+    if (!finalSlug) {
+      toast.error("Slug is required");
+      return;
+    }
+
+    setSaving(true);
     try {
-      const fd = new FormData();
-      fd.append("title", values.title);
-      fd.append("parent_id", values.parentId);
-      fd.append("position", String(values.position));
-      fd.append("status", values.status);
-      if (values.thumbnailFile) fd.append("thumbnail", values.thumbnailFile);
-
-      await createProductCategory(fd);
-      dispatch(showAlert({ type: "success", message: "Đã tạo danh mục" }));
+      await createCategory({ name: finalName, slug: finalSlug, icon });
+      toast.success("Category created");
       navigate("/admin/products-category", { replace: true });
-    } catch (err) {
-      dispatch(showAlert({ type: "error", message: err.message }));
+    } catch (err: any) {
+      toast.error(err?.message || "Create failed");
+    } finally {
+      setSaving(false);
     }
   };
 
-  if (loading) return <div>Đang tải...</div>;
-
   return (
-    <div className="space-y-3">
-      <h1 className="text-xl font-semibold">Thêm mới danh mục</h1>
-      <ProductCategoryForm categoriesTree={tree} onSubmit={onSubmit} />
+    <div className="p-6 space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">Create Category</h1>
+          <p className="text-slate-400">Add a new category</p>
+        </div>
+        <Link to="/admin/products-category">
+          <Button
+            variant="outline"
+            className="border-slate-800 bg-slate-900/40 hover:bg-slate-900/70 text-slate-100"
+          >
+            Back
+          </Button>
+        </Link>
+      </div>
+
+      <Card className="bg-slate-950 border-slate-800 text-slate-100">
+        <CardHeader>
+          <CardTitle className="text-slate-100">Category info</CardTitle>
+        </CardHeader>
+
+        <CardContent>
+          <form onSubmit={onSubmit} className="space-y-4">
+            <div>
+              <Label className="text-slate-300">Name</Label>
+              <Input
+                value={name}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setName(v);
+                  if (!slug) setSlug(slugifyLite(v));
+                }}
+                className="bg-slate-900/60 border-slate-800 text-slate-100"
+                required
+              />
+            </div>
+
+            <div>
+              <Label className="text-slate-300">Slug</Label>
+              <Input
+                value={slug}
+                onChange={(e) => setSlug(e.target.value)}
+                className="bg-slate-900/60 border-slate-800 text-slate-100"
+                required
+              />
+            </div>
+
+            <div>
+              <Label className="text-slate-300">Icon (optional)</Label>
+              <Input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setIcon(e.target.files?.[0] ?? null)}
+                className="bg-slate-900/60 border-slate-800 text-slate-100"
+              />
+              {previewUrl ? (
+                <img
+                  src={previewUrl}
+                  alt="preview"
+                  className="mt-3 max-w-[220px] border border-slate-800 rounded"
+                />
+              ) : null}
+            </div>
+
+            <div className="flex gap-2">
+              <Button
+                type="submit"
+                disabled={saving}
+                className="bg-blue-600 hover:bg-blue-600/90 text-white"
+              >
+                Create
+              </Button>
+              <Link to="/admin/products-category">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="border-slate-800 bg-slate-900/40 hover:bg-slate-900/70 text-slate-100"
+                >
+                  Cancel
+                </Button>
+              </Link>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }
