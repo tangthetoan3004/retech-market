@@ -142,12 +142,16 @@ SPECTACULAR_SETTINGS = {
     'COMPONENT_SPLIT_REQUEST': True,
 }
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+CORS_ALLOW_CREDENTIALS = True
 
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
 
@@ -157,3 +161,14 @@ SIMPLE_JWT = {
     'USER_ID_FIELD': 'id',
     'USER_ID_CLAIM': 'user_id',
 }
+
+ACCESS_TOKEN_COOKIE  = "access_token"
+REFRESH_TOKEN_COOKIE = "refresh_token"
+
+COOKIE_SECURE   = not DEBUG   
+
+COOKIE_HTTPONLY = True
+COOKIE_SAMESITE = "Lax"
+
+ACCESS_TOKEN_COOKIE_MAX_AGE  = 15 * 60      
+REFRESH_TOKEN_COOKIE_MAX_AGE = 7 * 24 * 3600
