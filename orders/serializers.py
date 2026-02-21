@@ -31,13 +31,30 @@ class OrderSerializer(serializers.ModelSerializer):
         total_amount = 0
         with transaction.atomic():
             order = Order.objects.create(user=request.user, status='PROCESSING', **validated_data)
+            products_to_mark_sold = []
             for item in items_data:
-                product = item['product']
+                # Re-fetch with select_for_update to lock the row and prevent race conditions
+                product = Product.objects.select_for_update().get(pk=item['product'].pk)
+                if product.is_sold:
+                    raise serializers.ValidationError(
+                        {
+                            "items": f"Sản phẩm '{product.name}' đã được bán. "
+                                     "Vui lòng xóa sản phẩm này khỏi giỏ hàng."
+                        }
+                    )
                 quantity = item['quantity']
                 price = product.price
                 total_amount += price * quantity
                 OrderItem.objects.create(order=order, product=product, quantity=quantity, price=price)
+                products_to_mark_sold.append(product)
+
             order.total_amount = total_amount
-            order.final_amount = total_amount 
+            order.final_amount = total_amount
             order.save()
+
+            # Mark every ordered product as sold
+            for product in products_to_mark_sold:
+                product.is_sold = True
+                product.save(update_fields=['is_sold'])
+
         return order
