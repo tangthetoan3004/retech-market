@@ -6,9 +6,9 @@ export default function PermissionGate({ children }) {
 
   if (!ok) {
     return (
-      <div className="p-6 border rounded bg-white">
+      <div className="p-6 border rounded bg-card">
         <h2 className="text-lg font-semibold mb-2">Bạn không có quyền truy cập</h2>
-        <p className="text-sm text-gray-600">Vui lòng liên hệ quản trị viên.</p>
+        <p className="text-sm text-muted-foreground">Vui lòng liên hệ quản trị viên.</p>
       </div>
     );
   }

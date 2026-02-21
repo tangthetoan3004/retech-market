@@ -33,7 +33,7 @@ export default function ResetPasswordPage() {
 
   return (
     <div className="max-w-md mx-auto px-4 py-10">
-      <div className="border rounded bg-white p-4 space-y-3">
+      <div className="border rounded bg-card p-4 space-y-3">
         <h1 className="text-lg font-semibold">Đổi mật khẩu</h1>
 
         <form onSubmit={onSubmit} className="space-y-3">

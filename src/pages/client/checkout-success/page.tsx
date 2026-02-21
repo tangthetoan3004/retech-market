@@ -6,7 +6,7 @@ export default function CheckoutSuccessPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-10 space-y-4">
-      <div className="border rounded bg-white p-4">
+      <div className="border rounded bg-card p-4">
         <div className="text-green-700 font-semibold">Chúc mừng bạn đã đặt hàng thành công!</div>
         <div className="text-slate-600">Chúng tôi sẽ xử lý đơn hàng trong thời gian sớm nhất.</div>
       </div>
@@ -16,7 +16,7 @@ export default function CheckoutSuccessPage() {
           Không có dữ liệu đơn hàng. <Link className="underline" to="/">Về trang chủ</Link>
         </div>
       ) : (
-        <div className="border rounded bg-white p-4 space-y-3">
+        <div className="border rounded bg-card p-4 space-y-3">
           <div className="font-semibold">Thông tin cá nhân</div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
             <div>Họ tên: <b>{order.userInfo?.fullName}</b></div>

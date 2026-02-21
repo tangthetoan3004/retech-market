@@ -61,7 +61,7 @@ export default function RolesPermissionsPage() {
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-xl font-semibold">Phân quyền</h1>
         <button
-          className="border rounded px-3 py-2 text-sm bg-white"
+          className="border rounded px-3 py-2 text-sm bg-card"
           onClick={onSave}
           disabled={saving}
           type="button"

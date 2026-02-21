@@ -31,7 +31,13 @@ export default function Header({ settingGeneral }: { settingGeneral?: any; categ
     return arr.reduce((sum: number, item: any) => sum + (Number(item?.quantity) || 0), 0);
   }, [cart]);
 
-  const active = pathname.startsWith("/products") ? "products" : "home";
+  const active = useMemo(() => {
+    if (pathname === "/" || pathname === "") return "home";
+    if (pathname.startsWith("/products")) return "products";
+    if (pathname.startsWith("/tradeins") || pathname.startsWith("/tradein")) return "tradein";
+    if (pathname.startsWith("/about")) return "about";
+    return "none";
+  }, [pathname]);
 
   const websiteName = settingGeneral?.websiteName || "ReTech Market";
 
@@ -82,10 +88,10 @@ export default function Header({ settingGeneral }: { settingGeneral?: any; categ
             <Link to="/products" className={`${navBase} ${active === "products" ? navActive : navIdle}`}>
               Products
             </Link>
-            <Link to="/" className={`${navBase} ${navIdle}`}>
+            <Link to="/tradeins" className={`${navBase} ${active === "tradein" ? navActive : navIdle}`}>
               Trade-In
             </Link>
-            <Link to="/" className={`${navBase} ${navIdle}`}>
+            <Link to="/about" className={`${navBase} ${active === "about" ? navActive : navIdle}`}>
               About
             </Link>
           </nav>
@@ -177,11 +183,19 @@ export default function Header({ settingGeneral }: { settingGeneral?: any; categ
                     Products
                   </Link>
 
-                  <Link to="/" className={`${navBase} justify-start ${navIdle}`} onClick={() => setMobileMenuOpen(false)}>
+                  <Link
+                    to="/tradeins"
+                    className={`${navBase} justify-start ${active === "tradein" ? navActive : navIdle}`}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
                     Trade-In
                   </Link>
 
-                  <Link to="/" className={`${navBase} justify-start ${navIdle}`} onClick={() => setMobileMenuOpen(false)}>
+                  <Link
+                    to="/about"
+                    className={`${navBase} justify-start ${active === "about" ? navActive : navIdle}`}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
                     About
                   </Link>
 

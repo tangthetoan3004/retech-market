@@ -68,7 +68,6 @@ export default function ProductDetailPage() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [addedToCart, setAddedToCart] = useState(false);
   const [wish, setWish] = useState(false);
-  const [qty, setQty] = useState(1);
 
   useEffect(() => {
     const run = async () => {
@@ -87,7 +86,6 @@ export default function ProductDetailPage() {
 
   useEffect(() => {
     setSelectedImage(0);
-    setQty(1);
   }, [slug]);
 
   const images = useMemo(() => (product ? safeImages(product) : []), [product]);
@@ -117,8 +115,9 @@ export default function ProductDetailPage() {
   const originalPrice = num(product?.priceOld ?? (product?.priceNew ? product?.price : 0) ?? 0);
   const hasOriginal = originalPrice > 0 && originalPrice > price;
 
-  const stock = num(product?.stock ?? 0);
-  const inStock = stock > 0;
+  // Hàng refurbished: mỗi sản phẩm = 1 thiết bị vật lý → dùng is_sold
+  const isSold = Boolean(product?.is_sold ?? product?.isSold ?? false);
+  const inStock = !isSold;
 
   const rating = num(product?.rating ?? 4.5) || 4.5;
   const reviewCount = num(product?.reviewCount ?? 89) || 89;
@@ -132,17 +131,14 @@ export default function ProductDetailPage() {
   const activeImg = images[selectedImage] || product?.thumbnail || product?.image || "";
 
   const handleAddToCart = () => {
-    if (!product || addedToCart || !inStock) return;
-
-    const maxQty = stock || 999;
-    const finalQty = Math.min(Math.max(1, num(qty) || 1), maxQty);
+    if (!product || addedToCart || isSold) return;
 
     setAddedToCart(true);
     dispatch(
       addToCart({
         id: product?.id || product?._id || product?.slug,
         item: product,
-        quantity: finalQty,
+        quantity: 1, // refurbished: luôn mua 1
       })
     );
     dispatch(showAlert({ type: "success", message: "Đã thêm vào giỏ hàng", timeout: 2000 }));
@@ -183,11 +179,10 @@ export default function ProductDetailPage() {
                 {images.slice(0, 4).map((image: string, index: number) => (
                   <motion.button
                     key={image}
-                    className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${
-                      selectedImage === index
-                        ? "border-[var(--accent-blue)]"
-                        : "border-border hover:border-[var(--accent-blue)]/50"
-                    }`}
+                    className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${selectedImage === index
+                      ? "border-[var(--accent-blue)]"
+                      : "border-border hover:border-[var(--accent-blue)]/50"
+                      }`}
                     onClick={() => setSelectedImage(index)}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -214,9 +209,8 @@ export default function ProductDetailPage() {
                   {Array.from({ length: 5 }).map((_, i) => (
                     <Star
                       key={i}
-                      className={`h-4 w-4 ${
-                        i < Math.round(rating) ? "fill-[var(--grade-b)] text-[var(--grade-b)]" : "text-muted"
-                      }`}
+                      className={`h-4 w-4 ${i < Math.round(rating) ? "fill-[var(--grade-b)] text-[var(--grade-b)]" : "text-muted"
+                        }`}
                     />
                   ))}
                   <span className="text-sm text-muted-foreground ml-2">
@@ -241,19 +235,18 @@ export default function ProductDetailPage() {
               ) : null}
             </div>
 
-            <div className="flex items-center gap-3">
-              <input
-                className="h-11 w-28 rounded-md border border-border bg-background px-3 text-sm outline-none"
-                type="number"
-                min="1"
-                max={stock || 999}
-                value={qty}
-                onChange={(e) => setQty(Math.max(1, Number(e.target.value || 1)))}
-              />
+            {/* Trạng thái tồn kho — refurbished: Còn hàng / Đã bán */}
+            <div className="flex items-center gap-2">
               {inStock ? (
-                <span className="text-sm text-muted-foreground">{stock} available</span>
+                <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium bg-green-500/10 text-green-500 border border-green-500/20">
+                  <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                  Còn hàng
+                </span>
               ) : (
-                <span className="text-sm text-[var(--status-error)]">Out of Stock</span>
+                <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium bg-red-500/10 text-red-500 border border-red-500/20">
+                  <span className="w-2 h-2 rounded-full bg-red-500" />
+                  Đã bán
+                </span>
               )}
             </div>
 
@@ -325,24 +318,30 @@ export default function ProductDetailPage() {
             <div className="flex gap-3">
               <Button
                 size="lg"
-                className={`flex-1 transition-all ${
-                  addedToCart
-                    ? "bg-[var(--status-success)] hover:bg-[var(--status-success)]"
+                className={`flex-1 transition-all ${isSold
+                  ? "bg-muted text-muted-foreground cursor-not-allowed"
+                  : addedToCart
+                    ? "bg-[var(--status-success)] hover:bg-[var(--status-success)] text-white"
                     : "rt-bg-brand text-white hover:opacity-90"
-                }`}
+                  }`}
                 onClick={handleAddToCart}
-                disabled={!inStock || addedToCart}
+                disabled={isSold || addedToCart}
                 type="button"
               >
-                {addedToCart ? (
+                {isSold ? (
+                  <>
+                    <span className="mr-2">✕</span>
+                    Đã bán
+                  </>
+                ) : addedToCart ? (
                   <>
                     <Check className="h-5 w-5 mr-2" />
-                    Added to Cart
+                    Đã thêm vào giỏ
                   </>
                 ) : (
                   <>
                     <ShoppingCart className="h-5 w-5 mr-2" />
-                    Add to Cart
+                    Thêm vào giỏ hàng
                   </>
                 )}
               </Button>
@@ -359,9 +358,9 @@ export default function ProductDetailPage() {
             </div>
 
             {inStock ? (
-              <p className="text-sm text-[var(--status-success)]">✓ In Stock ({stock} available)</p>
+              <p className="text-sm text-green-500">✓ Sản phẩm này hiện đang còn hàng</p>
             ) : (
-              <p className="text-sm text-[var(--status-error)]">Out of Stock</p>
+              <p className="text-sm text-red-500">✗ Sản phẩm này đã được bán</p>
             )}
           </div>
         </div>
@@ -445,8 +444,8 @@ export default function ProductDetailPage() {
                           {grade === "A"
                             ? "Minimal to no visible wear"
                             : grade === "B"
-                            ? "Light scratches or marks"
-                            : "Visible wear, fully functional"}
+                              ? "Light scratches or marks"
+                              : "Visible wear, fully functional"}
                         </li>
                         <li>• All original features intact</li>
                         <li>• Professionally cleaned and sanitized</li>

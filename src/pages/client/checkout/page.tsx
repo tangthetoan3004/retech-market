@@ -4,11 +4,12 @@ import { showAlert } from "../../../features/ui/uiSlice";
 import { createOrder } from "../../../services/client/checkout/checkoutService";
 import { deleteAll } from "../../../features/client/cart/cartSlice";
 import { useNavigate } from "react-router-dom";
+import { RootState } from "../../../app/store";
 
 export default function CheckoutPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const cart = useSelector((s) => s.cart);
+  const cart = useSelector((s: RootState) => s.cart);
 
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
@@ -56,11 +57,11 @@ export default function CheckoutPage() {
         <div className="text-slate-600">Giỏ hàng trống.</div>
       ) : (
         <>
-          <div className="border rounded bg-white p-4">
+          <div className="border rounded bg-card p-4">
             <div className="font-semibold">Tổng đơn hàng: {total}$</div>
           </div>
 
-          <form onSubmit={onSubmit} className="border rounded bg-white p-4 space-y-3">
+          <form onSubmit={onSubmit} className="border rounded bg-card p-4 space-y-3">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <input
                 className="border rounded px-3 py-2"

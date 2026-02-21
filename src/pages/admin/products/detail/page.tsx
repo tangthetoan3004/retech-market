@@ -33,12 +33,12 @@ export default function ProductsDetailPage() {
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Chi tiết sản phẩm</h1>
-        <Link className="border rounded px-3 py-2 text-sm bg-white" to={`/admin/products/edit/${id}`}>
+        <Link className="border rounded px-3 py-2 text-sm bg-card" to={`/admin/products/edit/${id}`}>
           Sửa
         </Link>
       </div>
 
-      <div className="border rounded p-4 bg-white space-y-2">
+      <div className="border rounded p-4 bg-card space-y-2">
         <div>
           <span className="font-medium">Tiêu đề: </span>
           {product.title || ""}

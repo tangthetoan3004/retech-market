@@ -70,30 +70,30 @@ function Card({ p, idx }: { p: any; idx: number }) {
           )}
 
           {brand ? (
-            <span className="max-w-[60%] truncate inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-white/85 text-black">
+            <span className="max-w-[60%] truncate inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-card text-foreground">
               {brand}
             </span>
           ) : null}
         </div>
       </div>
 
-      <div className="p-4 overflow-hidden">
-        <div className="text-[15px] font-semibold text-white leading-snug line-clamp-2 min-h-[44px]">
+      <div className="p-4 overflow-hidden bg-black/30">
+        <div className="text-[15px] font-semibold text-foreground leading-snug line-clamp-2 min-h-[44px]">
           {title}
         </div>
 
         <div className="mt-3 flex items-end justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <div className="text-[18px] font-extrabold text-white tabular-nums truncate">
+            <div className="text-[18px] font-extrabold text-foreground/80 tabular-nums truncate">
               {money(priceNew)}
             </div>
 
             {hasDiscount ? (
-              <div className="text-sm text-white/60 line-through tabular-nums truncate">
+              <div className="text-sm text-foreground/60 line-through tabular-nums truncate">
                 {money(priceOld)}
               </div>
             ) : (
-              <div className="text-sm text-white/60">&nbsp;</div>
+              <div className="text-sm text-foreground/60">&nbsp;</div>
             )}
           </div>
 

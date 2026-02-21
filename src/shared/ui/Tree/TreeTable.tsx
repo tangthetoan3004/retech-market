@@ -28,7 +28,7 @@ export default function TreeTable({ nodes, columns, renderActions }) {
   if (!Array.isArray(nodes)) return null;
 
   return (
-    <div className="border rounded bg-white overflow-auto">
+    <div className="border rounded bg-card overflow-auto">
       <table className="min-w-full text-sm">
         <thead className="bg-gray-50">
           <tr>
