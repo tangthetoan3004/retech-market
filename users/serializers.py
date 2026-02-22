@@ -47,7 +47,22 @@ class ChangePasswordSerializer(serializers.Serializer):
         return data
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    is_admin = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'phone_number', 'first_name', 'last_name', 'address', 'date_joined')
-        read_only_fields = ('id', 'username', 'email', 'date_joined')
+        fields = (
+            'id', 'username', 'email',
+            'phone_number', 'first_name', 'last_name',
+            'address', 'date_joined',
+            'is_active', 'is_staff', 'is_superuser',  
+            'is_admin',                                
+        )
+        read_only_fields = (
+            'id', 'username', 'email', 'date_joined',
+            'is_active', 'is_staff', 'is_superuser',  
+        )
+
+    def get_is_admin(self, obj) -> bool:
+        """True nếu user có thể truy cập trang quản trị."""
+        return obj.is_staff or obj.is_superuser

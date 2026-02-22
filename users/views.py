@@ -7,6 +7,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
 from django.contrib.auth import authenticate
+from .permissions import IsAdmin, IsSuperAdmin, IsStaffOrSuperAdmin, IsOwnerOrStaff
 
 from .serializers import (
     UserRegistrationSerializer,
@@ -89,6 +90,12 @@ class LoginView(APIView):
             return Response(
                 {"error": "Tên đăng nhập hoặc mật khẩu không đúng."},
                 status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        if not user.is_active:
+            return Response(
+                {"error": "Tài khoản đã bị vô hiệu hóa."},
+                status=status.HTTP_403_FORBIDDEN,
             )
 
         # Tạo cặp token bằng simplejwt
@@ -206,3 +213,46 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         return self.request.user
+
+class UserManageView(APIView):
+    """
+    API quản lý user dành cho Admin/Staff.
+    GET  /api/users/manage/        → Danh sách tất cả user
+    POST /api/users/manage/<id>/toggle-active/ → Kích hoạt / Vô hiệu hóa user
+    """
+    permission_classes = [IsAuthenticated, IsStaffOrSuperAdmin]
+
+    def get(self, request):
+        from .models import User as UserModel
+        from .serializers import UserProfileSerializer
+        users = UserModel.objects.all().order_by('-date_joined')
+        serializer = UserProfileSerializer(users, many=True, context={'request': request})
+        return Response(serializer.data)
+
+    def post(self, request, user_id: int):
+        """Toggle is_active của user. Chỉ superuser mới được vô hiệu hóa user khác."""
+        from .models import User as UserModel
+        if not request.user.is_superuser:
+            return Response(
+                {"error": "Chỉ Super Admin mới có quyền thay đổi trạng thái user."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        try:
+            target_user = UserModel.objects.get(id=user_id)
+        except UserModel.DoesNotExist:
+            return Response({"error": "User không tồn tại."}, status=status.HTTP_404_NOT_FOUND)
+
+        if target_user == request.user:
+            return Response(
+                {"error": "Không thể tự vô hiệu hóa tài khoản của chính mình."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        target_user.is_active = not target_user.is_active
+        target_user.save(update_fields=['is_active'])
+
+        action = "kích hoạt" if target_user.is_active else "vô hiệu hóa"
+        return Response(
+            {"message": f"Đã {action} tài khoản {target_user.username}.", "is_active": target_user.is_active},
+            status=status.HTTP_200_OK,
+        )
