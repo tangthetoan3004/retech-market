@@ -117,7 +117,7 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.BrowsableAPIRenderer',
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'core.authentication.CookieJWTAuthentication',  # ✅ Đọc JWT từ HttpOnly cookie
     ),
     'EXCEPTION_HANDLER': 'config.exceptions.custom_exception_handler',
 
@@ -145,8 +145,9 @@ SPECTACULAR_SETTINGS = {
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "http://localhost:8000",   # Cho phép Swagger UI / trình duyệt direct gọi API
 ]
-CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_CREDENTIALS = True  # Bắt buộc để browser gửi cookie cross-origin
 
 
 SIMPLE_JWT = {
@@ -172,3 +173,22 @@ COOKIE_SAMESITE = "Lax"
 
 ACCESS_TOKEN_COOKIE_MAX_AGE  = 15 * 60      
 REFRESH_TOKEN_COOKIE_MAX_AGE = 7 * 24 * 3600
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": os.environ.get("REDIS_URL", "redis://127.0.0.1:6379/0"),
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "CONNECTION_POOL_KWARGS": {
+                "max_connections": 100,
+            },
+            "IGNORE_EXCEPTIONS": True,
+        },
+        "KEY_PREFIX": "retech",
+        "TIMEOUT": 60 * 15,
+    }
+}
+
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "default"
