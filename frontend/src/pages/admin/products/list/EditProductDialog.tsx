@@ -22,18 +22,18 @@ type Product = {
   id: number;
   name: string;
   description: string;
+  brand: string;
+  brand_id?: number | null;
+  category: string;
+  category_id?: number | null;
   price: number;
   original_price?: number | null;
   condition?: string;
   battery_health?: number | null;
   warranty_period?: number | null;
+  is_sold?: boolean;
   main_image?: string;
-
-  category_id?: number | null;
-  brand_id?: number | null;
-
-  category?: number | { id: number } | null;
-  brand?: number | { id: number } | null;
+  created_at?: string;
 };
 
 type EditForm = AdminProductFormData & { main_image_url: string };
@@ -72,8 +72,8 @@ function toForm(product: Product): EditForm {
     battery_health: (product.battery_health ?? "") as any,
     warranty_period: (product.warranty_period ?? "") as any,
     main_image: null,
-    category_id: toId(product.category_id ?? product.category),
-    brand_id: toId(product.brand_id ?? product.brand),
+    category_id: product.category_id ?? "",
+    brand_id: product.brand_id ?? "",
     main_image_url: product.main_image || "",
   };
 }
