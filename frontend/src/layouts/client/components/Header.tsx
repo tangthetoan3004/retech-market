@@ -26,12 +26,23 @@ export default function Header({ settingGeneral }: { settingGeneral?: any; categ
   const cart = useSelector((s: any) => s.cart);
   const user = useSelector((s: any) => s.clientAuth?.user);
 
+  const isAdmin = useMemo(() => {
+    if (!user) return false;
+    return Boolean(user.is_staff || user.is_superuser || user.role === "admin");
+  }, [user]);
+
   const cartItemsCount = useMemo(() => {
     const arr = Array.isArray(cart) ? cart : [];
     return arr.reduce((sum: number, item: any) => sum + (Number(item?.quantity) || 0), 0);
   }, [cart]);
 
-  const active = pathname.startsWith("/products") ? "products" : "home";
+  const active = useMemo(() => {
+    if (pathname === "/" || pathname === "") return "home";
+    if (pathname.startsWith("/products")) return "products";
+    if (pathname.startsWith("/tradeins") || pathname.startsWith("/tradein")) return "tradein";
+    if (pathname.startsWith("/about")) return "about";
+    return "none";
+  }, [pathname]);
 
   const websiteName = settingGeneral?.websiteName || "ReTech Market";
 
@@ -82,10 +93,10 @@ export default function Header({ settingGeneral }: { settingGeneral?: any; categ
             <Link to="/products" className={`${navBase} ${active === "products" ? navActive : navIdle}`}>
               Products
             </Link>
-            <Link to="/" className={`${navBase} ${navIdle}`}>
+            <Link to="/tradeins" className={`${navBase} ${active === "tradein" ? navActive : navIdle}`}>
               Trade-In
             </Link>
-            <Link to="/" className={`${navBase} ${navIdle}`}>
+            <Link to="/about" className={`${navBase} ${active === "about" ? navActive : navIdle}`}>
               About
             </Link>
           </nav>
@@ -121,7 +132,7 @@ export default function Header({ settingGeneral }: { settingGeneral?: any; categ
                     <User className="h-5 w-5" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="min-w-[180px]">
+                <DropdownMenuContent align="end" className="min-w-45">
                   <DropdownMenuItem onClick={() => navigate("/user/info")} className="cursor-pointer">
                     <Settings className="h-4 w-4 mr-2" />
                     Tài khoản
@@ -138,15 +149,17 @@ export default function Header({ settingGeneral }: { settingGeneral?: any; categ
               </Button>
             )}
 
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate("/admin/auth/login")}
-              className="hidden lg:flex"
-              type="button"
-            >
-              Admin
-            </Button>
+            {isAdmin ? (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate("/admin/dashboard")}
+                className="hidden lg:flex"
+                type="button"
+              >
+                Admin
+              </Button>
+            ) : null}
 
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild>
@@ -177,21 +190,31 @@ export default function Header({ settingGeneral }: { settingGeneral?: any; categ
                     Products
                   </Link>
 
-                  <Link to="/" className={`${navBase} justify-start ${navIdle}`} onClick={() => setMobileMenuOpen(false)}>
+                  <Link
+                    to="/tradeins"
+                    className={`${navBase} justify-start ${active === "tradein" ? navActive : navIdle}`}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
                     Trade-In
                   </Link>
 
-                  <Link to="/" className={`${navBase} justify-start ${navIdle}`} onClick={() => setMobileMenuOpen(false)}>
+                  <Link
+                    to="/about"
+                    className={`${navBase} justify-start ${active === "about" ? navActive : navIdle}`}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
                     About
                   </Link>
 
-                  <Link
-                    to="/admin/auth/login"
-                    className={`${navBase} justify-start ${navIdle}`}
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Admin Mode
-                  </Link>
+                  {isAdmin ? (
+                    <Link
+                      to="/admin/dashboard"
+                      className={`${navBase} justify-start ${navIdle}`}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Admin Mode
+                    </Link>
+                  ) : null}
 
                   <button
                     className={`${navBase} justify-start ${navIdle}`}

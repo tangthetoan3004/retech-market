@@ -4,7 +4,7 @@ export default function SubMenu({ items, basePath }) {
   if (!items || items.length === 0) return null;
 
   return (
-    <ul className="min-w-[220px] rounded border bg-white shadow p-2">
+    <ul className="min-w-[220px] rounded border bg-card shadow p-2">
       {items.map((item) => (
         <li key={item.slug} className="relative group">
           <Link

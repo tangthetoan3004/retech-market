@@ -1,13 +1,11 @@
 import { useSelector } from "react-redux";
-import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 
 export default function RequireAdminAuth() {
-  const user = useSelector((s) => s.auth?.user);
-  const location = useLocation();
+  const user = useSelector((s: any) => s.clientAuth?.user);
+  const isAdmin = !!user && (user.is_staff || user.is_superuser);
 
-  if (!user) {
-    return <Navigate to="/admin/auth/login" replace state={{ from: location.pathname }} />;
-  }
+  if (!isAdmin) return <Navigate to="/" replace />;
 
   return <Outlet />;
 }

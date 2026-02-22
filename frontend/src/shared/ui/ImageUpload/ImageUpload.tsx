@@ -19,7 +19,7 @@ export default function ImageUpload({ label, value, onChange }) {
     <div className="space-y-2">
       {label ? <div className="text-sm font-medium">{label}</div> : null}
       <input type="file" onChange={onPick} />
-      {preview ? <img src={preview} alt="preview" className="max-w-[180px] border rounded" /> : null}
+      {preview ? <img src={preview} alt="preview" className="max-w-45 border rounded" /> : null}
     </div>
   );
 }

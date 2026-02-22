@@ -1,8 +1,9 @@
 import { useSelector } from "react-redux";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
+import type { RootState } from "../../../app/store";
 
 export default function RequireClientAuth() {
-  const user = useSelector((s) => s.clientAuth?.user);
+  const user = useSelector((s: RootState) => s.clientAuth?.user);
   const location = useLocation();
 
   if (!user) {

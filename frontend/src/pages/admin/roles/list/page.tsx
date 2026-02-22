@@ -3,14 +3,15 @@ import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { showAlert } from "../../../../features/ui/uiSlice";
 import { getRoles } from "../../../../services/admin/roles/rolesService";
+import { RootState } from "../../../../app/store";
 
-function has(perms, key) {
+function has(perms: string[], key: string) {
   return Array.isArray(perms) && perms.includes(key);
 }
 
 export default function RolesListPage() {
   const dispatch = useDispatch();
-  const perms = useSelector((s) => s.auth.permissions);
+  const perms = useSelector((state: RootState) => state.auth.permissions);
 
   const [loading, setLoading] = useState(false);
   const [roles, setRoles] = useState([]);
@@ -36,13 +37,13 @@ export default function RolesListPage() {
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-xl font-semibold">Nhóm quyền</h1>
         {has(perms, "roles_create") ? (
-          <Link className="border rounded px-3 py-2 text-sm bg-white" to="/admin/roles/create">
+          <Link className="border rounded px-3 py-2 text-sm bg-card" to="/admin/roles/create">
             + Thêm mới
           </Link>
         ) : null}
       </div>
 
-      <div className="border rounded bg-white overflow-auto">
+      <div className="border rounded bg-card overflow-auto">
         <table className="min-w-full text-sm">
           <thead className="bg-gray-50">
             <tr>

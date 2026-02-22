@@ -17,7 +17,7 @@ export default function PermissionsMatrix({ roles, permissions, value, onChange 
   };
 
   return (
-    <div className="border rounded bg-white overflow-auto">
+    <div className="border rounded bg-card overflow-auto">
       <table className="min-w-full text-sm">
         <thead className="bg-gray-50">
           <tr>

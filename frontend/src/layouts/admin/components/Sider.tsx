@@ -59,7 +59,7 @@ export default function Sider() {
       className="w-[280px] bg-card border-r border-border flex-shrink-0 hidden lg:block"
     >
       <div className="sticky top-0 p-6 space-y-6">
-        <button onClick={() => navigate("/")}  className="flex items-center gap-3 mb-8" type="button">
+        <button onClick={() => navigate("/")} className="flex items-center gap-3 mb-8" type="button">
           <div className="w-10 h-10 rounded-xl rt-gradient-brand flex items-center justify-center transition-transform group-hover:scale-105 overflow-hidden">
             <span className="text-white font-black text-2xl leading-none">R</span>
           </div>
@@ -85,9 +85,9 @@ export default function Sider() {
                 style={
                   active
                     ? {
-                        backgroundColor: "var(--accent-blue, #2563eb)",
-                        color: "#fff",
-                      }
+                      backgroundColor: "var(--accent-blue, #2563eb)",
+                      color: "#fff",
+                    }
                     : undefined
                 }
               >
@@ -101,7 +101,7 @@ export default function Sider() {
                 <span
                   className="grid place-items-center h-9 w-9 rounded-lg"
                   style={{
-                    backgroundColor: active ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.03)",
+                    backgroundColor: active ? "rgba(255,255,255,0.15)" : "var(--muted)",
                   }}
                 >
                   <Icon className="h-4 w-4" />

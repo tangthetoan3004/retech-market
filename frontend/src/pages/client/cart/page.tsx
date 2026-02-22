@@ -1,8 +1,8 @@
 import { useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import { Trash2, Plus, Minus, ShoppingBag } from "lucide-react";
-import { deleteItem, updateQuantity } from "../../../features/client/cart/cartSlice";
+import { deleteItem } from "../../../features/client/cart/cartSlice";
+import { Trash2, ShoppingBag } from "lucide-react";
 import { Button } from "../../../components/ui/button";
 
 function n(v: any) {
@@ -114,42 +114,9 @@ export default function CartPage() {
                       </div>
 
                       <div className="mt-4 flex items-center justify-between gap-4">
-                        <div className="inline-flex items-center gap-2 rounded-xl border border-border bg-muted/30 p-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            type="button"
-                            onClick={() => {
-                              const next = Math.max(1, qty - 1);
-                              dispatch(updateQuantity({ id: x.id, quantity: next }));
-                            }}
-                          >
-                            <Minus className="h-4 w-4" />
-                          </Button>
-
-                          <input
-                            className="w-14 h-9 text-center bg-transparent outline-none text-sm"
-                            type="number"
-                            min="1"
-                            value={qty}
-                            onChange={(e) => {
-                              const next = Math.max(1, n(e.target.value || 1));
-                              dispatch(updateQuantity({ id: x.id, quantity: next }));
-                            }}
-                          />
-
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            type="button"
-                            onClick={() => {
-                              const next = qty + 1;
-                              dispatch(updateQuantity({ id: x.id, quantity: next }));
-                            }}
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                        </div>
+                        <span className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-muted/40 px-3 py-1.5 text-sm font-medium">
+                          Số lượng: 1
+                        </span>
 
                         <Button
                           variant="outline"

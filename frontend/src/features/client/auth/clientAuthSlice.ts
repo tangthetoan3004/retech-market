@@ -2,24 +2,16 @@ import { createSlice } from "@reduxjs/toolkit";
 
 type ClientAuthState = {
   user: any;
-  token: string | null;   // access token
-  refresh: string | null; // refresh token
 };
 
 const loadAuth = (): ClientAuthState => {
   try {
     const raw = localStorage.getItem("client_auth");
-    if (!raw) return { user: null, token: null, refresh: null };
+    if (!raw) return { user: null };
     const data = JSON.parse(raw);
-    return data && typeof data === "object"
-      ? {
-          user: data.user || null,
-          token: data.token || null,
-          refresh: data.refresh || null
-        }
-      : { user: null, token: null, refresh: null };
+    return { user: data?.user || null };
   } catch {
-    return { user: null, token: null, refresh: null };
+    return { user: null };
   }
 };
 
@@ -28,17 +20,12 @@ const clientAuthSlice = createSlice({
   initialState: loadAuth(),
   reducers: {
     setClientAuth: (state, action) => {
-      const { user, token, refresh } = action.payload || {};
-      state.user = user || null;
-      state.token = token || null;
-      state.refresh = refresh || null;
+      state.user = action.payload?.user || null;
     },
     clearClientAuth: (state) => {
       state.user = null;
-      state.token = null;
-      state.refresh = null;
-    }
-  }
+    },
+  },
 });
 
 export const { setClientAuth, clearClientAuth } = clientAuthSlice.actions;

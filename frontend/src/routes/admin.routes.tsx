@@ -1,13 +1,10 @@
 import type { RouteObject } from "react-router-dom";
 
-import AdminAuthLayout from "../layouts/admin/AdminAuthLayout";
 import AdminLayout from "../layouts/admin/AdminLayout";
 
-import LoginPage from "../pages/admin/auth/login/page";
 import DashboardPage from "../pages/admin/dashboard/page";
 
 import ProductsListPage from "../pages/admin/products/list/page";
-// import ProductsCreatePage from "../pages/admin/products/create/page";
 import ProductsEditPage from "../pages/admin/products/edit/page";
 import ProductsDetailPage from "../pages/admin/products/detail/page";
 
@@ -30,30 +27,22 @@ import MyAccountEditPage from "../pages/admin/my-account/edit/page";
 import SettingsGeneralPage from "../pages/admin/settings/general/page";
 
 import TradeInsListPage from "../pages/admin/tradeins/list/page";
-
-import RequireAdminAuth from "./admin/_guards/RequireAdminAuth";
 import OrdersListPage from "../pages/admin/order/list/page";
 
+import RequireAdminAuth from "./admin/_guards/RequireAdminAuth";
+
 export const adminRoutes: RouteObject[] = [
-  {
-    path: "/admin",
-    element: <AdminAuthLayout />,
-    children: [{ path: "auth/login", element: <LoginPage /> }]
-  },
   {
     path: "/admin",
     element: <RequireAdminAuth />,
     children: [
       {
-        element: (
-          <AdminLayout />
-        ),
+        element: <AdminLayout />,
         children: [
           { index: true, element: <DashboardPage /> },
           { path: "dashboard", element: <DashboardPage /> },
 
           { path: "products", element: <ProductsListPage /> },
-          // { path: "products/create", element: <ProductsCreatePage /> },
           { path: "products/edit/:id", element: <ProductsEditPage /> },
           { path: "products/detail/:id", element: <ProductsDetailPage /> },
 
@@ -76,8 +65,8 @@ export const adminRoutes: RouteObject[] = [
           { path: "settings/general", element: <SettingsGeneralPage /> },
           { path: "tradeins", element: <TradeInsListPage /> },
           { path: "orders", element: <OrdersListPage /> },
-        ]
-      }
-    ]
-  }
+        ],
+      },
+    ],
+  },
 ];

@@ -59,13 +59,7 @@ export default function ProductsPage() {
         if (params?.slug) payload.category = String(params.slug);
 
         const data = await getProducts(payload);
-        const list = Array.isArray(data?.products)
-          ? data.products
-          : Array.isArray(data?.items)
-          ? data.items
-          : Array.isArray(data)
-          ? data
-          : [];
+        const list = Array.isArray(data) ? data : [];
 
         setProducts(list);
 
@@ -255,17 +249,22 @@ export default function ProductsPage() {
   return (
     <div className="min-h-screen py-8">
       <div className="container mx-auto px-4">
-        <div className="mb-8">
+        {/* <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Browse Products</h1>
           <p className="text-muted-foreground">
             Showing {filteredProducts.length} of {products.length} products
           </p>
-        </div>
+        </div> */}
 
         <div className="flex gap-8">
           <aside className="hidden lg:block w-64 flex-shrink-0">
-            <div className="sticky top-24 bg-card border border-border rounded-xl p-6">
-              <div className="flex items-center justify-between mb-6">
+            {/* sticky + max-height = vừa khít viewport, cuộn nội dung bên trong */}
+            <div
+              className="sticky top-20 bg-card border border-border rounded-xl overflow-hidden flex flex-col"
+              style={{ maxHeight: "calc(100vh - 6rem)" }}
+            >
+              {/* Header filter — không cuộn */}
+              <div className="flex items-center justify-between px-6 pt-6 pb-4 flex-shrink-0 border-b border-border">
                 <h2 className="font-semibold flex items-center gap-2">
                   <Filter className="h-5 w-5" />
                   Filters
@@ -276,7 +275,11 @@ export default function ProductsPage() {
                   )}
                 </h2>
               </div>
-              <FilterContent />
+
+              {/* Nội dung filter — cuộn bên trong khi quá dài */}
+              <div className="flex-1 overflow-y-auto px-6 py-4 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
+                <FilterContent />
+              </div>
             </div>
           </aside>
 
@@ -367,43 +370,38 @@ export default function ProductsPage() {
                   </Button>
                 </div>
               </div>
+            ) : viewMode === "grid" ? (
+              <ProductGrid items={filteredProducts} />
             ) : (
-              <motion.div
-                className={`grid gap-6 ${
-                  viewMode === "grid" ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"
-                }`}
-                layout
-              >
-                {filteredProducts.map((p: any, index: number) => (
-                  <motion.div
-                    key={p?.id || p?._id || p?.slug || index}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    layout
-                  >
-                    {viewMode === "grid" ? (
-                      <ProductGrid items={[p]} />
-                    ) : (
-                      <div className="bg-card border border-border rounded-xl overflow-hidden">
-                        <div className="flex gap-4 p-4">
-                          <div className="w-28 h-24 rounded-lg overflow-hidden flex-shrink-0 bg-muted">
-                            {p?.thumbnail ? (
-                              <img src={p.thumbnail} alt={p?.title || ""} className="w-full h-full object-cover" />
-                            ) : null}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="font-semibold line-clamp-2">{p?.title || p?.name}</div>
-                            <div className="mt-2 text-lg font-bold">
-                              {toNumber(p?.priceNew ?? p?.price ?? p?.salePrice)}
-                            </div>
+              <div className="flex flex-col gap-4">
+                {filteredProducts.map((p: any, index: number) => {
+                  const fmt = new Intl.NumberFormat("vi-VN");
+                  const priceNew = p?.priceNew ?? p?.price ?? 0;
+                  return (
+                    <motion.div
+                      key={p?.id || p?._id || p?.slug || index}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.03 }}
+                      className="bg-card border border-border rounded-xl overflow-hidden"
+                    >
+                      <div className="flex gap-4 p-4 items-center">
+                        <div className="w-28 h-24 rounded-lg overflow-hidden flex-shrink-0 bg-muted">
+                          {p?.thumbnail ? (
+                            <img src={p.thumbnail} alt={p?.title || ""} className="w-full h-full object-cover" />
+                          ) : null}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-semibold line-clamp-2">{p?.title || p?.name}</div>
+                          <div className="mt-2 text-lg font-bold text-foreground">
+                            {fmt.format(Number(priceNew))}₫
                           </div>
                         </div>
                       </div>
-                    )}
-                  </motion.div>
-                ))}
-              </motion.div>
+                    </motion.div>
+                  );
+                })}
+              </div>
             )}
           </div>
         </div>

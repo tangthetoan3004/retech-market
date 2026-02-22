@@ -1,10 +1,11 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { hideAlert } from "../../../features/ui/uiSlice";
+import type { RootState } from "../../../app/store";
 
 export default function Alert() {
   const dispatch = useDispatch();
-  const alert = useSelector((s) => s.ui.alert);
+  const alert = useSelector((s: RootState) => s.ui.alert);
 
   useEffect(() => {
     if (!alert) return;

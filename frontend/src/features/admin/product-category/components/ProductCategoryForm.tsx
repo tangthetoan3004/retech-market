@@ -32,7 +32,7 @@ export default function ProductCategoryForm({ initialValues, categoriesTree, onS
   };
 
   return (
-    <form onSubmit={submit} className="border rounded p-4 bg-white space-y-3">
+    <form onSubmit={submit} className="border rounded p-4 bg-card space-y-3">
       <input
         className="w-full border rounded px-3 py-2"
         placeholder="Tiêu đề"

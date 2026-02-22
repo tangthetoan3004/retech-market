@@ -135,10 +135,10 @@ export default function HomePage() {
               className="flex gap-2 max-w-2xl mx-auto"
             >
               <div className="flex-1 relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-black/60" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-foreground" />
                 <input
                   placeholder="Search for iPhone, MacBook, Samsung..."
-                  className="pl-12 h-14 w-full bg-white text-foreground border-0 shadow-xl rounded-md outline-none"
+                  className="pl-12 h-14 w-full bg-card text-foreground placeholder:text-foreground/70 border-0 shadow-xl rounded-md outline-none"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={(e) => {
@@ -146,7 +146,7 @@ export default function HomePage() {
                   }}
                 />
               </div>
-              <Button size="lg" className="h-14 bg-white text-primary hover:bg-white/90" onClick={() => navigate("/")} type="button">
+              <Button size="lg" className="h-14 bg-card text-foreground hover:bg-card" onClick={() => navigate("/")} type="button">
                 <Upload className="h-5 w-5" />
               </Button>
             </motion.div>
@@ -164,7 +164,7 @@ export default function HomePage() {
               <Button
                 size="lg"
                 variant="outline"
-                className="border-white/20 hover:bg-white/10 text-black"
+                className="border-white/20 hover:bg-white/10 text-foreground"
                 onClick={() => navigate("/")}
                 type="button"
               >

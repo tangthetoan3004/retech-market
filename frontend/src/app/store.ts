@@ -20,5 +20,5 @@ export type AppDispatch = typeof store.dispatch;
 store.subscribe(() => {
   const state = store.getState();
   localStorage.setItem("client_cart", JSON.stringify(state.cart));
-  localStorage.setItem("client_auth", JSON.stringify(state.clientAuth));
+  localStorage.setItem("client_auth", JSON.stringify({ user: state.clientAuth.user }));
 });

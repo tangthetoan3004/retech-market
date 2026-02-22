@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { hideAlert } from "../uiSlice";
+import type { RootState } from "../../../app/store";
 
 const typeClass = (type) => {
   if (type === "success") return "bg-green-600";
@@ -11,7 +12,7 @@ const typeClass = (type) => {
 
 export default function Alert() {
   const dispatch = useDispatch();
-  const { open, type, message, timeout } = useSelector((s) => s.ui);
+  const { open, type, message, timeout } = useSelector((s: RootState) => s.ui);
 
   useEffect(() => {
     if (!open) return;
