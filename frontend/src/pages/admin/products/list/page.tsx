@@ -193,17 +193,17 @@ export default function AdminProductsListPage() {
   };
 
   return (
-    <div className="p-6 space-y-4">
+    <div className="p-6 space-y-4 bg-background text-foreground">
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold mb-2">Products Management</h1>
-          <p className="text-slate-400">Manage your product catalog</p>
+          <p className="text-muted-foreground">Manage your product catalog</p>
         </div>
       </div>
 
-      <Card className="bg-slate-950 border-slate-800 text-slate-100">
+      <Card className="bg-card border-border">
         <CardHeader className="flex flex-row items-center justify-between gap-3">
-          <CardTitle className="text-slate-100">Products</CardTitle>
+          <CardTitle>Products</CardTitle>
 
           <div className="flex items-center gap-2">
             <div className="w-[320px]">
@@ -211,41 +211,28 @@ export default function AdminProductsListPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search name/brand/category..."
-                className="bg-slate-900/60 border-slate-800 text-slate-100"
               />
             </div>
 
-            <Button
-              variant="outline"
-              className="border-slate-800 bg-slate-900/40 hover:bg-slate-900/70 text-slate-100"
-              onClick={() => fetchProducts(search)}
-              disabled={loading}
-            >
+            <Button variant="outline" onClick={() => fetchProducts(search)} disabled={loading}>
               Search
             </Button>
 
             <Button
               variant={showFilters ? "default" : "outline"}
               onClick={() => setShowFilters(!showFilters)}
-              className={
-                showFilters
-                  ? "bg-blue-600 hover:bg-blue-600/90 text-white"
-                  : "border-slate-800 bg-slate-900/40 hover:bg-slate-900/70 text-slate-100"
-              }
+              className={showFilters ? "bg-blue-600 hover:bg-blue-600/90 text-white" : ""}
             >
               <Filter className="h-4 w-4 mr-2" />
               Filters
               {activeFiltersCount > 0 && (
-                <Badge className="ml-2 bg-white text-blue-600 hover:bg-white">
+                <Badge className="ml-2 bg-primary-foreground text-primary hover:bg-primary-foreground">
                   {activeFiltersCount}
                 </Badge>
               )}
             </Button>
 
-            <Button
-              className="bg-blue-600 hover:bg-blue-600/90 text-white"
-              onClick={openCreateDialog}
-            >
+            <Button className="bg-blue-600 hover:bg-blue-600/90 text-white" onClick={openCreateDialog}>
               Create product
             </Button>
           </div>
@@ -253,16 +240,11 @@ export default function AdminProductsListPage() {
 
         {showFilters && (
           <CardContent className="pt-0">
-            <div className="bg-slate-900/30 border border-slate-800 rounded-xl p-4">
+            <div className="bg-muted/30 border border-border rounded-xl p-4">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-slate-100">Filter Products</h3>
+                <h3 className="font-semibold">Filter Products</h3>
                 {activeFiltersCount > 0 && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={clearFilters}
-                    className="text-slate-200 hover:bg-slate-900/50"
-                  >
+                  <Button variant="ghost" size="sm" onClick={clearFilters} className="hover:bg-muted">
                     <X className="h-4 w-4 mr-1" />
                     Clear All
                   </Button>
@@ -271,15 +253,15 @@ export default function AdminProductsListPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
-                  <Label className="text-xs text-slate-400 mb-2 block">Condition</Label>
+                  <Label className="text-xs text-muted-foreground mb-2 block">Condition</Label>
                   <Select
                     value={filters.condition}
                     onValueChange={(value: any) => setFilters((p) => ({ ...p, condition: value }))}
                   >
-                    <SelectTrigger className="bg-slate-950 border-slate-800 text-slate-100">
+                    <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-slate-950 border-slate-800 text-slate-100">
+                    <SelectContent>
                       <SelectItem value="all">All</SelectItem>
                       <SelectItem value="NEW">NEW</SelectItem>
                       <SelectItem value="LIKE_NEW">LIKE_NEW</SelectItem>
@@ -291,15 +273,15 @@ export default function AdminProductsListPage() {
                 </div>
 
                 <div>
-                  <Label className="text-xs text-slate-400 mb-2 block">Ordering</Label>
+                  <Label className="text-xs text-muted-foreground mb-2 block">Ordering</Label>
                   <Select
                     value={filters.ordering}
                     onValueChange={(value: any) => setFilters((p) => ({ ...p, ordering: value }))}
                   >
-                    <SelectTrigger className="bg-slate-950 border-slate-800 text-slate-100">
+                    <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-slate-950 border-slate-800 text-slate-100">
+                    <SelectContent>
                       <SelectItem value="-created_at">Newest</SelectItem>
                       <SelectItem value="created_at">Oldest</SelectItem>
                       <SelectItem value="price">Price: Low → High</SelectItem>
@@ -313,70 +295,70 @@ export default function AdminProductsListPage() {
         )}
 
         <CardContent>
-          <div className="rounded-lg border border-slate-800 overflow-hidden">
+          <div className="rounded-lg border border-border overflow-hidden">
             <Table>
               <TableHeader>
-                <TableRow className="border-slate-800">
-                  <TableHead className="text-slate-300">Product</TableHead>
-                  <TableHead className="text-slate-300">Category</TableHead>
-                  <TableHead className="text-slate-300">Price</TableHead>
-                  <TableHead className="text-slate-300">Condition</TableHead>
-                  <TableHead className="text-slate-300">Battery / Warranty</TableHead>
-                  <TableHead className="text-right text-slate-300">Actions</TableHead>
+                <TableRow className="border-border">
+                  <TableHead>Product</TableHead>
+                  <TableHead>Category</TableHead>
+                  <TableHead>Price</TableHead>
+                  <TableHead>Condition</TableHead>
+                  <TableHead>Battery / Warranty</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
 
               <TableBody>
                 {loading ? (
-                  <TableRow className="border-slate-800">
-                    <TableCell colSpan={6} className="text-slate-400 py-10 text-center">
+                  <TableRow className="border-border">
+                    <TableCell colSpan={6} className="text-muted-foreground py-10 text-center">
                       Loading...
                     </TableCell>
                   </TableRow>
                 ) : filteredProducts.length === 0 ? (
-                  <TableRow className="border-slate-800">
-                    <TableCell colSpan={6} className="text-slate-400 py-10 text-center">
+                  <TableRow className="border-border">
+                    <TableCell colSpan={6} className="text-muted-foreground py-10 text-center">
                       No products
                     </TableCell>
                   </TableRow>
                 ) : (
                   filteredProducts.map((product) => (
-                    <TableRow key={product.id} className="border-slate-800">
+                    <TableRow key={product.id} className="border-border">
                       <TableCell>
                         <div className="flex items-center gap-3">
                           {product.main_image ? (
                             <img
                               src={product.main_image}
                               alt={product.name}
-                              className="w-12 h-12 rounded-lg object-cover border border-slate-800"
+                              className="w-12 h-12 rounded-lg object-cover border border-border"
                             />
                           ) : (
-                            <div className="w-12 h-12 rounded-lg border border-slate-800 bg-slate-900/40" />
+                            <div className="w-12 h-12 rounded-lg border border-border bg-muted/40" />
                           )}
 
                           <div className="min-w-0">
-                            <p className="font-medium truncate text-slate-100">{product.name}</p>
-                            <p className="text-sm text-slate-400 truncate">{product.brand || "-"}</p>
+                            <p className="font-medium truncate">{product.name}</p>
+                            <p className="text-sm text-muted-foreground truncate">{product.brand || "-"}</p>
                           </div>
                         </div>
                       </TableCell>
 
-                      <TableCell className="text-slate-200">{product.category || "-"}</TableCell>
+                      <TableCell className="text-muted-foreground">{product.category || "-"}</TableCell>
 
                       <TableCell>
                         <div>
-                          <p className="font-medium text-slate-100">${product.price}</p>
+                          <p className="font-medium">${product.price}</p>
                           {product.original_price ? (
-                            <p className="text-sm text-slate-400 line-through">
+                            <p className="text-sm text-muted-foreground line-through">
                               ${product.original_price}
                             </p>
                           ) : null}
                         </div>
                       </TableCell>
 
-                      <TableCell className="text-slate-200">{product.condition || "-"}</TableCell>
+                      <TableCell className="text-muted-foreground">{product.condition || "-"}</TableCell>
 
-                      <TableCell className="text-slate-200">
+                      <TableCell className="text-muted-foreground">
                         <div className="text-sm">
                           <div>Battery: {product.battery_health ?? "-"}</div>
                           <div>Warranty: {product.warranty_period ?? 0}m</div>
@@ -386,29 +368,19 @@ export default function AdminProductsListPage() {
                       <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="text-slate-200 hover:bg-slate-900/60"
-                            >
+                            <Button size="sm" variant="ghost" className="hover:bg-muted">
                               <MoreVertical className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
 
-                          <DropdownMenuContent
-                            align="end"
-                            className="bg-slate-950 border-slate-800 text-slate-100"
-                          >
-                            <DropdownMenuItem
-                              onClick={() => openEditDialog(product)}
-                              className="cursor-pointer focus:bg-slate-900/60"
-                            >
+                          <DropdownMenuContent align="end" className="bg-popover border-border text-popover-foreground">
+                            <DropdownMenuItem onClick={() => openEditDialog(product)} className="cursor-pointer">
                               Edit
                             </DropdownMenuItem>
 
                             <DropdownMenuItem
                               onClick={() => handleDeleteClick(product)}
-                              className="cursor-pointer text-red-400 focus:bg-slate-900/60"
+                              className="cursor-pointer text-red-500 focus:text-red-500"
                             >
                               Delete
                             </DropdownMenuItem>
@@ -445,21 +417,16 @@ export default function AdminProductsListPage() {
       />
 
       <AlertDialog open={!!deleteConfirm} onOpenChange={() => setDeleteConfirm(null)}>
-        <AlertDialogContent className="bg-slate-950 border-slate-800 text-slate-100">
+        <AlertDialogContent className="bg-popover border-border text-popover-foreground">
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription className="text-slate-400">
+            <AlertDialogDescription className="text-muted-foreground">
               This action cannot be undone. This will permanently delete the product.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="border-slate-800 bg-slate-900/40 hover:bg-slate-900/70 text-slate-100">
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={confirmDelete}
-              className="bg-red-600 hover:bg-red-600/90 text-white"
-            >
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-600/90 text-white">
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

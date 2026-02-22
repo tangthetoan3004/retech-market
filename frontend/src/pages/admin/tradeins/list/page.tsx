@@ -40,10 +40,10 @@ export type TradeInItem = {
 };
 
 const statusPillClass: Record<TradeInStatus, string> = {
-  PENDING: "bg-amber-500/10 text-amber-400",
-  SUBMITTED: "bg-sky-500/10 text-sky-400",
-  APPROVED: "bg-emerald-500/10 text-emerald-400",
-  REJECTED: "bg-red-500/10 text-red-400",
+  PENDING: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+  SUBMITTED: "bg-sky-500/10 text-sky-600 dark:text-sky-400",
+  APPROVED: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+  REJECTED: "bg-red-500/10 text-red-600 dark:text-red-400",
 };
 
 function StatusPillLite({ status }: { status: TradeInStatus }) {
@@ -220,29 +220,28 @@ export default function TradeInsListPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-4 md:p-6 lg:p-8">
+    <div className="min-h-screen bg-background text-foreground p-4 md:p-6 lg:p-8">
       <div className="space-y-6">
         <div className="flex items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold mb-2">Trade-In Requests</h1>
-            <p className="text-slate-400">Review and manage trade-in submissions</p>
+            <p className="text-muted-foreground">Review and manage trade-in submissions</p>
           </div>
         </div>
 
         <div className="flex items-center gap-4">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search by customer, phone, device..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-slate-900/60 border-slate-800 text-slate-100 placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-blue-500"
+              className="pl-10"
             />
           </div>
 
           <Button
             variant="outline"
-            className="border-slate-800 bg-slate-900/40 hover:bg-slate-900/70 text-slate-100"
             onClick={() => setStatusFilter((p) => (p === "all" ? "PENDING" : "all"))}
           >
             <Filter className="h-4 w-4 mr-2" />
@@ -250,17 +249,17 @@ export default function TradeInsListPage() {
           </Button>
         </div>
 
-        <div className="bg-slate-900/70 border border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+        <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
           <Table>
             <TableHeader>
-              <TableRow className="border-b border-slate-800 bg-slate-900/80 hover:bg-slate-900/80">
-                <TableHead className="text-slate-300">Customer</TableHead>
-                <TableHead className="text-slate-300">Device</TableHead>
-                <TableHead className="text-slate-300">Offer</TableHead>
-                <TableHead className="text-slate-300">Condition</TableHead>
-                <TableHead className="text-slate-300">Date</TableHead>
-                <TableHead className="text-slate-300">Status</TableHead>
-                <TableHead className="text-right text-slate-300">Actions</TableHead>
+              <TableRow className="border-b border-border bg-muted/30 hover:bg-muted/30">
+                <TableHead>Customer</TableHead>
+                <TableHead>Device</TableHead>
+                <TableHead>Offer</TableHead>
+                <TableHead>Condition</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
 
@@ -270,12 +269,12 @@ export default function TradeInsListPage() {
                   key={it.id}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="border-b border-slate-800/60 last:border-b-0 hover:bg-slate-800/30 transition-colors"
+                  className="border-b border-border/60 last:border-b-0 hover:bg-muted/30 transition-colors"
                 >
                   <TableCell>
                     <div className="min-w-0">
                       <p className="font-medium truncate">{it.customerName}</p>
-                      <p className="text-sm text-slate-400 truncate">{it.customerPhone || "—"}</p>
+                      <p className="text-sm text-muted-foreground truncate">{it.customerPhone || "—"}</p>
                     </div>
                   </TableCell>
 
@@ -284,8 +283,8 @@ export default function TradeInsListPage() {
                   </TableCell>
 
                   <TableCell className="font-medium">${it.offeredPrice}</TableCell>
-                  <TableCell className="text-slate-200">{it.condition || "—"}</TableCell>
-                  <TableCell className="text-slate-200">{it.createdAt || "—"}</TableCell>
+                  <TableCell className="text-muted-foreground">{it.condition || "—"}</TableCell>
+                  <TableCell className="text-muted-foreground">{it.createdAt || "—"}</TableCell>
 
                   <TableCell>
                     <StatusPillLite status={it.status} />
@@ -294,32 +293,32 @@ export default function TradeInsListPage() {
                   <TableCell className="text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="hover:bg-slate-800/40 text-slate-200">
+                        <Button variant="ghost" size="sm" className="hover:bg-muted">
                           <MoreVertical className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
 
-                      <DropdownMenuContent align="end" className="bg-slate-900 border-slate-800 text-slate-100">
-                        <DropdownMenuItem className="focus:bg-slate-800/50" onClick={() => setViewId(it.id)}>
+                      <DropdownMenuContent align="end" className="bg-popover border-border text-popover-foreground">
+                        <DropdownMenuItem onClick={() => setViewId(it.id)} className="cursor-pointer">
                           <Eye className="h-4 w-4 mr-2" />
                           View details
                         </DropdownMenuItem>
 
                         <DropdownMenuItem
-                          className="focus:bg-slate-800/50"
                           onClick={() => setConfirm({ id: it.id, type: "approve" })}
                           disabled={it.status === "APPROVED"}
+                          className="cursor-pointer"
                         >
-                          <CheckCircle2 className="h-4 w-4 mr-2 text-emerald-400" />
+                          <CheckCircle2 className="h-4 w-4 mr-2 text-emerald-500" />
                           Approve
                         </DropdownMenuItem>
 
                         <DropdownMenuItem
-                          className="focus:bg-slate-800/50"
                           onClick={() => setConfirm({ id: it.id, type: "reject" })}
                           disabled={it.status === "REJECTED"}
+                          className="cursor-pointer"
                         >
-                          <XCircle className="h-4 w-4 mr-2 text-red-400" />
+                          <XCircle className="h-4 w-4 mr-2 text-red-500" />
                           Reject
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -330,7 +329,7 @@ export default function TradeInsListPage() {
 
               {filtered.length === 0 ? (
                 <TableRow className="hover:bg-transparent">
-                  <TableCell colSpan={7} className="py-10 text-center text-slate-400">
+                  <TableCell colSpan={7} className="py-10 text-center text-muted-foreground">
                     No trade-in requests found.
                   </TableCell>
                 </TableRow>

@@ -127,36 +127,35 @@ export default function EditProductDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="bg-slate-950 border-slate-800 text-slate-100 max-w-xl">
+      <DialogContent className="bg-popover border-border text-popover-foreground max-w-xl">
         <DialogHeader>
-          <DialogTitle className="text-slate-100">Edit product</DialogTitle>
+          <DialogTitle>Edit product</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
             <div>
-              <Label className="text-slate-300">Name</Label>
+              <Label>Name</Label>
               <Input
                 value={formData.name}
                 onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))}
                 required
-                className="bg-slate-900/60 border-slate-800 text-slate-100"
               />
             </div>
 
             <div>
-              <Label className="text-slate-300">Description</Label>
+              <Label>Description</Label>
               <Textarea
                 value={formData.description}
                 onChange={(e) => setFormData((p) => ({ ...p, description: e.target.value }))}
                 required
-                className="bg-slate-900/60 border-slate-800 text-slate-100 min-h-24"
+                className="min-h-24"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label className="text-slate-300">Price</Label>
+                <Label>Price</Label>
                 <Input
                   type="number"
                   value={formData.price}
@@ -167,12 +166,11 @@ export default function EditProductDialog({
                     }))
                   }
                   required
-                  className="bg-slate-900/60 border-slate-800 text-slate-100"
                 />
               </div>
 
               <div>
-                <Label className="text-slate-300">Original price</Label>
+                <Label>Original price</Label>
                 <Input
                   type="number"
                   value={formData.original_price ?? ""}
@@ -182,24 +180,23 @@ export default function EditProductDialog({
                       original_price: e.target.value === "" ? "" : Number(e.target.value),
                     }))
                   }
-                  className="bg-slate-900/60 border-slate-800 text-slate-100"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label className="text-slate-300">Category</Label>
+                <Label>Category</Label>
                 <Select
                   value={formData.category_id ? String(formData.category_id) : ""}
                   onValueChange={(v) =>
                     setFormData((p) => ({ ...p, category_id: v ? Number(v) : "" }))
                   }
                 >
-                  <SelectTrigger className="bg-slate-900/60 border-slate-800 text-slate-100">
+                  <SelectTrigger>
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
-                  <SelectContent className="bg-slate-950 border-slate-800 text-slate-100">
+                  <SelectContent>
                     {categories.map((c) => (
                       <SelectItem key={c.id} value={String(c.id)}>
                         {c.name}
@@ -210,17 +207,17 @@ export default function EditProductDialog({
               </div>
 
               <div>
-                <Label className="text-slate-300">Brand</Label>
+                <Label>Brand</Label>
                 <Select
                   value={formData.brand_id ? String(formData.brand_id) : ""}
                   onValueChange={(v) =>
                     setFormData((p) => ({ ...p, brand_id: v ? Number(v) : "" }))
                   }
                 >
-                  <SelectTrigger className="bg-slate-900/60 border-slate-800 text-slate-100">
+                  <SelectTrigger>
                     <SelectValue placeholder="Select brand" />
                   </SelectTrigger>
-                  <SelectContent className="bg-slate-950 border-slate-800 text-slate-100">
+                  <SelectContent>
                     {brands.map((b) => (
                       <SelectItem key={b.id} value={String(b.id)}>
                         {b.name}
@@ -233,15 +230,15 @@ export default function EditProductDialog({
 
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <Label className="text-slate-300">Condition</Label>
+                <Label>Condition</Label>
                 <Select
                   value={formData.condition}
                   onValueChange={(v) => setFormData((p) => ({ ...p, condition: v }))}
                 >
-                  <SelectTrigger className="bg-slate-900/60 border-slate-800 text-slate-100">
+                  <SelectTrigger>
                     <SelectValue placeholder="Select condition" />
                   </SelectTrigger>
-                  <SelectContent className="bg-slate-950 border-slate-800 text-slate-100">
+                  <SelectContent>
                     <SelectItem value="NEW">NEW</SelectItem>
                     <SelectItem value="LIKE_NEW">LIKE_NEW</SelectItem>
                     <SelectItem value="GOOD">GOOD</SelectItem>
@@ -252,7 +249,7 @@ export default function EditProductDialog({
               </div>
 
               <div>
-                <Label className="text-slate-300">Battery health</Label>
+                <Label>Battery health</Label>
                 <Input
                   type="number"
                   value={formData.battery_health ?? ""}
@@ -262,12 +259,11 @@ export default function EditProductDialog({
                       battery_health: e.target.value === "" ? "" : Number(e.target.value),
                     }))
                   }
-                  className="bg-slate-900/60 border-slate-800 text-slate-100"
                 />
               </div>
 
               <div>
-                <Label className="text-slate-300">Warranty (months)</Label>
+                <Label>Warranty (months)</Label>
                 <Input
                   type="number"
                   value={formData.warranty_period ?? ""}
@@ -277,13 +273,12 @@ export default function EditProductDialog({
                       warranty_period: e.target.value === "" ? "" : Number(e.target.value),
                     }))
                   }
-                  className="bg-slate-900/60 border-slate-800 text-slate-100"
                 />
               </div>
             </div>
 
             <div>
-              <Label className="text-slate-300">Main image (optional)</Label>
+              <Label>Main image (optional)</Label>
               <Input
                 type="file"
                 accept="image/*"
@@ -291,26 +286,20 @@ export default function EditProductDialog({
                   const f = e.target.files?.[0] ?? null;
                   setFormData((p) => ({ ...p, main_image: f }));
                 }}
-                className="bg-slate-900/60 border-slate-800 text-slate-100"
               />
 
               {previewUrl ? (
                 <img
                   src={previewUrl}
                   alt="preview"
-                  className="mt-3 max-w-[220px] border border-slate-800 rounded"
+                  className="mt-3 max-w-[220px] border border-border rounded"
                 />
               ) : null}
             </div>
           </div>
 
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              className="border-slate-800 bg-slate-900/40 hover:bg-slate-900/70 text-slate-100"
-              onClick={() => handleOpenChange(false)}
-            >
+            <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
               Cancel
             </Button>
             <Button type="submit" className="bg-blue-600 hover:bg-blue-600/90 text-white">

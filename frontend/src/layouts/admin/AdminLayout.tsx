@@ -6,7 +6,7 @@ export default function AdminLayout() {
     <div className="min-h-screen flex flex-col">
       <div className="flex flex-1">
         <Sider />
-        <main className="flex-1 p-4 bg-slate-950">
+        <main className="flex-1 p-4 bg-background text-foreground">
           <Outlet />
         </main>
       </div>

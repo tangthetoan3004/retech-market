@@ -89,34 +89,31 @@ export default function ProductCategoryEditPage() {
     }
   };
 
-  if (loading) return <div className="p-6 text-slate-300">Loading...</div>;
+  if (loading) return <div className="p-6 text-muted-foreground">Loading...</div>;
 
   return (
-    <div className="p-6 space-y-4">
+    <div className="p-6 space-y-4 bg-background text-foreground">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold mb-2">Edit Category</h1>
-          <p className="text-slate-400">Update category info</p>
+          <p className="text-muted-foreground">Update category info</p>
         </div>
         <Link to="/admin/products-category">
-          <Button
-            variant="outline"
-            className="border-slate-800 bg-slate-900/40 hover:bg-slate-900/70 text-slate-100"
-          >
+          <Button variant="outline">
             Back
           </Button>
         </Link>
       </div>
 
-      <Card className="bg-slate-950 border-slate-800 text-slate-100">
+      <Card className="bg-card border-border">
         <CardHeader>
-          <CardTitle className="text-slate-100">Category info</CardTitle>
+          <CardTitle>Category info</CardTitle>
         </CardHeader>
 
         <CardContent>
           <form onSubmit={onSubmit} className="space-y-4">
             <div>
-              <Label className="text-slate-300">Name</Label>
+              <Label>Name</Label>
               <Input
                 value={name}
                 onChange={(e) => {
@@ -124,52 +121,37 @@ export default function ProductCategoryEditPage() {
                   setName(v);
                   if (!slug) setSlug(slugifyLite(v));
                 }}
-                className="bg-slate-900/60 border-slate-800 text-slate-100"
                 required
               />
             </div>
 
             <div>
-              <Label className="text-slate-300">Slug</Label>
-              <Input
-                value={slug}
-                onChange={(e) => setSlug(e.target.value)}
-                className="bg-slate-900/60 border-slate-800 text-slate-100"
-                required
-              />
+              <Label>Slug</Label>
+              <Input value={slug} onChange={(e) => setSlug(e.target.value)} required />
             </div>
 
             <div>
-              <Label className="text-slate-300">Icon (optional)</Label>
+              <Label>Icon (optional)</Label>
               <Input
                 type="file"
                 accept="image/*"
                 onChange={(e) => setIcon(e.target.files?.[0] ?? null)}
-                className="bg-slate-900/60 border-slate-800 text-slate-100"
               />
               {previewUrl ? (
                 <img
                   src={previewUrl}
                   alt="preview"
-                  className="mt-3 max-w-[220px] border border-slate-800 rounded"
+                  className="mt-3 max-w-[220px] border border-border rounded"
                 />
               ) : null}
             </div>
 
             <div className="flex gap-2">
-              <Button
-                type="submit"
-                disabled={saving}
-                className="bg-blue-600 hover:bg-blue-600/90 text-white"
-              >
+              <Button type="submit" disabled={saving} className="bg-blue-600 hover:bg-blue-600/90 text-white">
                 Save
               </Button>
               <Link to="/admin/products-category">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="border-slate-800 bg-slate-900/40 hover:bg-slate-900/70 text-slate-100"
-                >
+                <Button type="button" variant="outline">
                   Cancel
                 </Button>
               </Link>

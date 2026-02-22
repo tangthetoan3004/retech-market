@@ -84,15 +84,15 @@ export default function ProductCategoryListPage() {
   };
 
   return (
-    <div className="p-6 space-y-4">
+    <div className="p-6 space-y-4 bg-background text-foreground">
       <div>
         <h1 className="text-3xl font-bold mb-2">Product Categories</h1>
-        <p className="text-slate-400">Manage categories</p>
+        <p className="text-muted-foreground">Manage categories</p>
       </div>
 
-      <Card className="bg-slate-950 border-slate-800 text-slate-100">
+      <Card className="bg-card border-border">
         <CardHeader className="flex flex-row items-center justify-between gap-3">
-          <CardTitle className="text-slate-100">Categories</CardTitle>
+          <CardTitle>Categories</CardTitle>
 
           <div className="flex items-center gap-2">
             <div className="w-[320px]">
@@ -100,16 +100,10 @@ export default function ProductCategoryListPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search name/slug..."
-                className="bg-slate-900/60 border-slate-800 text-slate-100"
               />
             </div>
 
-            <Button
-              variant="outline"
-              className="border-slate-800 bg-slate-900/40 hover:bg-slate-900/70 text-slate-100"
-              onClick={fetchList}
-              disabled={loading}
-            >
+            <Button variant="outline" onClick={fetchList} disabled={loading}>
               Refresh
             </Button>
 
@@ -122,78 +116,71 @@ export default function ProductCategoryListPage() {
         </CardHeader>
 
         <CardContent>
-          <div className="rounded-lg border border-slate-800 overflow-hidden">
+          <div className="rounded-lg border border-border overflow-hidden">
             <Table>
               <TableHeader>
-                <TableRow className="border-slate-800">
-                  <TableHead className="text-slate-300">Category</TableHead>
-                  <TableHead className="text-slate-300">Slug</TableHead>
-                  <TableHead className="text-right text-slate-300">Actions</TableHead>
+                <TableRow className="border-border">
+                  <TableHead>Category</TableHead>
+                  <TableHead>Slug</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
 
               <TableBody>
                 {loading ? (
-                  <TableRow className="border-slate-800">
-                    <TableCell colSpan={3} className="text-slate-400 py-10 text-center">
+                  <TableRow className="border-border">
+                    <TableCell colSpan={3} className="text-muted-foreground py-10 text-center">
                       Loading...
                     </TableCell>
                   </TableRow>
                 ) : filtered.length === 0 ? (
-                  <TableRow className="border-slate-800">
-                    <TableCell colSpan={3} className="text-slate-400 py-10 text-center">
+                  <TableRow className="border-border">
+                    <TableCell colSpan={3} className="text-muted-foreground py-10 text-center">
                       No categories
                     </TableCell>
                   </TableRow>
                 ) : (
                   filtered.map((c) => (
-                    <TableRow key={c.id} className="border-slate-800">
+                    <TableRow key={c.id} className="border-border">
                       <TableCell>
                         <div className="flex items-center gap-3">
                           {c.icon ? (
                             <img
                               src={c.icon}
                               alt={c.name}
-                              className="w-10 h-10 rounded-lg object-cover border border-slate-800"
+                              className="w-10 h-10 rounded-lg object-cover border border-border"
                             />
                           ) : (
-                            <div className="w-10 h-10 rounded-lg border border-slate-800 bg-slate-900/40" />
+                            <div className="w-10 h-10 rounded-lg border border-border bg-muted/40" />
                           )}
 
                           <div className="min-w-0">
-                            <p className="font-medium truncate text-slate-100">{c.name}</p>
-                            <p className="text-sm text-slate-400 truncate">ID: {c.id}</p>
+                            <p className="font-medium truncate">{c.name}</p>
+                            <p className="text-sm text-muted-foreground truncate">ID: {c.id}</p>
                           </div>
                         </div>
                       </TableCell>
 
-                      <TableCell className="text-slate-200">{c.slug || "-"}</TableCell>
+                      <TableCell className="text-muted-foreground">{c.slug || "-"}</TableCell>
 
                       <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="text-slate-200 hover:bg-slate-900/60"
-                            >
+                            <Button size="sm" variant="ghost" className="hover:bg-muted">
                               <MoreVertical className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
 
-                          <DropdownMenuContent
-                            align="end"
-                            className="bg-slate-950 border-slate-800 text-slate-100"
-                          >
+                          <DropdownMenuContent align="end" className="bg-popover border-border text-popover-foreground">
                             <Link to={`/admin/products-category/edit/${c.id}`}>
-                              <DropdownMenuItem className="cursor-pointer focus:bg-slate-900/60">
+                              <DropdownMenuItem className="cursor-pointer">
                                 Edit
                               </DropdownMenuItem>
                             </Link>
 
                             <DropdownMenuItem
                               onClick={() => setDeleteConfirm(c)}
-                              className="cursor-pointer text-red-400 focus:bg-slate-900/60"
+                              className="cursor-pointer text-red-500 focus:text-red-500"
                             >
                               Delete
                             </DropdownMenuItem>
@@ -210,21 +197,18 @@ export default function ProductCategoryListPage() {
       </Card>
 
       <AlertDialog open={!!deleteConfirm} onOpenChange={() => setDeleteConfirm(null)}>
-        <AlertDialogContent className="bg-slate-950 border-slate-800 text-slate-100">
+        <AlertDialogContent className="bg-popover border-border text-popover-foreground">
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription className="text-slate-400">
+            <AlertDialogDescription className="text-muted-foreground">
               This will permanently delete the category.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="border-slate-800 bg-slate-900/40 hover:bg-slate-900/70 text-slate-100">
+            <AlertDialogCancel>
               Cancel
             </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={confirmDelete}
-              className="bg-red-600 hover:bg-red-600/90 text-white"
-            >
+            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-600/90 text-white">
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

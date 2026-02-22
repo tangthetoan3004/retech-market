@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { showAlert } from "../../../../features/ui/uiSlice";
 import { getAccounts } from "../../../../services/admin/accounts/accountsService";
 
-function has(perms, key) {
+function has(perms: any, key: string) {
   return Array.isArray(perms) && perms.includes(key);
 }
 
@@ -12,10 +12,10 @@ function StatusPill({ status }: { status: string }) {
   const s = String(status || "").toLowerCase();
   const cls =
     s === "active"
-      ? "bg-emerald-500/10 text-emerald-400"
+      ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
       : s === "inactive"
-      ? "bg-red-500/10 text-red-400"
-      : "bg-slate-500/10 text-slate-300";
+      ? "bg-red-500/10 text-red-600 dark:text-red-400"
+      : "bg-muted text-muted-foreground";
 
   return (
     <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${cls}`}>
@@ -29,15 +29,15 @@ export default function AccountsListPage() {
   const perms = useSelector((s: any) => s.auth?.permissions);
 
   const [loading, setLoading] = useState(false);
-  const [accounts, setAccounts] = useState([]);
+  const [accounts, setAccounts] = useState<any[]>([]);
 
   const fetchList = async () => {
     setLoading(true);
     try {
-      const data = await getAccounts();
+      const data: any = await getAccounts();
       setAccounts(data.records || data.accounts || data.items || []);
-    } catch (err) {
-      dispatch(showAlert({ type: "error", message: err.message }));
+    } catch (err: any) {
+      dispatch(showAlert({ type: "error", message: err?.message || "Load failed" }));
     } finally {
       setLoading(false);
     }
@@ -48,12 +48,12 @@ export default function AccountsListPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-4 md:p-6 lg:p-8">
+    <div className="min-h-screen bg-background text-foreground p-4 md:p-6 lg:p-8">
       <div className="space-y-6">
         <div className="flex items-center justify-between gap-3">
           <div>
             <h1 className="text-3xl font-bold mb-2">Tài khoản</h1>
-            <p className="text-slate-400">Quản lý danh sách tài khoản</p>
+            <p className="text-muted-foreground">Quản lý danh sách tài khoản</p>
           </div>
 
           {has(perms, "accounts_create") ? (
@@ -66,38 +66,38 @@ export default function AccountsListPage() {
           ) : null}
         </div>
 
-        <div className="bg-slate-900/70 border border-slate-800 rounded-2xl overflow-auto shadow-sm">
+        <div className="bg-card border border-border rounded-2xl overflow-auto shadow-sm">
           <table className="min-w-full text-sm">
-            <thead className="bg-slate-900/80">
-              <tr className="border-b border-slate-800">
-                <th className="p-3 text-left text-slate-300 font-medium">Họ tên</th>
-                <th className="p-3 text-left text-slate-300 font-medium">Email</th>
-                <th className="p-3 text-left text-slate-300 font-medium">Trạng thái</th>
-                <th className="p-3 text-left text-slate-300 font-medium">Hành động</th>
+            <thead className="bg-muted/30">
+              <tr className="border-b border-border">
+                <th className="p-3 text-left text-muted-foreground font-medium">Họ tên</th>
+                <th className="p-3 text-left text-muted-foreground font-medium">Email</th>
+                <th className="p-3 text-left text-muted-foreground font-medium">Trạng thái</th>
+                <th className="p-3 text-left text-muted-foreground font-medium">Hành động</th>
               </tr>
             </thead>
 
             <tbody>
               {loading ? (
-                <tr className="border-b border-slate-800/60">
-                  <td className="p-4 text-slate-400" colSpan={4}>
+                <tr className="border-b border-border/60">
+                  <td className="p-4 text-muted-foreground" colSpan={4}>
                     Đang tải...
                   </td>
                 </tr>
               ) : accounts.length === 0 ? (
-                <tr className="border-b border-slate-800/60">
-                  <td className="p-4 text-slate-400" colSpan={4}>
+                <tr className="border-b border-border/60">
+                  <td className="p-4 text-muted-foreground" colSpan={4}>
                     Không có dữ liệu
                   </td>
                 </tr>
               ) : (
-                accounts.map((a) => (
+                accounts.map((a: any) => (
                   <tr
                     key={a._id}
-                    className="border-b border-slate-800/60 last:border-b-0 hover:bg-slate-800/30 transition-colors"
+                    className="border-b border-border/60 last:border-b-0 hover:bg-muted/30 transition-colors"
                   >
-                    <td className="p-3 text-slate-100">{a.fullName || "—"}</td>
-                    <td className="p-3 text-slate-200">{a.email || "—"}</td>
+                    <td className="p-3">{a.fullName || "—"}</td>
+                    <td className="p-3 text-muted-foreground">{a.email || "—"}</td>
                     <td className="p-3">
                       <StatusPill status={a.status || ""} />
                     </td>
@@ -105,7 +105,7 @@ export default function AccountsListPage() {
                       <div className="flex gap-2 flex-wrap">
                         {has(perms, "accounts_edit") ? (
                           <Link
-                            className="inline-flex items-center justify-center rounded-lg border border-slate-800 bg-slate-900/40 hover:bg-slate-900/70 text-slate-100 px-3 py-1.5 text-xs"
+                            className="inline-flex items-center justify-center rounded-lg border border-border bg-background hover:bg-muted text-foreground px-3 py-1.5 text-xs"
                             to={`/admin/accounts/edit/${a._id}`}
                           >
                             Sửa
