@@ -147,7 +147,24 @@ export default function AdminProductsListPage() {
   };
 
   const openEditDialog = (p: Product) => {
-    setEditingProduct(p);
+    const norm = (s: any) => String(s ?? "").trim().toLowerCase();
+
+    const cat =
+      categories.find((c) => norm(c?.name) === norm(p.category)) ||
+      categories.find((c) => norm(c?.title) === norm(p.category)) ||
+      categories.find((c) => norm(c?.label) === norm(p.category));
+
+    const br =
+      brands.find((b) => norm(b?.name) === norm(p.brand)) ||
+      brands.find((b) => norm(b?.title) === norm(p.brand)) ||
+      brands.find((b) => norm(b?.label) === norm(p.brand));
+
+    setEditingProduct({
+      ...p,
+      category_id: (cat?.id ?? cat?.pk ?? cat?.value ?? null) as any,
+      brand_id: (br?.id ?? br?.pk ?? br?.value ?? null) as any,
+    });
+
     setOpenEdit(true);
   };
 
@@ -232,7 +249,10 @@ export default function AdminProductsListPage() {
               )}
             </Button>
 
-            <Button className="bg-blue-600 hover:bg-blue-600/90 text-white" onClick={openCreateDialog}>
+            <Button
+              className="bg-blue-600 hover:bg-blue-600/90 text-white"
+              onClick={openCreateDialog}
+            >
               Create product
             </Button>
           </div>
@@ -244,7 +264,12 @@ export default function AdminProductsListPage() {
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-semibold">Filter Products</h3>
                 {activeFiltersCount > 0 && (
-                  <Button variant="ghost" size="sm" onClick={clearFilters} className="hover:bg-muted">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearFilters}
+                    className="hover:bg-muted"
+                  >
                     <X className="h-4 w-4 mr-1" />
                     Clear All
                   </Button>
@@ -338,12 +363,16 @@ export default function AdminProductsListPage() {
 
                           <div className="min-w-0">
                             <p className="font-medium truncate">{product.name}</p>
-                            <p className="text-sm text-muted-foreground truncate">{product.brand || "-"}</p>
+                            <p className="text-sm text-muted-foreground truncate">
+                              {product.brand || "-"}
+                            </p>
                           </div>
                         </div>
                       </TableCell>
 
-                      <TableCell className="text-muted-foreground">{product.category || "-"}</TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {product.category || "-"}
+                      </TableCell>
 
                       <TableCell>
                         <div>
@@ -356,7 +385,9 @@ export default function AdminProductsListPage() {
                         </div>
                       </TableCell>
 
-                      <TableCell className="text-muted-foreground">{product.condition || "-"}</TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {product.condition || "-"}
+                      </TableCell>
 
                       <TableCell className="text-muted-foreground">
                         <div className="text-sm">
@@ -373,8 +404,14 @@ export default function AdminProductsListPage() {
                             </Button>
                           </DropdownMenuTrigger>
 
-                          <DropdownMenuContent align="end" className="bg-popover border-border text-popover-foreground">
-                            <DropdownMenuItem onClick={() => openEditDialog(product)} className="cursor-pointer">
+                          <DropdownMenuContent
+                            align="end"
+                            className="bg-popover border-border text-popover-foreground"
+                          >
+                            <DropdownMenuItem
+                              onClick={() => openEditDialog(product)}
+                              className="cursor-pointer"
+                            >
                               Edit
                             </DropdownMenuItem>
 
@@ -426,7 +463,10 @@ export default function AdminProductsListPage() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-600/90 text-white">
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-red-600 hover:bg-red-600/90 text-white"
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

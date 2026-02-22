@@ -7,8 +7,6 @@ type RequestOptions = {
   headers?: Record<string, any>;
 };
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
 function buildQuery(params?: Record<string, any>) {
   if (!params) return "";
   const usp = new URLSearchParams();
@@ -38,13 +36,10 @@ function unwrapApiErrors(payload: any) {
   return payload;
 }
 
-// ─── Refresh logic (tránh gọi refresh đệ quy vô hạn) ────────────────────────
-
 let isRefreshing = false;
 let refreshQueue: Array<(ok: boolean) => void> = [];
 
 async function tryRefreshToken(): Promise<boolean> {
-  // Nếu đang có refresh đang chạy, xếp hàng chờ kết quả
   if (isRefreshing) {
     return new Promise((resolve) => refreshQueue.push(resolve));
   }
@@ -53,7 +48,7 @@ async function tryRefreshToken(): Promise<boolean> {
   try {
     const res = await fetch(`${BASE_URL}/api/users/token/refresh/`, {
       method: "POST",
-      credentials: "include", // Gửi refresh_token cookie lên backend
+      credentials: "include",
     });
     const ok = res.ok;
     refreshQueue.forEach((cb) => cb(ok));
@@ -68,13 +63,7 @@ async function tryRefreshToken(): Promise<boolean> {
   }
 }
 
-// ─── Core request ─────────────────────────────────────────────────────────────
-
-export default async function request(
-  path: string,
-  options: RequestOptions = {},
-  _isRetry = false // flag nội bộ, tránh retry vô hạn
-) {
+export default async function request(path: string, options: RequestOptions = {}, _isRetry = false) {
   const { method = "GET", params, body, headers } = options;
 
   const url = `${BASE_URL}/${normalizePath(path)}${buildQuery(params)}`;
@@ -98,24 +87,18 @@ export default async function request(
 
   const res = await fetch(url, init);
 
-  // ─── Auto-refresh khi nhận 401 ──────────────────────────────────────────────
-  // Chỉ retry 1 lần (không phải cho chính endpoint refresh, tránh vòng lặp)
   if (res.status === 401 && !_isRetry && !path.includes("token/refresh")) {
     const refreshed = await tryRefreshToken();
 
     if (refreshed) {
-      // Retry request gốc với access_token mới (đã được set vào cookie bởi backend)
       return request(path, options, true);
     } else {
-      // Refresh thất bại → session hết hạn, xóa user trên Redux và redirect
-      _handleSessionExpired();
+      handleSessionExpired();
       const err: any = new Error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
       err.status = 401;
       throw err;
     }
   }
-
-  // ─── Parse response ──────────────────────────────────────────────────────────
 
   const contentType = res.headers.get("content-type") || "";
   const isJson = contentType.includes("application/json");
@@ -128,14 +111,6 @@ export default async function request(
   }
 
   if (!res.ok) {
-    console.log("[API ERROR]", {
-      url,
-      method,
-      status: res.status,
-      statusText: res.statusText,
-      response: rawData,
-    });
-
     const message =
       (rawData && (rawData.message || rawData.error || rawData.detail)) ||
       (rawData && typeof rawData === "object" ? JSON.stringify(rawData) : String(rawData || "")) ||
@@ -164,10 +139,7 @@ export default async function request(
   return unwrapApiData(rawData);
 }
 
-// ─── Session expired handler ──────────────────────────────────────────────────
-
-function _handleSessionExpired() {
-  // Xóa user khỏi localStorage và reload về trang login
+function handleSessionExpired() {
   localStorage.removeItem("client_auth");
 
   import("../app/store").then(({ store }) => {
@@ -176,13 +148,10 @@ function _handleSessionExpired() {
     });
   });
 
-  // Redirect về login nếu không đang ở trang login
   if (!window.location.pathname.includes("/user/login")) {
     window.location.href = "/login";
   }
 }
-
-// ─── Shorthand methods ────────────────────────────────────────────────────────
 
 export const get = (path: string, options?: Omit<RequestOptions, "method" | "body">) =>
   request(path, { ...(options || {}), method: "GET" });

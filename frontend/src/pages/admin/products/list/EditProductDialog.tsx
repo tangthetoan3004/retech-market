@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Button } from "../../../../components/ui/button";
 import {
   Dialog,
@@ -14,7 +14,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "../../../../components/ui/select";
 import { Textarea } from "../../../../components/ui/textarea";
 import type { AdminProductFormData } from "./CreateProductDialog";
@@ -29,8 +28,12 @@ type Product = {
   battery_health?: number | null;
   warranty_period?: number | null;
   main_image?: string;
+
   category_id?: number | null;
   brand_id?: number | null;
+
+  category?: number | { id: number } | null;
+  brand?: number | { id: number } | null;
 };
 
 type EditForm = AdminProductFormData & { main_image_url: string };
@@ -51,6 +54,14 @@ function emptyForm(): EditForm {
   };
 }
 
+function toId(v: any): number | "" {
+  if (v === "" || v === null || v === undefined) return "";
+  if (typeof v === "number") return v;
+  if (typeof v === "string" && v.trim() !== "" && !Number.isNaN(Number(v))) return Number(v);
+  if (typeof v === "object" && v?.id != null) return Number(v.id);
+  return "";
+}
+
 function toForm(product: Product): EditForm {
   return {
     name: product.name ?? "",
@@ -61,8 +72,8 @@ function toForm(product: Product): EditForm {
     battery_health: (product.battery_health ?? "") as any,
     warranty_period: (product.warranty_period ?? "") as any,
     main_image: null,
-    category_id: product.category_id ?? "",
-    brand_id: product.brand_id ?? "",
+    category_id: toId(product.category_id ?? product.category),
+    brand_id: toId(product.brand_id ?? product.brand),
     main_image_url: product.main_image || "",
   };
 }
@@ -84,20 +95,31 @@ export default function EditProductDialog({
 }) {
   const [formData, setFormData] = useState<EditForm>(emptyForm());
 
+  useEffect(() => {
+    if (!open) {
+      setFormData(emptyForm());
+      return;
+    }
+    if (product) setFormData(toForm(product));
+    else setFormData(emptyForm());
+  }, [open, product]);
+
   const previewUrl = useMemo(() => {
     if (formData.main_image) return URL.createObjectURL(formData.main_image);
     return formData.main_image_url || "";
   }, [formData.main_image, formData.main_image_url]);
 
-  const handleOpenChange = (v: boolean) => {
-    onOpenChange(v);
-    if (!v) {
-      setFormData(emptyForm());
-      return;
-    }
-    if (v && product) setFormData(toForm(product));
-    if (v && !product) setFormData(emptyForm());
-  };
+  const selectedCategoryName = useMemo(() => {
+    if (formData.category_id === "") return "";
+    const c = categories?.find((x) => Number(x.id) === Number(formData.category_id));
+    return c?.name ?? "";
+  }, [categories, formData.category_id]);
+
+  const selectedBrandName = useMemo(() => {
+    if (formData.brand_id === "") return "";
+    const b = brands?.find((x) => Number(x.id) === Number(formData.brand_id));
+    return b?.name ?? "";
+  }, [brands, formData.brand_id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -126,7 +148,7 @@ export default function EditProductDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-popover border-border text-popover-foreground max-w-xl">
         <DialogHeader>
           <DialogTitle>Edit product</DialogTitle>
@@ -147,7 +169,9 @@ export default function EditProductDialog({
               <Label>Description</Label>
               <Textarea
                 value={formData.description}
-                onChange={(e) => setFormData((p) => ({ ...p, description: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((p) => ({ ...p, description: e.target.value }))
+                }
                 required
                 className="min-h-24"
               />
@@ -188,13 +212,15 @@ export default function EditProductDialog({
               <div>
                 <Label>Category</Label>
                 <Select
-                  value={formData.category_id ? String(formData.category_id) : ""}
+                  value={formData.category_id === "" ? "" : String(formData.category_id)}
                   onValueChange={(v) =>
                     setFormData((p) => ({ ...p, category_id: v ? Number(v) : "" }))
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select category" />
+                    <span className={selectedCategoryName ? "" : "text-muted-foreground"}>
+                      {selectedCategoryName || "Select category"}
+                    </span>
                   </SelectTrigger>
                   <SelectContent>
                     {categories.map((c) => (
@@ -209,13 +235,15 @@ export default function EditProductDialog({
               <div>
                 <Label>Brand</Label>
                 <Select
-                  value={formData.brand_id ? String(formData.brand_id) : ""}
+                  value={formData.brand_id === "" ? "" : String(formData.brand_id)}
                   onValueChange={(v) =>
                     setFormData((p) => ({ ...p, brand_id: v ? Number(v) : "" }))
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select brand" />
+                    <span className={selectedBrandName ? "" : "text-muted-foreground"}>
+                      {selectedBrandName || "Select brand"}
+                    </span>
                   </SelectTrigger>
                   <SelectContent>
                     {brands.map((b) => (
@@ -236,7 +264,7 @@ export default function EditProductDialog({
                   onValueChange={(v) => setFormData((p) => ({ ...p, condition: v }))}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select condition" />
+                    <span>{formData.condition || "Select condition"}</span>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="NEW">NEW</SelectItem>
@@ -299,7 +327,7 @@ export default function EditProductDialog({
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
             <Button type="submit" className="bg-blue-600 hover:bg-blue-600/90 text-white">

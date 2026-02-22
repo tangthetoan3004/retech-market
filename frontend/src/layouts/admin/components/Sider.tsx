@@ -18,6 +18,7 @@ import { clearAuth } from "../../../features/admin/auth/authSlice";
 import { logoutAdmin } from "../../../services/admin/auth/authService";
 import { useTheme } from "next-themes";
 import { Button } from "../../../components/ui/button";
+import { clearClientAuth } from "../../../features/client/auth/clientAuthSlice";
 
 type Item = { to: string; label: string; icon: any; exact?: boolean };
 
@@ -33,6 +34,8 @@ export default function Sider() {
     } catch {
       //
     } finally {
+      localStorage.removeItem("client_auth");
+      dispatch(clearClientAuth());
       dispatch(clearAuth());
       navigate("/", { replace: true });
     }
@@ -61,7 +64,7 @@ export default function Sider() {
     <motion.aside
       initial={{ x: -280 }}
       animate={{ x: 0 }}
-      className="w-[280px] bg-card border-r border-border flex-shrink-0 hidden lg:block"
+      className="w-70 bg-card border-r border-border flex-shrink-0 hidden lg:block"
     >
       <div className="sticky top-0 p-6 space-y-6">
         <div className="flex items-start justify-between gap-3">

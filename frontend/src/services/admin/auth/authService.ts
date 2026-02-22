@@ -16,13 +16,5 @@ export const loginAdmin = async (payload: { email?: string; username?: string; p
 };
 
 export const logoutAdmin = async () => {
-  let refresh: string | null = null;
-  try {
-    const raw = localStorage.getItem("client_auth");
-    if (raw) refresh = JSON.parse(raw)?.refresh || null;
-  } catch {
-    return;
-  }
-
-  return post("/api/users/logout/", { refresh });
+  return post("/api/users/logout/", {});
 };
