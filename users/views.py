@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
 from django.contrib.auth import authenticate
-from .permissions import IsAdmin, IsSuperAdmin, IsStaffOrSuperAdmin, IsOwnerOrStaff
+from .permissions import IsStaffOrSuperAdmin
 
 from .serializers import (
     UserRegistrationSerializer,
@@ -214,12 +214,14 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
     def get_object(self):
         return self.request.user
 
-class UserManageView(APIView):
+
     """
     API quản lý user dành cho Admin/Staff.
     GET  /api/users/manage/        → Danh sách tất cả user
     POST /api/users/manage/<id>/toggle-active/ → Kích hoạt / Vô hiệu hóa user
     """
+
+class UserManageView(APIView):
     permission_classes = [IsAuthenticated, IsStaffOrSuperAdmin]
 
     def get(self, request):
@@ -229,6 +231,9 @@ class UserManageView(APIView):
         serializer = UserProfileSerializer(users, many=True, context={'request': request})
         return Response(serializer.data)
 
+
+class UserManageToggleActiveView(APIView):
+    permission_classes = [IsAuthenticated, IsStaffOrSuperAdmin] 
     def post(self, request, user_id: int):
         """Toggle is_active của user. Chỉ superuser mới được vô hiệu hóa user khác."""
         from .models import User as UserModel

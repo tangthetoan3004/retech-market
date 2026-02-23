@@ -6,6 +6,8 @@ from .views import (
     LogoutView,
     ChangePasswordView,
     UserProfileView,
+    UserManageView,
+    UserManageToggleActiveView,
 )
 
 urlpatterns = [
@@ -15,4 +17,8 @@ urlpatterns = [
     path("logout/",         LogoutView.as_view(),             name="logout"),
     path("change-password/",ChangePasswordView.as_view(),     name="change_password"),
     path("profile/",        UserProfileView.as_view(),        name="user_profile"),
+    path("manage/",           UserManageView.as_view(),           name="user_manage"),
+    path("manage/<int:user_id>/toggle-active/",
+         UserManageToggleActiveView.as_view(),
+         name="user_manage_toggle_active"),
 ]

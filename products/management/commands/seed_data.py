@@ -17,7 +17,7 @@ class Command(BaseCommand):
 
         # Create Category & Brand
         categories = ['Phones', 'Laptops', 'Tablets', 'Smartwatches', 'Accessories']
-        brands = ['Apple', 'Samsung', 'Dell', 'Lenovo', 'Asus', 'Sony', 'Xiaomi', 'Acer', 'Iphone', 'Vivo']
+        brands = ['Apple', 'Samsung', 'Dell', 'Lenovo', 'Asus', 'Sony', 'Xiaomi', 'Acer', 'Vivo']
 
         db_categories = []
         for category_name in categories:

@@ -116,8 +116,13 @@ REST_FRAMEWORK = {
         'config.renderers.CustomJSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',
     ),
+    'DEFAULT_PARSER_CLASSES': (
+        'rest_framework.parsers.JSONParser',       
+        'rest_framework.parsers.MultiPartParser',  
+        'rest_framework.parsers.FileUploadParser', 
+    ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'core.authentication.CookieJWTAuthentication',  # ✅ Đọc JWT từ HttpOnly cookie
+        'core.authentication.CookieJWTAuthentication',
     ),
     'EXCEPTION_HANDLER': 'config.exceptions.custom_exception_handler',
 

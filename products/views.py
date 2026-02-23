@@ -1,68 +1,161 @@
-# products/views.py
-
 from rest_framework import viewsets, permissions, filters
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
+from django.db.models import Q
+
 from .models import Product, Category, Brand
 from .serializers import ProductSerializer, CategorySerializer, BrandSerializer
 from .permissions import IsOwnerOrReadOnly
+from .pagination import ProductPagination
 from core.cache import CacheManager, CacheKey
+from users.permissions import IsStaffOrSuperAdmin
 
 class ProductViewSet(viewsets.ModelViewSet):
-    # ✅ Queryset gốc — KHÔNG thay đổi, để DRF filter backends làm việc bình thường
-    queryset = Product.objects.filter(is_sold=False).order_by('-created_at')
     serializer_class = ProductSerializer
+    pagination_class = ProductPagination
     permission_classes = [IsOwnerOrReadOnly]
-
+    
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['category', 'brand', 'condition']
     search_fields = ['name', 'description']
     ordering_fields = ['price', 'created_at']
 
+    def get_queryset(self):
+        queryset = (
+            Product.objects.select_related("seller", "category", "brand")
+            .filter(is_sold=False)
+        )
+
+        category = self.request.query_params.get("category")
+        brand = self.request.query_params.get("brand")
+        min_price = self.request.query_params.get("min_price")
+        max_price = self.request.query_params.get("max_price")
+        search = self.request.query_params.get("search")
+
+        if category:
+            queryset = queryset.filter(category__slug=category)
+        if brand:
+            queryset = queryset.filter(brand__slug=brand)
+        if min_price:
+            queryset = queryset.filter(price__gte=min_price)
+        if max_price:
+            queryset = queryset.filter(price__lte=max_price)
+        if search:
+            queryset = queryset.filter(
+                Q(name__icontains=search) | Q(description__icontains=search)
+            )
+
+        return queryset
+
     def list(self, request, *args, **kwargs):
-        """
-        Override list() — Cache toàn bộ response SAU KHI DRF đã filter + paginate xong.
-        Đây là điểm caching đúng nhất: 1 cache key = 1 response hoàn chỉnh.
-        """
-        # ✅ Cache key = toàn bộ query string (bao gồm filters + page + ordering)
-        # Ví dụ: ?category=2&page=1&ordering=-price → key riêng biệt
-        cache_key = CacheKey.make_product_list_key(dict(request.query_params))
+        params = request.query_params.dict()
+        
+        try:
+            page_str = params.get("page", "1")
+            page_number = int(page_str) if page_str.isdigit() else 1
+        except (ValueError, TypeError):
+            page_number = 1
 
-        cached_response = CacheManager.get(cache_key)
-        if cached_response is not None:
-            return Response(cached_response)  # ✅ HIT: trả ngay, 0 DB query
+        should_cache = page_number <= 3
+        cache_key = CacheKey.make_product_list_key(params)
 
-        # ✅ MISS: Gọi pipeline chuẩn của DRF (filter → paginate → serialize)
-        # super().list() tự xử lý toàn bộ, kết quả là response đã hoàn chỉnh
-        response = super().list(request, *args, **kwargs)
+        if should_cache:
+            def db_query():
+                return self._get_paginated_data()
 
-        # Lưu data vào cache (chỉ lưu .data, không lưu Response object)
-        CacheManager.set(cache_key, response.data, timeout=60 * 10)
+            data = CacheManager.get_or_set(cache_key, db_query, timeout=600)
+            return Response(data)
 
-        return response
+        return Response(self._get_paginated_data())
+
+    def _get_paginated_data(self):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data).data
+
+        serializer = self.get_serializer(queryset, many=True)
+        return serializer.data
 
     def perform_create(self, serializer):
         serializer.save(seller=self.request.user)
-        # ✅ Xóa toàn bộ list cache khi có sản phẩm mới
         CacheManager.invalidate_pattern("product:list:")
 
     def perform_update(self, serializer):
-        instance = serializer.save()
-        CacheManager.invalidate(CacheKey.PRODUCT_DETAIL.format(slug=instance.slug))
-        CacheManager.invalidate_pattern("product:list:")
+        product = serializer.save()
+        CacheManager.invalidate_pattern("product:list")
+        CacheManager.invalidate(CacheKey.PRODUCT_DETAIL.format(slug=product.slug))
 
     def perform_destroy(self, instance):
-        CacheManager.invalidate(CacheKey.PRODUCT_DETAIL.format(slug=instance.slug))
-        CacheManager.invalidate_pattern("product:list:")
+        slug = instance.slug
         instance.delete()
+        CacheManager.invalidate_pattern("product:list")
+        CacheManager.invalidate(CacheKey.PRODUCT_DETAIL.format(slug=slug))
 
 
-class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
+class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = [permissions.AllowAny]
-    
-class BrandViewSet(viewsets.ReadOnlyModelViewSet):
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [permissions.AllowAny()]
+        return [IsStaffOrSuperAdmin()]
+
+    def list(self, request, *args, **kwargs):
+        cache_key = CacheKey.CATEGORY_LIST
+        
+        def db_query():
+            queryset = self.filter_queryset(self.get_queryset())
+            serializer = self.get_serializer(queryset, many=True)
+            return serializer.data
+
+        data = CacheManager.get_or_set(cache_key, db_query, timeout=3600)
+        return Response(data)
+
+    def perform_create(self, serializer):
+        serializer.save()
+        CacheManager.invalidate(CacheKey.CATEGORY_LIST)
+
+    def perform_update(self, serializer):
+        serializer.save()
+        CacheManager.invalidate(CacheKey.CATEGORY_LIST)
+
+    def perform_destroy(self, instance):
+        instance.delete()
+        CacheManager.invalidate(CacheKey.CATEGORY_LIST)
+
+
+class BrandViewSet(viewsets.ModelViewSet):
     queryset = Brand.objects.all()
     serializer_class = BrandSerializer
-    permission_classes = [permissions.AllowAny]
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [permissions.AllowAny()]
+        return [IsStaffOrSuperAdmin()]
+
+    def list(self, request, *args, **kwargs):
+        cache_key = CacheKey.BRAND_LIST
+        
+        def db_query():
+            queryset = self.filter_queryset(self.get_queryset())
+            serializer = self.get_serializer(queryset, many=True)
+            return serializer.data
+
+        data = CacheManager.get_or_set(cache_key, db_query, timeout=3600)
+        return Response(data)
+
+    def perform_create(self, serializer):
+        serializer.save()
+        CacheManager.invalidate(CacheKey.BRAND_LIST)
+
+    def perform_update(self, serializer):
+        serializer.save()
+        CacheManager.invalidate(CacheKey.BRAND_LIST)
+
+    def perform_destroy(self, instance):
+        instance.delete()
+        CacheManager.invalidate(CacheKey.BRAND_LIST)
