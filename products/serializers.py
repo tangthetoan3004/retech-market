@@ -3,6 +3,7 @@ from django.db import transaction
 from .models import Product, Category, Brand
 
 
+
 class ProductSerializer(serializers.ModelSerializer):
     seller_username = serializers.ReadOnlyField(source="seller.username")
     category_name = serializers.ReadOnlyField(source="category.name")

@@ -1,60 +1,67 @@
 from rest_framework import serializers
-from .models import Order, OrderItem
-from django.db import transaction
-from products.models import Product
 
-class OrderItemSerializer(serializers.ModelSerializer):
-    product = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all())
-    class Meta:
-        model = OrderItem
-        fields = ('product', 'quantity')
+from .models import Order, OrderItem, Refund, RefundItem
 
-class OrderSerializer(serializers.ModelSerializer):
-    items = OrderItemSerializer(many=True, write_only=True)
-    full_name = serializers.CharField(required=True, max_length=255)
-    phone_number = serializers.CharField(required=True, max_length=20)
-    shipping_address = serializers.CharField(required=True, max_length=800)
-    payment_method = serializers.CharField(required=True, max_length=50)
-
-    total_amount = serializers.DecimalField(max_digits=12, decimal_places=0, read_only=True)
-    final_amount = serializers.DecimalField(max_digits=12, decimal_places=0, read_only=True)
+class OrderItemReadSerializer(serializers.ModelSerializer):
+    product_name  = serializers.ReadOnlyField(source="product.name")
+    product_slug  = serializers.ReadOnlyField(source="product.slug")
 
     class Meta:
-        model = Order
-        fields = '__all__'
-        read_only_fields = ('id', 'status', 'created_at')
+        model  = OrderItem
+        fields = ["id", "product", "product_name", "product_slug", "price_snapshot"]
 
-    def create(self, validated_data):
-        request = self.context.get('request')
-        items_data = validated_data.pop('items')
 
-        total_amount = 0
-        with transaction.atomic():
-            order = Order.objects.create(user=request.user, status='PROCESSING', **validated_data)
-            products_to_mark_sold = []
-            for item in items_data:
-                # Re-fetch with select_for_update to lock the row and prevent race conditions
-                product = Product.objects.select_for_update().get(pk=item['product'].pk)
-                if product.is_sold:
-                    raise serializers.ValidationError(
-                        {
-                            "items": f"Sản phẩm '{product.name}' đã được bán. "
-                                     "Vui lòng xóa sản phẩm này khỏi giỏ hàng."
-                        }
-                    )
-                quantity = item['quantity']
-                price = product.price
-                total_amount += price * quantity
-                OrderItem.objects.create(order=order, product=product, quantity=quantity, price=price)
-                products_to_mark_sold.append(product)
+class OrderItemWriteSerializer(serializers.Serializer):
+    product_id = serializers.IntegerField(min_value=1)
 
-            order.total_amount = total_amount
-            order.final_amount = total_amount
-            order.save()
 
-            # Mark every ordered product as sold
-            for product in products_to_mark_sold:
-                product.is_sold = True
-                product.save(update_fields=['is_sold'])
+class OrderReadSerializer(serializers.ModelSerializer):
+    items      = OrderItemReadSerializer(many=True, read_only=True)
+    user_email = serializers.ReadOnlyField(source="user.email")
+    status_display = serializers.SerializerMethodField()
 
-        return order
+    class Meta:
+        model  = Order
+        fields = [
+            "id", "user_email", "status", "status_display",
+            "total_amount", "items", "created_at", "updated_at",
+        ]
+
+    def get_status_display(self, obj: Order) -> str:
+        return obj.get_status_display()
+
+
+class OrderCreateSerializer(serializers.Serializer):
+    items = OrderItemWriteSerializer(many=True)
+
+    def validate_items(self, value):
+        if not value:
+            raise serializers.ValidationError("Đơn hàng phải có ít nhất một sản phẩm.")
+        ids = [item["product_id"] for item in value]
+        if len(ids) != len(set(ids)):
+            raise serializers.ValidationError("Danh sách sản phẩm bị trùng lặp.")
+        return value
+
+class OrderStatusUpdateSerializer(serializers.Serializer):
+    status = serializers.ChoiceField(choices=Order.Status.choices)
+
+class RefundItemSerializer(serializers.ModelSerializer):
+    product_name = serializers.ReadOnlyField(source="order_item.product.name")
+
+    class Meta:
+        model  = RefundItem
+        fields = ["id", "order_item", "product_name", "price_snapshot"]
+
+
+class RefundSerializer(serializers.ModelSerializer):
+    refund_items = RefundItemSerializer(many=True, read_only=True)
+    order_id     = serializers.IntegerField(write_only=True, min_value=1)
+
+    class Meta:
+        model  = Refund
+        fields = [
+            "id", "order_id", "reason_refund", "status",
+            "total_refund_amount", "reject_reason",
+            "refund_items", "created_at",
+        ]
+        read_only_fields = ["status", "total_refund_amount", "reject_reason"]

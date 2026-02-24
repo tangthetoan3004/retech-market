@@ -63,7 +63,7 @@ class ProductViewSet(viewsets.ModelViewSet):
             def db_query():
                 return self._get_paginated_data()
 
-            data = CacheManager.get_or_set(cache_key, db_query, timeout=600)
+            data = CacheManager.get_or_set(cache_key, db_query, timeout=3600)
             return Response(data)
 
         return Response(self._get_paginated_data())

@@ -191,7 +191,7 @@ CACHES = {
             "IGNORE_EXCEPTIONS": True,
         },
         "KEY_PREFIX": "retech",
-        "TIMEOUT": 60 * 15,
+        "TIMEOUT": 60 * 3,
     }
 }
 
