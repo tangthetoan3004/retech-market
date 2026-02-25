@@ -330,6 +330,7 @@ export default function AdminProductsListPage() {
                   <TableHead>Price</TableHead>
                   <TableHead>Condition</TableHead>
                   <TableHead>Battery / Warranty</TableHead>
+                  <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -337,7 +338,7 @@ export default function AdminProductsListPage() {
               <TableBody>
                 {loading ? (
                   <TableRow className="border-border">
-                    <TableCell colSpan={6} className="py-20 text-center">
+                    <TableCell colSpan={7} className="py-20 text-center">
                       <div className="flex flex-col items-center justify-center gap-4">
                         <LoadingSpinner />
                         <p className="text-muted-foreground animate-pulse font-medium">Đang tải sản phẩm...</p>
@@ -346,7 +347,7 @@ export default function AdminProductsListPage() {
                   </TableRow>
                 ) : filteredProducts.length === 0 ? (
                   <TableRow className="border-border">
-                    <TableCell colSpan={6} className="text-muted-foreground py-10 text-center">
+                    <TableCell colSpan={7} className="text-muted-foreground py-10 text-center">
                       No products
                     </TableCell>
                   </TableRow>
@@ -368,14 +369,26 @@ export default function AdminProductsListPage() {
                           <div className="min-w-0">
                             <p className="font-medium truncate">{product.name}</p>
                             <p className="text-sm text-muted-foreground truncate">
-                              {product.brand || "-"}
+                              {(() => {
+                                const bval = product.brand || product.brand_id;
+                                if (!bval) return "-";
+                                const sval = String(bval);
+                                const b = brands.find((x: any) => String(x.id) === sval || String(x.pk) === sval || x.name === bval);
+                                return b ? (b.name || b.title || b.label) : bval;
+                              })()}
                             </p>
                           </div>
                         </div>
                       </TableCell>
 
                       <TableCell className="text-muted-foreground">
-                        {product.category || "-"}
+                        {(() => {
+                          const cval = product.category || product.category_id;
+                          if (!cval) return "-";
+                          const sval = String(cval);
+                          const c = categories.find((x: any) => String(x.id) === sval || String(x.pk) === sval || x.name === cval);
+                          return c ? (c.name || c.title || c.label) : cval;
+                        })()}
                       </TableCell>
 
                       <TableCell>
@@ -398,6 +411,18 @@ export default function AdminProductsListPage() {
                           <div>Battery: {product.battery_health ?? "-"}</div>
                           <div>Warranty: {product.warranty_period ?? 0}m</div>
                         </div>
+                      </TableCell>
+
+                      <TableCell>
+                        {product.is_sold ? (
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium text-red-600 dark:text-red-400 bg-red-500/10">
+                            Đã bán
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10">
+                            Còn hàng
+                          </span>
+                        )}
                       </TableCell>
 
                       <TableCell className="text-right">
