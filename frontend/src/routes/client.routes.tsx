@@ -9,6 +9,7 @@ import SearchPage from "../pages/client/search/page";
 import CartPage from "../pages/client/cart/page";
 import CheckoutPage from "../pages/client/checkout/page";
 import CheckoutSuccessPage from "../pages/client/checkout-success/page";
+import { WishlistPage } from "../pages/client/wishlist/page";
 
 import UserLoginPage from "../pages/client/user/login/page";
 import UserRegisterPage from "../pages/client/user/register/page";
@@ -19,6 +20,8 @@ import UserInfoPage from "../pages/client/user/info/page";
 
 import RequireClientAuth from "./client/_guards/RequireClientAuth";
 
+import UserOrdersPage from "../pages/client/user/orders/page";
+import OrderDetailPage from "../pages/client/user/orders/detail/page";
 export const clientRoutes: RouteObject[] = [
   {
     path: "/",
@@ -33,6 +36,7 @@ export const clientRoutes: RouteObject[] = [
       { path: "search", element: <SearchPage /> },
 
       { path: "cart", element: <CartPage /> },
+      { path: "wishlist", element: <WishlistPage /> },
       { path: "checkout", element: <CheckoutPage /> },
       { path: "checkout/success", element: <CheckoutSuccessPage /> },
 
@@ -43,7 +47,11 @@ export const clientRoutes: RouteObject[] = [
       { path: "user/password/reset", element: <ResetPasswordPage /> },
       {
         element: <RequireClientAuth />,
-        children: [{ path: "user/info", element: <UserInfoPage /> }]
+        children: [
+          { path: "user/info", element: <UserInfoPage /> },
+          { path: "user/orders", element: <UserOrdersPage /> },
+          { path: "user/orders/:id", element: <OrderDetailPage /> }
+        ]
       }
     ]
   }

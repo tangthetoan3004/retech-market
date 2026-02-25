@@ -48,10 +48,11 @@ export default function Sider() {
     { to: "/admin/products", label: "Sản phẩm", icon: Package },
     { to: "/admin/brands", label: "Thương hiệu", icon: Star },
     { to: "/admin/orders", label: "Orders", icon: ShoppingBag },
+    { to: "/admin/refunds", label: "Hoàn tiền", icon: RefreshCw },
     { to: "/admin/tradeins", label: "Trade-Ins", icon: RefreshCw },
     { to: "/admin/accounts", label: "Tài khoản", icon: Users },
-    { to: "/admin/my-account", label: "Tài khoản của tôi", icon: UserCircle },
-    { to: "/admin/settings/general", label: "Cài đặt chung", icon: Settings },
+    { to: "/admin/my-account", label: "Tài khoản của tôi", icon: UserCircle }
+    // { to: "/admin/settings/general", label: "Cài đặt chung", icon: Settings },
   ];
 
   const isActive = (to: string, exact?: boolean) => {

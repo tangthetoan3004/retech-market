@@ -64,7 +64,7 @@ export function ProductCard({
       {/* Image Container */}
       <div className="relative aspect-square overflow-hidden bg-muted">
         <img src={image} alt={name} className="w-full h-full object-cover" />
-        
+
         {/* Overlay actions on hover */}
         <motion.div
           className="absolute inset-0 bg-black/40 flex items-center justify-center gap-2"
@@ -85,11 +85,10 @@ export function ProductCard({
 
         {/* Wishlist button */}
         <button
-          className={`absolute top-3 right-3 p-2 rounded-full backdrop-blur-sm transition-all ${
-            isInWishlist
-              ? "bg-red-500 text-white"
-              : "bg-white/80 hover:bg-white text-foreground"
-          }`}
+          className={`absolute top-3 right-3 p-2 rounded-full backdrop-blur-sm transition-all ${isInWishlist
+            ? "bg-red-500 text-white"
+            : "bg-white/80 hover:bg-white text-foreground"
+            }`}
           onClick={() => onToggleWishlist?.(id)}
         >
           <Heart className={`h-4 w-4 ${isInWishlist ? "fill-current" : ""}`} />
@@ -145,7 +144,7 @@ export function ProductCard({
               )}
             </div>
             {originalPrice && (
-              <span className="text-xs text-[var(--secondary)]">
+              <span className="text-xs text-[#00d084] font-medium">
                 Save ${(originalPrice - price).toLocaleString()}
               </span>
             )}
@@ -154,11 +153,10 @@ export function ProductCard({
 
         {/* Add to Cart Button */}
         <Button
-          className={`w-full transition-all ${
-            addedToCart
-              ? "bg-[var(--status-success)] hover:bg-[var(--status-success)]"
-              : "bg-[var(--accent-blue)] hover:bg-[var(--accent-blue)]/90"
-          }`}
+          className={`w-full transition-all ${addedToCart
+            ? "bg-[var(--status-success)] hover:bg-[var(--status-success)] text-white"
+            : "bg-blue-600 hover:bg-blue-700 text-white"
+            }`}
           onClick={handleAddToCart}
           disabled={!inStock || addedToCart}
         >

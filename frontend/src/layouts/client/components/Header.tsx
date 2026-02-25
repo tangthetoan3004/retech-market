@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { ShoppingCart, Heart, User, Menu, Moon, Sun, LogOut, Settings } from "lucide-react";
+import { ShoppingCart, Heart, User, Menu, Moon, Sun, LogOut, Settings, Package } from "lucide-react";
 import { Button } from "../../../components/ui/button";
 import { Badge } from "../../../components/ui/badge";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "../../../components/ui/sheet";
@@ -24,6 +24,7 @@ export default function Header({ settingGeneral }: { settingGeneral?: any; categ
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const cart = useSelector((s: any) => s.cart);
+  const wishlist = useSelector((s: any) => s.wishlist);
   const user = useSelector((s: any) => s.clientAuth?.user);
 
   const isAdmin = useMemo(() => {
@@ -112,8 +113,13 @@ export default function Header({ settingGeneral }: { settingGeneral?: any; categ
               {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </Button>
 
-            <Button variant="ghost" size="icon" onClick={() => navigate("/")} type="button">
+            <Button variant="ghost" size="icon" onClick={() => navigate("/wishlist")} className="relative" type="button">
               <Heart className="h-5 w-5" />
+              {wishlist?.length > 0 && (
+                <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center bg-red-500 text-white">
+                  {wishlist.length}
+                </Badge>
+              )}
             </Button>
 
             <Button variant="ghost" size="icon" onClick={() => navigate("/cart")} className="relative" type="button">
@@ -136,6 +142,10 @@ export default function Header({ settingGeneral }: { settingGeneral?: any; categ
                   <DropdownMenuItem onClick={() => navigate("/user/info")} className="cursor-pointer">
                     <Settings className="h-4 w-4 mr-2" />
                     Tài khoản
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/user/orders")} className="cursor-pointer">
+                    <Package className="h-4 w-4 mr-2" />
+                    Đơn hàng của tôi
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={doLogout} className="cursor-pointer text-red-500">
                     <LogOut className="h-4 w-4 mr-2" />

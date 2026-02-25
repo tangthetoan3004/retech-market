@@ -4,13 +4,15 @@ import uiReducer from "../features/ui/uiSlice";
 import authReducer from "../features/admin/auth/authSlice";
 import cartReducer from "../features/client/cart/cartSlice";
 import clientAuthReducer from "../features/client/auth/clientAuthSlice";
+import wishlistReducer from "../features/client/wishlist/wishlistSlice";
 
 export const store = configureStore({
   reducer: {
     ui: uiReducer,
     auth: authReducer,
     cart: cartReducer,
-    clientAuth: clientAuthReducer
+    clientAuth: clientAuthReducer,
+    wishlist: wishlistReducer,
   }
 });
 

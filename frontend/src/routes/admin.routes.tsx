@@ -27,6 +27,7 @@ import SettingsGeneralPage from "../pages/admin/settings/general/page";
 
 import TradeInsListPage from "../pages/admin/tradeins/list/page";
 import OrdersListPage from "../pages/admin/order/list/page";
+import AdminRefundsPage from "../pages/admin/refunds/page";
 
 import RequireAdminAuth from "./admin/_guards/RequireAdminAuth";
 
@@ -63,6 +64,7 @@ export const adminRoutes: RouteObject[] = [
           { path: "settings/general", element: <SettingsGeneralPage /> },
           { path: "tradeins", element: <TradeInsListPage /> },
           { path: "orders", element: <OrdersListPage /> },
+          { path: "refunds", element: <AdminRefundsPage /> },
         ],
       },
     ],
