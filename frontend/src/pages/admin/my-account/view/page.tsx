@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { showAlert } from "../../../../features/ui/uiSlice";
 import { getMyAccount } from "../../../../services/admin/my-account/myAccountService";
+import LoadingSpinner from "../../../../components/ui/LoadingSpinner";
 
 function StatusPill({ status }: { status: string }) {
   const s = String(status || "").toLowerCase();
@@ -10,8 +11,8 @@ function StatusPill({ status }: { status: string }) {
     s === "active"
       ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
       : s === "inactive"
-      ? "bg-red-500/10 text-red-600 dark:text-red-400"
-      : "bg-muted text-muted-foreground";
+        ? "bg-red-500/10 text-red-600 dark:text-red-400"
+        : "bg-muted text-muted-foreground";
   return <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${cls}`}>{status || "—"}</span>;
 }
 
@@ -37,8 +38,11 @@ export default function MyAccountViewPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background text-foreground p-4 md:p-6 lg:p-8">
-        <div className="text-muted-foreground">Đang tải...</div>
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <LoadingSpinner />
+          <p className="text-muted-foreground animate-pulse font-medium">Đang tải dữ liệu...</p>
+        </div>
       </div>
     );
   }
@@ -76,7 +80,9 @@ export default function MyAccountViewPage() {
             <div className="space-y-2 min-w-0">
               <div className="flex flex-wrap gap-2">
                 <span className="text-sm text-muted-foreground">Họ tên:</span>
-                <span className="text-sm font-medium">{account.fullName || "—"}</span>
+                <span className="text-sm font-medium">
+                  {[account.first_name, account.last_name].filter(Boolean).join(" ") || account.username || "—"}
+                </span>
               </div>
 
               <div className="flex flex-wrap gap-2">
@@ -86,12 +92,12 @@ export default function MyAccountViewPage() {
 
               <div className="flex flex-wrap gap-2">
                 <span className="text-sm text-muted-foreground">SĐT:</span>
-                <span className="text-sm font-medium">{account.phone || "—"}</span>
+                <span className="text-sm font-medium">{account.phone_number || account.phone || "—"}</span>
               </div>
 
               <div className="flex flex-wrap gap-2 items-center">
                 <span className="text-sm text-muted-foreground">Trạng thái:</span>
-                <StatusPill status={account.status || ""} />
+                <StatusPill status={account.is_active ? "active" : "inactive"} />
               </div>
             </div>
           </div>

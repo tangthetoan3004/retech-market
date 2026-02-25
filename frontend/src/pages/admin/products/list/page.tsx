@@ -15,6 +15,7 @@ import React from "react";
 
 import CreateProductDialog from "./CreateProductDialog";
 import EditProductDialog from "./EditProductDialog";
+import LoadingSpinner from "../../../../components/ui/LoadingSpinner";
 
 import {
   getProducts,
@@ -336,8 +337,11 @@ export default function AdminProductsListPage() {
               <TableBody>
                 {loading ? (
                   <TableRow className="border-border">
-                    <TableCell colSpan={6} className="text-muted-foreground py-10 text-center">
-                      Loading...
+                    <TableCell colSpan={6} className="py-20 text-center">
+                      <div className="flex flex-col items-center justify-center gap-4">
+                        <LoadingSpinner />
+                        <p className="text-muted-foreground animate-pulse font-medium">Đang tải sản phẩm...</p>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ) : filteredProducts.length === 0 ? (

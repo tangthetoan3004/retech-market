@@ -12,6 +12,7 @@ import { Textarea } from "../../../../components/ui/textarea";
 import { showAlert } from "../../../../features/ui/uiSlice";
 import { getMyInfo, updateMyInfo } from "../../../../services/client/user/userService";
 import { setClientAuth } from "../../../../features/client/auth/clientAuthSlice";
+import LoadingSpinner from "../../../../components/ui/LoadingSpinner";
 
 function splitName(fullName: string) {
   const s = (fullName || "").trim().replace(/\s+/g, " ");
@@ -108,7 +109,14 @@ export default function UserInfoPage() {
     }
   };
 
-  if (loading) return <div className="max-w-4xl mx-auto px-4 py-10">Loading...</div>;
+  if (loading) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-32 flex flex-col items-center justify-center gap-4">
+        <LoadingSpinner />
+        <p className="text-muted-foreground animate-pulse font-medium">Đang tải hồ sơ...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-10">

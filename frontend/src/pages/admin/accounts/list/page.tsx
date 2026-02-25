@@ -14,8 +14,8 @@ function StatusPill({ status }: { status: string }) {
     s === "active"
       ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
       : s === "inactive"
-      ? "bg-red-500/10 text-red-600 dark:text-red-400"
-      : "bg-muted text-muted-foreground";
+        ? "bg-red-500/10 text-red-600 dark:text-red-400"
+        : "bg-muted text-muted-foreground";
 
   return (
     <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${cls}`}>
@@ -35,7 +35,7 @@ export default function AccountsListPage() {
     setLoading(true);
     try {
       const data: any = await getAccounts();
-      setAccounts(data.records || data.accounts || data.items || []);
+      setAccounts(Array.isArray(data) ? data : data.records || data.accounts || data.items || data.data || []);
     } catch (err: any) {
       dispatch(showAlert({ type: "error", message: err?.message || "Load failed" }));
     } finally {
@@ -93,20 +93,23 @@ export default function AccountsListPage() {
               ) : (
                 accounts.map((a: any) => (
                   <tr
-                    key={a._id}
+                    key={a.id}
                     className="border-b border-border/60 last:border-b-0 hover:bg-muted/30 transition-colors"
                   >
-                    <td className="p-3">{a.fullName || "—"}</td>
+                    <td className="p-3">
+                      <div className="font-medium">{[a.first_name, a.last_name].filter(Boolean).join(" ") || a.username || "—"}</div>
+                      <div className="text-xs text-muted-foreground">@{a.username}</div>
+                    </td>
                     <td className="p-3 text-muted-foreground">{a.email || "—"}</td>
                     <td className="p-3">
-                      <StatusPill status={a.status || ""} />
+                      <StatusPill status={a.is_active ? "active" : "inactive"} />
                     </td>
                     <td className="p-3">
                       <div className="flex gap-2 flex-wrap">
                         {has(perms, "accounts_edit") ? (
                           <Link
                             className="inline-flex items-center justify-center rounded-lg border border-border bg-background hover:bg-muted text-foreground px-3 py-1.5 text-xs"
-                            to={`/admin/accounts/edit/${a._id}`}
+                            to={`/admin/accounts/edit/${a.id}`}
                           >
                             Sửa
                           </Link>

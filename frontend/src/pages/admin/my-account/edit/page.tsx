@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { showAlert } from "../../../../features/ui/uiSlice";
-import { getEditMyAccount, updateMyAccount } from "../../../../services/admin/my-account/myAccountService";
+import { getMyAccount, updateMyAccount } from "../../../../services/admin/my-account/myAccountService";
 import MyAccountForm from "../../../../features/admin/my-account/components/MyAccountForm";
 
 export default function MyAccountEditPage() {
@@ -17,7 +17,7 @@ export default function MyAccountEditPage() {
     const run = async () => {
       setLoading(true);
       try {
-        const data = await getEditMyAccount();
+        const data = await getMyAccount();
         setInitialValues(data.record || data.account || data.user || data);
       } catch (err) {
         dispatch(showAlert({ type: "error", message: err.message }));

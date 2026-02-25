@@ -1,16 +1,10 @@
 import { get, patch } from "../../../utils/request";
 
 export const getMyAccount = async () => {
-  const result = await get("admin/my-account");
-  return result;
+  return await get("/api/users/profile/");
 };
 
-export const getEditMyAccount = async () => {
-  const result = await get("admin/my-account/edit");
-  return result;
-};
-
-export const updateMyAccount = async (formData) => {
-  const result = await patch("admin/my-account/edit", formData);
-  return result;
+export const updateMyAccount = async (formData: any) => {
+  // Using put/patch on profile endpoint
+  return await patch("/api/users/profile/", formData);
 };
