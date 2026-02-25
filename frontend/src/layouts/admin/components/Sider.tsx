@@ -12,6 +12,7 @@ import {
   ShoppingBag,
   Moon,
   Sun,
+  Star,
 } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { clearAuth } from "../../../features/admin/auth/authSlice";
@@ -45,6 +46,7 @@ export default function Sider() {
     { to: "/admin/dashboard", label: "Tổng quan", icon: LayoutDashboard },
     { to: "/admin/products-category", label: "Danh mục sản phẩm", icon: Tags },
     { to: "/admin/products", label: "Sản phẩm", icon: Package },
+    { to: "/admin/brands", label: "Thương hiệu", icon: Star },
     { to: "/admin/orders", label: "Orders", icon: ShoppingBag },
     { to: "/admin/tradeins", label: "Trade-Ins", icon: RefreshCw },
     { to: "/admin/accounts", label: "Tài khoản", icon: Users },

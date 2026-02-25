@@ -5,6 +5,7 @@ import AdminLayout from "../layouts/admin/AdminLayout";
 import DashboardPage from "../pages/admin/dashboard/page";
 
 import ProductsListPage from "../pages/admin/products/list/page";
+import BrandsListPage from "../pages/admin/brands/list/page";
 
 import ProductCategoryListPage from "../pages/admin/products-category/list/page";
 import ProductCategoryCreatePage from "../pages/admin/products-category/create/page";
@@ -41,6 +42,7 @@ export const adminRoutes: RouteObject[] = [
           { path: "dashboard", element: <DashboardPage /> },
 
           { path: "products", element: <ProductsListPage /> },
+          { path: "brands", element: <BrandsListPage /> },
 
           { path: "products-category", element: <ProductCategoryListPage /> },
           { path: "products-category/create", element: <ProductCategoryCreatePage /> },

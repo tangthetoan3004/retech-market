@@ -1,8 +1,8 @@
 import { useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import { deleteItem } from "../../../features/client/cart/cartSlice";
-import { Trash2, ShoppingBag } from "lucide-react";
+import { deleteItem, updateQuantity } from "../../../features/client/cart/cartSlice";
+import { Trash2, ShoppingBag, Minus, Plus } from "lucide-react";
 import { Button } from "../../../components/ui/button";
 
 function n(v: any) {
@@ -114,9 +114,26 @@ export default function CartPage() {
                       </div>
 
                       <div className="mt-4 flex items-center justify-between gap-4">
-                        <span className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-muted/40 px-3 py-1.5 text-sm font-medium">
-                          Số lượng: 1
-                        </span>
+                        <div className="flex items-center border border-border rounded-lg overflow-hidden h-9 w-28 bg-card">
+                          <button
+                            type="button"
+                            className="flex-1 flex items-center justify-center hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            onClick={() => dispatch(updateQuantity({ id: x.id, quantity: Math.max(1, qty - 1) }))}
+                            disabled={qty <= 1}
+                          >
+                            <Minus className="h-3.5 w-3.5" />
+                          </button>
+                          <div className="flex-1 flex items-center justify-center text-sm font-medium border-x border-border h-full">
+                            {qty}
+                          </div>
+                          <button
+                            type="button"
+                            className="flex-1 flex items-center justify-center hover:bg-muted transition-colors"
+                            onClick={() => dispatch(updateQuantity({ id: x.id, quantity: qty + 1 }))}
+                          >
+                            <Plus className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
 
                         <Button
                           variant="outline"

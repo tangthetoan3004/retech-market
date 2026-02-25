@@ -15,6 +15,8 @@ import {
   HardDrive,
   Monitor,
   ChevronLeft,
+  Minus,
+  Plus,
 } from "lucide-react";
 import { Button } from "../../../components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../components/ui/tabs";
@@ -68,6 +70,7 @@ export default function ProductDetailPage() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [addedToCart, setAddedToCart] = useState(false);
   const [wish, setWish] = useState(false);
+  const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
     const run = async () => {
@@ -138,7 +141,7 @@ export default function ProductDetailPage() {
       addToCart({
         id: product?.id || product?._id || product?.slug,
         item: product,
-        quantity: 1, // refurbished: luôn mua 1
+        quantity: quantity,
       })
     );
     dispatch(showAlert({ type: "success", message: "Đã thêm vào giỏ hàng", timeout: 2000 }));
@@ -315,46 +318,73 @@ export default function ProductDetailPage() {
               </div>
             </div>
 
-            <div className="flex gap-3">
-              <Button
-                size="lg"
-                className={`flex-1 transition-all ${isSold
-                  ? "bg-muted text-muted-foreground cursor-not-allowed"
-                  : addedToCart
-                    ? "bg-[var(--status-success)] hover:bg-[var(--status-success)] text-white"
-                    : "rt-bg-brand text-white hover:opacity-90"
-                  }`}
-                onClick={handleAddToCart}
-                disabled={isSold || addedToCart}
-                type="button"
-              >
-                {isSold ? (
-                  <>
-                    <span className="mr-2">✕</span>
-                    Đã bán
-                  </>
-                ) : addedToCart ? (
-                  <>
-                    <Check className="h-5 w-5 mr-2" />
-                    Đã thêm vào giỏ
-                  </>
-                ) : (
-                  <>
-                    <ShoppingCart className="h-5 w-5 mr-2" />
-                    Thêm vào giỏ hàng
-                  </>
-                )}
-              </Button>
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center gap-4">
+                <span className="text-sm font-medium">Số lượng:</span>
+                <div className="flex items-center border border-border rounded-lg overflow-hidden h-10 w-32">
+                  <button
+                    type="button"
+                    className="flex-1 flex items-center justify-center hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    disabled={quantity <= 1 || isSold}
+                  >
+                    <Minus className="h-4 w-4" />
+                  </button>
+                  <div className="flex-1 flex items-center justify-center text-sm font-medium border-x border-border h-full">
+                    {quantity}
+                  </div>
+                  <button
+                    type="button"
+                    className="flex-1 flex items-center justify-center hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={() => setQuantity(quantity + 1)}
+                    disabled={isSold}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
 
-              <Button
-                size="lg"
-                variant="outline"
-                className={wish ? "border-red-500 text-red-500" : ""}
-                onClick={() => setWish((v) => !v)}
-                type="button"
-              >
-                <Heart className={`h-5 w-5 ${wish ? "fill-current" : ""}`} />
-              </Button>
+              <div className="flex gap-3">
+                <Button
+                  size="lg"
+                  className={`flex-1 transition-all ${isSold
+                    ? "bg-muted text-muted-foreground cursor-not-allowed"
+                    : addedToCart
+                      ? "bg-[var(--status-success)] hover:bg-[var(--status-success)] text-white"
+                      : "rt-bg-brand text-white hover:opacity-90"
+                    }`}
+                  onClick={handleAddToCart}
+                  disabled={isSold || addedToCart}
+                  type="button"
+                >
+                  {isSold ? (
+                    <>
+                      <span className="mr-2">✕</span>
+                      Đã bán
+                    </>
+                  ) : addedToCart ? (
+                    <>
+                      <Check className="h-5 w-5 mr-2" />
+                      Đã thêm vào giỏ
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingCart className="h-5 w-5 mr-2" />
+                      Thêm vào giỏ hàng
+                    </>
+                  )}
+                </Button>
+
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className={wish ? "border-red-500 text-red-500" : ""}
+                  onClick={() => setWish((v) => !v)}
+                  type="button"
+                >
+                  <Heart className={`h-5 w-5 ${wish ? "fill-current" : ""}`} />
+                </Button>
+              </div>
             </div>
 
             {inStock ? (
