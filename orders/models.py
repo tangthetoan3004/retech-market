@@ -15,7 +15,7 @@ class Order(models.Model):
         RETURNED   = "RETURNED",   "Returned"
 
     ALLOWED_TRANSITIONS: dict[str, list[str]] = {
-        Status.PENDING:    [Status.PROCESSING, Status.CANCELLED],
+        Status.PENDING:    [Status.PROCESSING, Status.CANCELLED, Status.DELIVERED],
         Status.PROCESSING: [Status.SHIPPED,    Status.CANCELLED],
         Status.SHIPPED:    [Status.DELIVERED],
         Status.DELIVERED:  [],

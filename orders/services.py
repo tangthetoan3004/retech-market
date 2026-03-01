@@ -3,6 +3,7 @@ from decimal import Decimal
 from django.core.exceptions import ValidationError
 from django.db import transaction
 
+from payment.models import Payment
 from products.models import Product
 from .models import Order, OrderItem, Refund, RefundItem
 
@@ -11,7 +12,7 @@ class OrderService:
 
     @staticmethod
     @transaction.atomic
-    def create_order(user, product_ids: list[int]) -> Order:
+    def create_order(user, product_ids: list[int], payment_method: str) -> Order:
         if not product_ids:
             raise ValidationError("Đơn hàng phải có ít nhất một sản phẩm.")
 
@@ -45,6 +46,16 @@ class OrderService:
         order.total_amount = total_amount
         order.save(update_fields=["total_amount", "updated_at"])
 
+        # Tự động tạo Payment cho Order
+        Payment.objects.create(
+            user=user,
+            payment_type=Payment.PaymentType.ORDER,
+            payment_method=payment_method,
+            direction=Payment.Direction.INBOUND,
+            amount=total_amount,
+            order=order,
+        )
+
         return order
 
     @staticmethod
@@ -71,6 +82,11 @@ class OrderService:
         for p in products:
             p.is_sold = False
         Product.objects.bulk_update(products, ["is_sold"])
+
+        # Auto-fail Payment PENDING liên kết với Order
+        order.payments.filter(status=Payment.Status.PENDING).update(
+            status=Payment.Status.FAILED
+        )
 
         return order
 

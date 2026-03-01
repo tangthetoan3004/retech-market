@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'products',
     'orders',
     'tradein',
+    'payment',
 ]
 
 MIDDLEWARE = [
@@ -197,3 +198,28 @@ CACHES = {
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"
+
+# ---------- Celery ----------
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://127.0.0.1:6379/1")
+CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", "redis://127.0.0.1:6379/1")
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = TIME_ZONE
+
+from celery.schedules import crontab  # noqa: E402
+
+CELERY_BEAT_SCHEDULE = {
+    "auto-cancel-expired-tradeins": {
+        "task": "tradein.tasks.auto_cancel_expired_tradeins",
+        "schedule": crontab(minute=0),  # Mỗi giờ
+    },
+    "cleanup-orphaned-temp-images": {
+        "task": "tradein.tasks.cleanup_orphaned_temp_images",
+        "schedule": crontab(hour=3, minute=0),  # 3h sáng mỗi ngày
+    },
+    "auto-fail-expired-bank-transfer-payments": {
+        "task": "payment.tasks.auto_fail_expired_bank_transfer_payments",
+        "schedule": crontab(minute=0),  # Mỗi giờ
+    },
+}

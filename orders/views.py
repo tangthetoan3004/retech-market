@@ -39,7 +39,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         user = self.request.user
         queryset = (
             Order.objects.select_related("user")
-            .prefetch_related("items__product")
+            .prefetch_related("items__product", "payments")
         )
         if user.is_staff:
             return queryset
@@ -76,7 +76,12 @@ class OrderViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         try:
             product_ids = [item['product_id'] for item in serializer.validated_data['items']]
-            order = OrderService.create_order(user=request.user, product_ids=product_ids)
+            payment_method = serializer.validated_data['payment_method']
+            order = OrderService.create_order(
+                user=request.user,
+                product_ids=product_ids,
+                payment_method=payment_method,
+            )
             CacheManager.invalidate_pattern(f"orders:user:{request.user.id}")
             read_serializer = OrderReadSerializer(order, context={"request": request})
             return Response(read_serializer.data, status=status.HTTP_201_CREATED)

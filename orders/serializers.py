@@ -16,23 +16,42 @@ class OrderItemWriteSerializer(serializers.Serializer):
 
 
 class OrderReadSerializer(serializers.ModelSerializer):
-    items      = OrderItemReadSerializer(many=True, read_only=True)
-    user_email = serializers.ReadOnlyField(source="user.email")
+    items          = OrderItemReadSerializer(many=True, read_only=True)
+    user_email     = serializers.ReadOnlyField(source="user.email")
     status_display = serializers.SerializerMethodField()
+    payment        = serializers.SerializerMethodField()
 
     class Meta:
         model  = Order
         fields = [
             "id", "user_email", "status", "status_display",
-            "total_amount", "items", "created_at", "updated_at",
+            "total_amount", "items", "payment", "created_at", "updated_at",
         ]
 
     def get_status_display(self, obj: Order) -> str:
         return obj.get_status_display()
 
+    def get_payment(self, obj: Order):
+        payment = obj.payments.first()
+        if not payment:
+            return None
+        return {
+            "id": payment.id,
+            "status": payment.status,
+            "payment_method": payment.payment_method,
+            "amount": payment.amount,
+        }
+
+
+ALLOWED_ORDER_PAYMENT_METHODS = [
+    ("BANK_TRANSFER", "Chuyển khoản ngân hàng"),
+    ("COD", "Thanh toán khi nhận hàng"),
+]
+
 
 class OrderCreateSerializer(serializers.Serializer):
-    items = OrderItemWriteSerializer(many=True)
+    items          = OrderItemWriteSerializer(many=True)
+    payment_method = serializers.ChoiceField(choices=ALLOWED_ORDER_PAYMENT_METHODS)
 
     def validate_items(self, value):
         if not value:
