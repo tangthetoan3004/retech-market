@@ -1,4 +1,4 @@
-import { get, patch } from "../../../utils/request";
+import { get, post } from "../../../utils/request";
 
 export type AdminTradeInStatus = "PENDING" | "SUBMITTED" | "APPROVED";
 
@@ -77,6 +77,10 @@ export async function getTradeIns(params: GetTradeInsParams = {}) {
   return { items };
 }
 
-export async function updateTradeInStatus(id: number | string, status: AdminTradeInStatus) {
-  return patch(`/api/tradein/tradein/${id}/`, { status });
+export async function approveTradeIn(id: number | string, final_price: number, staff_note: string = "") {
+  return post(`/api/tradein/tradein/${id}/approve/`, { final_price, staff_note });
+}
+
+export async function rejectTradeIn(id: number | string, reject_reason: string) {
+  return post(`/api/tradein/tradein/${id}/reject/`, { reject_reason });
 }

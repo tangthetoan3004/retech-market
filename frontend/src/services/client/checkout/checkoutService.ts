@@ -8,7 +8,7 @@ export const createOrder = async (options: any) => {
     full_name: ui.fullName || "",
     phone_number: ui.phone || "",
     shipping_address: ui.address || "",
-    payment_method: "COD",
+    payment_method: options?.payment_method || "COD",
     items: products.map((p: any) => ({
       product: p.productId,
       quantity: Number(p.quantity || 1)

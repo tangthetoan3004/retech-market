@@ -10,6 +10,7 @@ import CartPage from "../pages/client/cart/page";
 import CheckoutPage from "../pages/client/checkout/page";
 import CheckoutSuccessPage from "../pages/client/checkout-success/page";
 import { WishlistPage } from "../pages/client/wishlist/page";
+import TradeInsPage from "../pages/client/tradeins/page";
 
 import UserLoginPage from "../pages/client/user/login/page";
 import UserRegisterPage from "../pages/client/user/register/page";
@@ -39,6 +40,7 @@ export const clientRoutes: RouteObject[] = [
       { path: "wishlist", element: <WishlistPage /> },
       { path: "checkout", element: <CheckoutPage /> },
       { path: "checkout/success", element: <CheckoutSuccessPage /> },
+      { path: "tradeins", element: <TradeInsPage /> },
 
       { path: "user/login", element: <UserLoginPage /> },
       { path: "user/register", element: <UserRegisterPage /> },

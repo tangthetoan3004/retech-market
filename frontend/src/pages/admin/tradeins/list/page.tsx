@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import { motion } from "motion/react";
 import { Search, Filter, MoreVertical, Eye, CheckCircle2, XCircle } from "lucide-react";
 import { toast } from "sonner";
+import { approveTradeIn, rejectTradeIn } from "../../../../services/admin/tradeins/tradeinsService";
 
 import { Button } from "../../../../components/ui/button";
 import { Input } from "../../../../components/ui/input";
@@ -193,8 +194,9 @@ export default function TradeInsListPage() {
     setLocalStatus((prev) => ({ ...prev, [id]: status }));
   };
 
-  const approve = async (id: string) => {
+  const approve = async (id: string, finalPrice?: number, staffNote?: string) => {
     try {
+      await approveTradeIn(id, finalPrice ?? 0, staffNote);
       setStatusLocal(id, "APPROVED");
       toast.success("Approved trade-in request");
     } catch (err: any) {
@@ -202,8 +204,9 @@ export default function TradeInsListPage() {
     }
   };
 
-  const reject = async (id: string) => {
+  const reject = async (id: string, rejectReason?: string) => {
     try {
+      await rejectTradeIn(id, rejectReason ?? "");
       setStatusLocal(id, "REJECTED");
       toast.success("Rejected trade-in request");
     } catch (err: any) {
@@ -211,12 +214,12 @@ export default function TradeInsListPage() {
     }
   };
 
-  const onConfirm = async () => {
+  const onConfirm = async (data: { finalPrice?: number; staffNote?: string; rejectReason?: string }) => {
     if (!confirm) return;
     const { id, type } = confirm;
     setConfirm(null);
-    if (type === "approve") await approve(id);
-    if (type === "reject") await reject(id);
+    if (type === "approve") await approve(id, data.finalPrice, data.staffNote);
+    if (type === "reject") await reject(id, data.rejectReason);
   };
 
   return (
@@ -341,6 +344,7 @@ export default function TradeInsListPage() {
         <ConfirmTradeInDialog
           open={!!confirm}
           type={confirm?.type ?? "approve"}
+          defaultPrice={confirm?.type === "approve" ? (rows.find((r) => r.id === confirm.id)?.estimatedPrice ?? 0) : 0}
           onClose={() => setConfirm(null)}
           onConfirm={onConfirm}
         />

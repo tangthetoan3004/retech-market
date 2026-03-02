@@ -18,6 +18,7 @@ export default function CheckoutPage() {
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("COD");
   const [loading, setLoading] = useState(false);
 
   const subtotal = useMemo(() => {
@@ -41,6 +42,7 @@ export default function CheckoutPage() {
     try {
       const payload = {
         userInfo: { fullName, phone, address },
+        payment_method: paymentMethod,
         products: cart.map((x: any) => ({
           productId: x.id,
           quantity: x.quantity
@@ -130,6 +132,46 @@ export default function CheckoutPage() {
                     className="h-11"
                   />
                 </div>
+
+                <div className="space-y-3 pt-4 border-t border-border">
+                  <h3 className="font-medium text-lg">Phương thức thanh toán</h3>
+
+                  <div className="grid gap-3">
+                    <label
+                      className={`flex items-center p-4 border rounded-lg cursor-pointer transition-colors ${paymentMethod === "COD" ? "border-blue-500 bg-blue-50/50 dark:bg-blue-950/20" : "border-border hover:bg-muted/50"
+                        }`}
+                    >
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value="COD"
+                        checked={paymentMethod === "COD"}
+                        onChange={(e) => setPaymentMethod(e.target.value)}
+                        className="mr-3 w-4 h-4 text-blue-600 focus:ring-blue-500"
+                      />
+                      <div className="flex-1 text-sm font-medium">Thanh toán khi nhận hàng (COD)</div>
+                    </label>
+
+                    <label
+                      className={`flex items-center p-4 border rounded-lg cursor-pointer transition-colors ${paymentMethod === "BANK_TRANSFER" ? "border-blue-500 bg-blue-50/50 dark:bg-blue-950/20" : "border-border hover:bg-muted/50"
+                        }`}
+                    >
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value="BANK_TRANSFER"
+                        checked={paymentMethod === "BANK_TRANSFER"}
+                        onChange={(e) => setPaymentMethod(e.target.value)}
+                        className="mr-3 w-4 h-4 text-blue-600 focus:ring-blue-500"
+                      />
+                      <div className="flex-1 flex items-center justify-between text-sm font-medium">
+                        <span>Chuyển khoản / Thu hộ Online (VNPAY)</span>
+                        <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 rounded">Online</span>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
               </form>
             </div>
           </div>
