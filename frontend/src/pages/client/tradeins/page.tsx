@@ -127,38 +127,38 @@ export default function TradeInsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
+    <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
       <div className="mx-auto max-w-5xl px-4 md:px-6 lg:px-8 py-10">
         <div className="space-y-2 mb-8">
           <h1 className="text-3xl md:text-4xl font-bold">Trade-In (Thu Cũ Đổi Mới)</h1>
-          <p className="text-slate-400">
+          <p className="text-muted-foreground">
             Gửi thông tin thiết bị cũ để nhận báo giá nhanh. Chúng tôi sẽ liên hệ trong thời gian sớm nhất.
           </p>
         </div>
 
         <div className="grid lg:grid-cols-5 gap-6">
           <div className="lg:col-span-2 space-y-4">
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+            <div className="rounded-2xl border border-border bg-card p-5">
               <div className="text-sm font-semibold mb-3">Quy trình</div>
-              <ol className="space-y-3 text-sm text-slate-300">
+              <ol className="space-y-3 text-sm text-foreground/80">
                 <li className="flex gap-3">
-                  <span className="w-7 h-7 rounded-full bg-blue-600/20 text-blue-300 flex items-center justify-center text-xs">1</span>
+                  <span className="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs">1</span>
                   <span>Điền form & gửi hình ảnh thiết bị</span>
                 </li>
                 <li className="flex gap-3">
-                  <span className="w-7 h-7 rounded-full bg-emerald-600/20 text-emerald-300 flex items-center justify-center text-xs">2</span>
+                  <span className="w-7 h-7 rounded-full bg-secondary/20 text-secondary-foreground flex items-center justify-center text-xs">2</span>
                   <span>Nhận báo giá dự kiến ngay lập tức</span>
                 </li>
                 <li className="flex gap-3">
-                  <span className="w-7 h-7 rounded-full bg-blue-600/20 text-blue-300 flex items-center justify-center text-xs">3</span>
+                  <span className="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs">3</span>
                   <span>Kiểm tra máy & chốt giá tại cửa hàng / thu tận nơi</span>
                 </li>
               </ol>
             </div>
 
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+            <div className="rounded-2xl border border-border bg-card p-5">
               <div className="text-sm font-semibold mb-2">Lưu ý</div>
-              <ul className="text-sm text-slate-300 space-y-2">
+              <ul className="text-sm text-foreground/80 space-y-2">
                 <li>• Giá cuối cùng phụ thuộc tình trạng thực tế.</li>
                 <li>• Nên cung cấp ảnh rõ mặt trước/sau, cạnh viền, màn hình.</li>
                 <li>• Nếu có hoá đơn/hộp/phụ kiện, hãy ghi chú thêm.</li>
@@ -166,20 +166,20 @@ export default function TradeInsPage() {
             </div>
 
             {estimatedPrice !== null && (
-              <div className="rounded-2xl border border-emerald-800 bg-emerald-900/30 p-5 shadow-[0_0_15px_rgba(16,185,129,0.1)]">
-                <div className="text-emerald-400 text-sm font-medium mb-1">Giá thu dự kiến:</div>
-                <div className="text-3xl font-bold text-emerald-300">${estimatedPrice.toLocaleString()}</div>
+              <div className="rounded-2xl border border-status-success bg-status-success/10 p-5 shadow-[0_0_15px_rgba(16,185,129,0.1)]">
+                <div className="text-status-success text-sm font-medium mb-1">Giá thu dự kiến:</div>
+                <div className="text-3xl font-bold text-status-success">${estimatedPrice.toLocaleString()}</div>
               </div>
             )}
           </div>
 
           <div className="lg:col-span-3">
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5 md:p-6 shadow-sm">
+            <div className="rounded-2xl border border-border bg-card p-5 md:p-6 shadow-sm">
               {!submitted ? (
                 <form onSubmit={submit} className="space-y-6">
                   {/* Trade-in Type */}
-                  <div className="space-y-3 pb-4 border-b border-slate-800">
-                    <div className="text-sm font-medium text-slate-300">Nhu cầu của bạn</div>
+                  <div className="space-y-3 pb-4 border-b border-border">
+                    <div className="text-sm font-medium text-foreground/80">Nhu cầu của bạn</div>
                     <div className="grid grid-cols-2 gap-4">
                       <label
                         className={`flex items-center justify-center p-3 rounded-xl border cursor-pointer transition-colors ${form.tradein_type === 'SELL' ? 'border-blue-500 bg-blue-500/10 text-blue-400' : 'border-slate-800 bg-slate-900/60 text-slate-400'}`}
@@ -197,11 +197,11 @@ export default function TradeInsPage() {
                   </div>
 
                   {form.tradein_type === 'EXCHANGE' && (
-                    <div className="pb-4 border-b border-slate-800">
-                      <div className="text-sm font-medium text-slate-300 mb-2">Sản phẩm muốn đổi lên *</div>
+                    <div className="pb-4 border-b border-border">
+                      <div className="text-sm font-medium text-foreground/80 mb-2">Sản phẩm muốn đổi lên *</div>
                       <select
                         required={form.tradein_type === 'EXCHANGE'}
-                        className="w-full rounded-xl border border-slate-800 bg-slate-900/60 px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/60"
+                        className="w-full rounded-xl border border-input bg-input-background px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
                         value={form.target_product}
                         onChange={(e) => setForm(p => ({ ...p, target_product: e.target.value }))}
                       >
@@ -214,10 +214,10 @@ export default function TradeInsPage() {
                   {/* Category & Brand */}
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <div className="text-sm font-medium text-slate-300 mb-2">Danh mục thiết bị *</div>
+                      <div className="text-sm font-medium text-foreground/80 mb-2">Danh mục thiết bị *</div>
                       <select
                         required
-                        className="w-full rounded-xl border border-slate-800 bg-slate-900/60 px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/60"
+                        className="w-full rounded-xl border border-input bg-input-background px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
                         value={form.category_id}
                         onChange={(e) => setForm(p => ({ ...p, category_id: e.target.value }))}
                       >
@@ -226,10 +226,10 @@ export default function TradeInsPage() {
                       </select>
                     </div>
                     <div>
-                      <div className="text-sm font-medium text-slate-300 mb-2">Thương hiệu *</div>
+                      <div className="text-sm font-medium text-foreground/80 mb-2">Thương hiệu *</div>
                       <select
                         required
-                        className="w-full rounded-xl border border-slate-800 bg-slate-900/60 px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/60"
+                        className="w-full rounded-xl border border-input bg-input-background px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
                         value={form.brand_id}
                         onChange={(e) => setForm(p => ({ ...p, brand_id: e.target.value }))}
                       >
@@ -242,9 +242,9 @@ export default function TradeInsPage() {
                   {/* Model & Storage */}
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <div className="text-sm font-medium text-slate-300 mb-2">Tên dòng máy *</div>
+                      <div className="text-sm font-medium text-foreground/80 mb-2">Tên dòng máy *</div>
                       <input
-                        className="w-full rounded-xl border border-slate-800 bg-slate-900/60 px-4 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/60"
+                        className="w-full rounded-xl border border-input bg-input-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
                         placeholder="VD: iPhone 13 Pro Max"
                         value={form.model_name}
                         onChange={(e) => setForm((p) => ({ ...p, model_name: e.target.value }))}
