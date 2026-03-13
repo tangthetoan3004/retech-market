@@ -349,6 +349,26 @@ export default function AdminOrdersListPage() {
                   </div>
                 </div>
 
+                {/* Order Items */}
+                <div className="bg-muted/50 rounded-lg p-4">
+                  <h3 className="font-semibold mb-3">Order Items</h3>
+                  {selectedOrder.items && selectedOrder.items.length > 0 ? (
+                    <div className="space-y-3">
+                      {selectedOrder.items.map((item) => (
+                        <div key={item.id} className="flex items-center justify-between bg-background p-3 rounded border border-border">
+                          <div className="flex flex-col">
+                            <span className="font-medium">{item.product_name || "Unknown Product"}</span>
+                            <span className="text-xs text-muted-foreground">Product ID: {item.product}</span>
+                          </div>
+                          <span className="font-semibold">{fmtMoney(item.price_snapshot)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">No items found for this order.</p>
+                  )}
+                </div>
+
                 {/* Order Status */}
                 <div>
                   <div className="flex items-center justify-between mb-4">

@@ -1,8 +1,17 @@
 import { get, patch } from "../../../utils/request";
 
+export type AdminOrderItem = {
+  id: number;
+  product: number;
+  product_name: string;
+  product_slug: string;
+  price_snapshot: string | number;
+};
+
 export type AdminOrder = {
   id: number;
   user: number; 
+  user_email?: string;
   full_name: string | null;
   phone_number: string | null;
   shipping_address: string | null;
@@ -13,7 +22,9 @@ export type AdminOrder = {
   final_amount: string | number;
 
   status: string;
+  status_display?: string;
   created_at: string;
+  items: AdminOrderItem[];
 };
 
 export type GetOrdersParams = {
@@ -25,6 +36,7 @@ function normalizeOrder(o: any): AdminOrder {
   return {
     id: o?.id,
     user: o?.user,
+    user_email: o?.user_email ?? null,
     full_name: o?.full_name ?? null,
     phone_number: o?.phone_number ?? null,
     shipping_address: o?.shipping_address ?? null,
@@ -35,7 +47,9 @@ function normalizeOrder(o: any): AdminOrder {
     final_amount: o?.final_amount ?? 0,
 
     status: o?.status ?? "PENDING",
+    status_display: o?.status_display ?? "",
     created_at: o?.created_at ?? "",
+    items: Array.isArray(o?.items) ? o.items : [],
   };
 }
 
