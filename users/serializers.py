@@ -46,6 +46,35 @@ class ChangePasswordSerializer(serializers.Serializer):
             raise serializers.ValidationError("Mật khẩu mới phải có ít nhất 8 ký tự")
         return data
 
+class ForgotPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+
+class VerifyOtpSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    otp = serializers.CharField(max_length=6, min_length=6)
+
+    def validate_otp(self, value):
+        if not value.isdigit():
+            raise serializers.ValidationError("OTP phải là 6 chữ số.")
+        return value
+
+
+class ResetPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    reset_token = serializers.CharField()
+    new_password = serializers.CharField(min_length=8)
+
+    def validate_new_password(self, value):
+        if len(value) < 8:
+            raise serializers.ValidationError("Mật khẩu mới phải có ít nhất 8 ký tự.")
+        return value
+
+
+class GoogleLoginSerializer(serializers.Serializer):
+    code = serializers.CharField(required=True)
+
+
 class UserProfileSerializer(serializers.ModelSerializer):
     is_admin = serializers.SerializerMethodField()
 

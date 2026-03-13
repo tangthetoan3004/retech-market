@@ -3,3 +3,5 @@ redis==5.2.0
 hiredis==2.3.2
 celery==5.4.0
 django-celery-beat==2.9.0
+google-auth==2.38.0
+requests==2.32.3
