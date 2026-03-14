@@ -29,3 +29,8 @@ export const resendOtp = async (options: any) => {
   const result = await post("/api/users/password/resend-otp/", options);
   return result;
 };
+
+export const changePassword = async (options: { old_password: string; new_password: string; confirm_password: string }) => {
+  const result = await patch("/api/users/change-password/", options);
+  return result;
+};

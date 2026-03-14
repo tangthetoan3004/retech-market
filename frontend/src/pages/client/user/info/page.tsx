@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "motion/react";
-import { User, Mail, Phone, MapPin, Save } from "lucide-react";
+import { User, Mail, Phone, MapPin, Save, Lock, Eye, EyeOff } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import React from "react";
 
@@ -10,8 +10,8 @@ import { Label } from "../../../../components/ui/label";
 import { Textarea } from "../../../../components/ui/textarea";
 
 import { showAlert } from "../../../../features/ui/uiSlice";
-import { getMyInfo, updateMyInfo } from "../../../../services/client/user/userService";
-import { setClientAuth } from "../../../../features/client/auth/clientAuthSlice";
+import { getMyInfo, updateMyInfo, changePassword } from "../../../../services/client/user/userService";
+import { setClientAuth, clearClientAuth } from "../../../../features/client/auth/clientAuthSlice";
 import LoadingSpinner from "../../../../components/ui/LoadingSpinner";
 
 function splitName(fullName: string) {
@@ -35,6 +35,16 @@ export default function UserInfoPage() {
   const [fullName, setFullName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [address, setAddress] = useState("");
+
+  // ── Change Password State ──
+  const [cpOld, setCpOld] = useState("");
+  const [cpNew, setCpNew] = useState("");
+  const [cpConfirm, setCpConfirm] = useState("");
+  const [cpSaving, setCpSaving] = useState(false);
+  const [showOld, setShowOld] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [cpError, setCpError] = useState("");
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -106,6 +116,31 @@ export default function UserInfoPage() {
       dispatch(showAlert({ type: "error", message: err?.message || "Cập nhật thất bại", timeout: 3000 }));
     } finally {
       setSaving(false);
+    }
+  };
+
+  const onChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setCpError("");
+    if (cpNew !== cpConfirm) {
+      setCpError("Mật khẩu mới không khớp với xác nhận.");
+      return;
+    }
+    if (cpNew.length < 6) {
+      setCpError("Mật khẩu mới phải có ít nhất 6 ký tự.");
+      return;
+    }
+    setCpSaving(true);
+    try {
+      await changePassword({ old_password: cpOld, new_password: cpNew, confirm_password: cpConfirm });
+      dispatch(showAlert({ type: "success", message: "Đổi mật khẩu thành công! Vui lòng đăng nhập lại.", timeout: 3000 }));
+      // Backend clears auth cookies; clear redux state and redirect to login
+      dispatch(clearClientAuth());
+      setTimeout(() => { window.location.href = "/user/login"; }, 1500);
+    } catch (err: any) {
+      setCpError(err?.message || "Đổi mật khẩu thất bại.");
+    } finally {
+      setCpSaving(false);
     }
   };
 
@@ -236,6 +271,102 @@ export default function UserInfoPage() {
                   <>
                     <Save className="w-5 h-5 mr-2" />
                     Lưu thay đổi
+                  </>
+                )}
+              </Button>
+            </div>
+          </form>
+        </motion.div>
+
+        {/* ── Change Password ── */}
+        <motion.div variants={itemVariants} className="rounded-xl border bg-card overflow-hidden">
+          <div className="px-5 py-4 border-b bg-muted/30">
+            <div className="font-semibold">Đổi mật khẩu</div>
+            <div className="text-sm text-muted-foreground">Sau khi đổi bạn sẽ được đăng xuất và yêu cầu đăng nhập lại</div>
+          </div>
+
+          <form onSubmit={onChangePassword} className="p-5 space-y-4">
+            {cpError && (
+              <div className="rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 p-3 text-sm text-red-600 dark:text-red-400">
+                {cpError}
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Label htmlFor="cp-old">Mật khẩu hiện tại</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
+                <Input
+                  id="cp-old"
+                  type={showOld ? "text" : "password"}
+                  value={cpOld}
+                  onChange={(e) => setCpOld(e.target.value)}
+                  className="pl-10 pr-10 h-11"
+                  placeholder="Mật khẩu hiện tại"
+                  required
+                />
+                <button type="button" tabIndex={-1} onClick={() => setShowOld((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                  {showOld ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="cp-new">Mật khẩu mới</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
+                  <Input
+                    id="cp-new"
+                    type={showNew ? "text" : "password"}
+                    value={cpNew}
+                    onChange={(e) => setCpNew(e.target.value)}
+                    className="pl-10 pr-10 h-11"
+                    placeholder="Ít nhất 6 ký tự"
+                    required
+                  />
+                  <button type="button" tabIndex={-1} onClick={() => setShowNew((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                    {showNew ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="cp-confirm">Xác nhận mật khẩu mới</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
+                  <Input
+                    id="cp-confirm"
+                    type={showConfirm ? "text" : "password"}
+                    value={cpConfirm}
+                    onChange={(e) => setCpConfirm(e.target.value)}
+                    className="pl-10 pr-10 h-11"
+                    placeholder="Nhập lại mật khẩu mới"
+                    required
+                  />
+                  <button type="button" tabIndex={-1} onClick={() => setShowConfirm((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                    {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-2 flex items-center justify-end">
+              <Button
+                type="submit"
+                className="h-11 bg-orange-600 hover:bg-orange-600/90 text-white"
+                disabled={cpSaving}
+              >
+                {cpSaving ? (
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
+                  />
+                ) : (
+                  <>
+                    <Lock className="w-4 h-4 mr-2" />
+                    Đổi mật khẩu
                   </>
                 )}
               </Button>

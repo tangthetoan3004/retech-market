@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { showAlert } from "../../../../features/ui/uiSlice";
-import { getAccounts } from "../../../../services/admin/accounts/accountsService";
+import { getAccounts, toggleAccountActive } from "../../../../services/admin/accounts/accountsService";
 
 function has(perms: any, key: string) {
   return Array.isArray(perms) && perms.includes(key);
@@ -47,6 +47,16 @@ export default function AccountsListPage() {
     fetchList();
   }, []);
 
+  const handleToggleActive = async (a: any) => {
+    try {
+      await toggleAccountActive(a.id);
+      dispatch(showAlert({ type: "success", message: `Tài khoản ${a.username} đã được ${a.is_active ? 'vô hiệu hóa' : 'kích hoạt'} thành công.`, timeout: 2500 }));
+      fetchList();
+    } catch (err: any) {
+      dispatch(showAlert({ type: "error", message: err?.message || "Thao tác thất bại" }));
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground p-4 md:p-6 lg:p-8">
       <div className="space-y-6">
@@ -73,7 +83,7 @@ export default function AccountsListPage() {
                 <th className="p-3 text-left text-muted-foreground font-medium">Họ tên</th>
                 <th className="p-3 text-left text-muted-foreground font-medium">Email</th>
                 <th className="p-3 text-left text-muted-foreground font-medium">Trạng thái</th>
-                <th className="p-3 text-left text-muted-foreground font-medium">Hành động</th>
+                <th className="p-3 text-left text-muted-foreground font-medium" colSpan={2}>Hành động</th>
               </tr>
             </thead>
 
@@ -114,6 +124,18 @@ export default function AccountsListPage() {
                             Sửa
                           </Link>
                         ) : null}
+                        <button
+                          type="button"
+                          onClick={() => handleToggleActive(a)}
+                          className={[
+                            "inline-flex items-center justify-center rounded-lg px-3 py-1.5 text-xs font-medium transition-colors",
+                            a.is_active
+                              ? "border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 dark:border-red-800 dark:bg-red-950/30 dark:text-red-400"
+                              : "border border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-400",
+                          ].join(" ")}
+                        >
+                          {a.is_active ? "🔒 Khóa" : "🔓 Mở khóa"}
+                        </button>
                       </div>
                     </td>
                   </tr>
