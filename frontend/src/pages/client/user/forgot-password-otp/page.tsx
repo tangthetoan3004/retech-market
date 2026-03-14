@@ -9,7 +9,7 @@ import { Button } from "../../../../components/ui/button";
 import { Input } from "../../../../components/ui/input";
 import { Label } from "../../../../components/ui/label";
 
-import { post } from "../../../../utils/request";
+import { verifyOtp, resendOtp } from "../../../../services/client/user/userService";
 import { showAlert } from "../../../../features/ui/uiSlice";
 
 export default function OtpPage() {
@@ -44,17 +44,12 @@ export default function OtpPage() {
 
     setIsLoading(true);
     try {
-      // Endpoint verify có thể khác, UI vẫn chạy để bạn test
-      await post("/api/users/password/verify-otp/", { email, otp: otpPretty });
+      const resp: any = await verifyOtp({ email, otp: otpPretty });
 
       dispatch(showAlert({ type: "success", message: "OTP hợp lệ. Bạn có thể đặt lại mật khẩu.", timeout: 2500 }));
-      // Nếu bạn có trang reset-password thì chuyển tới đó:
-      // navigate("/user/password/reset", { state: { email, otp: otpPretty } });
-      // Nếu chưa có thì tạm về login:
-      navigate("/user/login", { replace: true });
-    } catch {
-      dispatch(showAlert({ type: "info", message: "Chưa có API verify-otp. UI OK, bạn nối backend sau.", timeout: 3000 }));
-      navigate("/user/login", { replace: true });
+      navigate("/user/password/reset", { state: { email, reset_token: resp?.reset_token } });
+    } catch (err: any) {
+      dispatch(showAlert({ type: "error", message: err?.message || "Mã OTP không hợp lệ.", timeout: 3000 }));
     } finally {
       setIsLoading(false);
     }
@@ -63,10 +58,10 @@ export default function OtpPage() {
   const handleResend = async () => {
     setResendLoading(true);
     try {
-      await post("/api/users/password/resend-otp/", { email });
+      await resendOtp({ email });
       dispatch(showAlert({ type: "success", message: "Đã gửi lại OTP", timeout: 2500 }));
-    } catch {
-      dispatch(showAlert({ type: "info", message: "Chưa có API resend-otp. UI OK.", timeout: 2500 }));
+    } catch (err: any) {
+      dispatch(showAlert({ type: "error", message: err?.message || "Không thể gửi lại OTP lúc này", timeout: 2500 }));
     } finally {
       setResendLoading(false);
     }

@@ -9,7 +9,7 @@ import { Button } from "../../../../components/ui/button";
 import { Input } from "../../../../components/ui/input";
 import { Label } from "../../../../components/ui/label";
 
-import { post } from "../../../../utils/request";
+import { forgotPassword } from "../../../../services/client/user/userService";
 import { showAlert } from "../../../../features/ui/uiSlice";
 
 export default function ForgotPasswordPage() {
@@ -34,17 +34,14 @@ export default function ForgotPasswordPage() {
     setIsLoading(true);
 
     try {
-      // Endpoint reset có thể khác tùy backend. Nếu chưa có, UI vẫn chạy.
-      await post("/api/users/password/forgot/", { email });
-      dispatch(showAlert({ type: "success", message: "Nếu email tồn tại, hệ thống sẽ gửi mã OTP.", timeout: 2500 }));
-    } catch {
-      // vẫn cho flow OTP để test UI
-      dispatch(showAlert({ type: "info", message: "Chưa có API forgot-password. Vẫn chuyển sang OTP để test UI.", timeout: 3000 }));
+      await forgotPassword({ email });
+      dispatch(showAlert({ type: "success", message: "Yêu cầu đặt lại mật khẩu đã được gửi. Vui lòng kiểm tra email.", timeout: 3500 }));
+      navigate("/user/password/otp", { state: { email } });
+    } catch (err: any) {
+      dispatch(showAlert({ type: "error", message: err?.message || "Lỗi khi gửi yêu cầu quên mật khẩu", timeout: 3000 }));
     } finally {
       setIsLoading(false);
     }
-
-    navigate("/user/password/otp", { state: { email } });
   };
 
   return (

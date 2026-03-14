@@ -1,7 +1,7 @@
 import { del, get, patch, post } from "../../../utils/request";
 
 function unwrap(res: any) {
-  const data = Array.isArray(res) ? res : res?.data;
+  const data = Array.isArray(res) ? res : (res?.data || res?.results || res?.items);
   return data;
 }
 

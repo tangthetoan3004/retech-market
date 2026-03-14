@@ -11,16 +11,21 @@ export const updateMyInfo = async (formData: any) => {
 };
 
 export const forgotPassword = async (options: any) => {
-  const result = await post("/api/user/password/forgot", options);
+  const result = await post("/api/users/password/forgot/", options);
   return result;
 };
 
 export const verifyOtp = async (options: any) => {
-  const result = await post("/api/user/password/otp", options);
+  const result = await post("/api/users/password/verify-otp/", options);
   return result;
 };
 
 export const resetPassword = async (options: any) => {
-  const result = await post("/api/user/password/reset", options);
+  const result = await post("/api/users/password/reset/", options);
+  return result;
+};
+
+export const resendOtp = async (options: any) => {
+  const result = await post("/api/users/password/resend-otp/", options);
   return result;
 };

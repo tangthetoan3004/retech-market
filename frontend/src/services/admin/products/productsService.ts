@@ -6,7 +6,7 @@ const API_ORIGIN =
     : "http://127.0.0.1:8000";
 
 function unwrap(res: any) {
-  const data = Array.isArray(res) ? res : res?.data;
+  const data = Array.isArray(res) ? res : (res?.data || res?.results || res?.items);
   return data;
 }
 

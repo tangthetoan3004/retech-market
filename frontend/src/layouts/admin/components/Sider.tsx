@@ -13,6 +13,7 @@ import {
   Moon,
   Sun,
   Star,
+  CreditCard,
 } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { clearAuth } from "../../../features/admin/auth/authSlice";
@@ -50,6 +51,7 @@ export default function Sider() {
     { to: "/admin/orders", label: "Orders", icon: ShoppingBag },
     { to: "/admin/refunds", label: "Hoàn tiền", icon: RefreshCw },
     { to: "/admin/tradeins", label: "Trade-Ins", icon: RefreshCw },
+    { to: "/admin/payments", label: "Thanh toán", icon: CreditCard },
     { to: "/admin/accounts", label: "Tài khoản", icon: Users },
     { to: "/admin/my-account", label: "Tài khoản của tôi", icon: UserCircle }
     // { to: "/admin/settings/general", label: "Cài đặt chung", icon: Settings },
