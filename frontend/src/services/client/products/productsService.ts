@@ -68,8 +68,20 @@ export const getHomeProducts = async () => {
 };
 
 export const getProducts = async (params: any = {}) => {
-  const list = await get("/api/products/items/", { params });
-  return normalizeList(list);
+  const result: any = await get("/api/products/items/", { params });
+  const rawList =
+    (Array.isArray(result) && result) ||
+    result?.results ||
+    result?.items ||
+    result?.data?.results ||
+    result?.data?.items ||
+    result?.data ||
+    [];
+
+  const items = normalizeList(rawList);
+  const count = result?.count ?? items.length;
+  
+  return { items, count };
 };
 
 export const getProductDetailBySlug = async (slug: string) => {

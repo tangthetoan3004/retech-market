@@ -12,6 +12,14 @@ import { Label } from "../../../components/ui/label";
 import ProductGrid from "../../../features/client/products/components/ProductGrid";
 import { showAlert } from "../../../features/ui/uiSlice";
 import { getProducts } from "../../../services/client/products/productsService";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "../../../components/ui/pagination";
 
 function toNumber(v: any) {
   const n = Number(v);
@@ -24,6 +32,9 @@ export default function ProductsPage() {
 
   const [products, setProducts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const PAGE_SIZE = 10;
 
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [sortBy, setSortBy] = useState("featured");
@@ -55,13 +66,14 @@ export default function ProductsPage() {
     const run = async () => {
       setIsLoading(true);
       try {
-        const payload: any = {};
+        const payload: any = { page };
         if (params?.slug) payload.category = String(params.slug);
 
         const data = await getProducts(payload);
-        const list = Array.isArray(data) ? data : [];
+        const list = Array.isArray(data?.items) ? data.items : [];
 
         setProducts(list);
+        setTotalCount(data?.count || 0);
 
         // --- FIX: tính max price từ list rồi set range ---
         const maxPrice = list.reduce((mx: number, p: any) => {
@@ -79,7 +91,7 @@ export default function ProductsPage() {
       }
     };
     run();
-  }, [dispatch, params?.slug]);
+  }, [dispatch, params?.slug, page]);
 
   const categories = useMemo(
     () => [
@@ -119,6 +131,7 @@ export default function ProductsPage() {
     setSelectedGrades([]);
     setSelectedCategories(params?.slug ? [String(params.slug)] : []);
     setPriceRange([0, priceMax || 3000]);
+    setPage(1);
   };
 
   const activeFiltersCount = selectedBrands.length + selectedGrades.length + selectedCategories.length;
@@ -401,6 +414,34 @@ export default function ProductsPage() {
                     </motion.div>
                   );
                 })}
+              </div>
+            )}
+            
+            {totalCount > PAGE_SIZE && (
+              <div className="mt-8">
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious
+                        onClick={() => setPage((p) => Math.max(1, p - 1))}
+                        className={page === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                      />
+                    </PaginationItem>
+
+                    <PaginationItem>
+                      <span className="text-sm px-4">
+                        Page {page} of {Math.ceil(totalCount / PAGE_SIZE)}
+                      </span>
+                    </PaginationItem>
+
+                    <PaginationItem>
+                      <PaginationNext
+                        onClick={() => setPage((p) => p + 1)}
+                        className={page >= Math.ceil(totalCount / PAGE_SIZE) ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
               </div>
             )}
           </div>

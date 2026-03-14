@@ -11,6 +11,14 @@ import {
   TableHeader,
   TableRow,
 } from "../../../../components/ui/table";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "../../../../components/ui/pagination";
 import React from "react";
 
 import CreateProductDialog from "./CreateProductDialog";
@@ -83,6 +91,10 @@ export default function AdminProductsListPage() {
 
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const PAGE_SIZE = 10;
+
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
     condition: "all",
@@ -126,14 +138,16 @@ export default function AdminProductsListPage() {
   const fetchProducts = async (q?: string) => {
     setLoading(true);
     try {
-      const params: any = { ordering: filters.ordering };
+      const params: any = { ordering: filters.ordering, page };
       if (q && q.trim()) params.search = q.trim();
       if (filters.condition !== "all") params.condition = filters.condition;
 
       const res = await getProducts(params);
       setProducts((res?.items ?? []) as Product[]);
+      setTotalCount(res?.count || 0);
     } catch (err: any) {
       toast.error(err?.message || "Fetch products failed");
+      setTotalCount(0);
     } finally {
       setLoading(false);
     }
@@ -141,7 +155,7 @@ export default function AdminProductsListPage() {
 
   useEffect(() => {
     fetchProducts(search);
-  }, [filters.condition, filters.ordering]);
+  }, [filters.condition, filters.ordering, page]);
 
   const openCreateDialog = () => {
     setOpenCreate(true);
@@ -208,6 +222,7 @@ export default function AdminProductsListPage() {
 
   const clearFilters = () => {
     setFilters({ condition: "all", ordering: "-created_at" });
+    setPage(1);
   };
 
   return (
@@ -228,11 +243,17 @@ export default function AdminProductsListPage() {
               <Input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                     setPage(1);
+                     fetchProducts(search);
+                  }
+                }}
                 placeholder="Search name/brand/category..."
               />
             </div>
 
-            <Button variant="outline" onClick={() => fetchProducts(search)} disabled={loading}>
+            <Button variant="outline" onClick={() => { setPage(1); fetchProducts(search); }} disabled={loading}>
               Search
             </Button>
 
@@ -460,6 +481,33 @@ export default function AdminProductsListPage() {
             </Table>
           </div>
         </CardContent>
+        {totalCount > PAGE_SIZE && (
+          <div className="p-4 border-t border-border">
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    className={page === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                  />
+                </PaginationItem>
+
+                <PaginationItem>
+                  <span className="text-sm px-4">
+                    Page {page} of {Math.ceil(totalCount / PAGE_SIZE)}
+                  </span>
+                </PaginationItem>
+
+                <PaginationItem>
+                  <PaginationNext
+                    onClick={() => setPage((p) => p + 1)}
+                    className={page >= Math.ceil(totalCount / PAGE_SIZE) ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        )}
       </Card>
 
       <CreateProductDialog

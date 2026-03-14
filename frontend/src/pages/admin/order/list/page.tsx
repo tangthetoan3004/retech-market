@@ -12,6 +12,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Label } from "../../../../components/ui/label";
 import { Badge } from "../../../../components/ui/badge";
 import { Timeline } from "../../../../components/retech/Timeline";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "../../../../components/ui/pagination";
 
 import { getOrders, updateOrderStatus, type AdminOrder } from "../../../../services/admin/orders/ordersService";
 
@@ -27,9 +35,26 @@ function fmtDate(iso: string) {
   return d.toLocaleString();
 }
 
-function normStatus(s: string) {
-  return String(s || "").toLowerCase();
+function statusKey(s: string) {
+  return String(s || "").trim().toUpperCase();
 }
+
+function flowStatus(s: string) {
+  const v = statusKey(s);
+  if (v === "SHIPPED") return "SHIPPING";
+  return v;
+}
+
+const allowedTransitions: Record<string, string[]> = {
+  PENDING: ["PROCESSING", "CANCELLED"],
+  PROCESSING: ["SHIPPED", "CANCELLED"],
+  SHIPPED: ["DELIVERED"],
+  DELIVERED: [],
+  CANCELLED: [],
+  RETURNED: [],
+};
+
+const allStatuses = ["PENDING", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED", "RETURNED"];
 
 export default function AdminOrdersListPage() {
   const [loading, setLoading] = useState(false);
@@ -40,10 +65,13 @@ export default function AdminOrdersListPage() {
 
   const [selectedOrder, setSelectedOrder] = useState<AdminOrder | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const PAGE_SIZE = 10;
 
   const [filters, setFilters] = useState({
     status: "all",
-    ordering: "default", 
+    ordering: "default",
     payment_method: "all",
   });
 
@@ -54,21 +82,23 @@ export default function AdminOrdersListPage() {
 
   const clearFilters = () => {
     setFilters({ status: "all", ordering: "default", payment_method: "all" });
+    setPage(1);
   };
 
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      const params: any = {};
+      const params: any = { page };
       if (filters.status !== "all") params.status = filters.status;
       if (filters.ordering !== "default") params.ordering = filters.ordering;
 
       const res = await getOrders(params);
-      console.log(res)
       setRows(res.items);
+      setTotalCount(res.count || 0);
     } catch (err: any) {
       toast.error(err?.message || "Load orders failed");
       setRows([]);
+      setTotalCount(0);
     } finally {
       setLoading(false);
     }
@@ -76,7 +106,7 @@ export default function AdminOrdersListPage() {
 
   useEffect(() => {
     fetchOrders();
-  }, [filters.status, filters.ordering]);
+  }, [filters.status, filters.ordering, page]);
 
   const filteredOrders = useMemo(() => {
     const q = deferredSearch.trim().toLowerCase();
@@ -97,35 +127,47 @@ export default function AdminOrdersListPage() {
   }, [rows, deferredSearch, filters.payment_method]);
 
   const getTimelineItems = (order: AdminOrder) => {
-    // backend hiện không có lịch sử trạng thái, nên dựng timeline theo trạng thái hiện tại
-    const statuses = ["processing", "packed", "shipping", "delivered"];
-    const s = normStatus(order.status);
+    const statuses = ["PENDING", "PROCESSING", "SHIPPING", "DELIVERED"];
+    const s = flowStatus(order.status);
     const currentIndex = statuses.indexOf(s);
 
     return statuses.map((st, idx) => ({
       id: st,
-      label: st.charAt(0).toUpperCase() + st.slice(1),
+      label: st.charAt(0) + st.slice(1).toLowerCase(),
       description: idx === currentIndex ? "Current status" : "",
       date: idx <= currentIndex ? fmtDate(order.created_at) : "",
       completed: idx <= currentIndex && currentIndex !== -1,
     }));
   };
 
+  const getNextStatuses = (order: AdminOrder) => {
+    return allowedTransitions[statusKey(order.status)] || [];
+  };
+
   const handleStatusChange = async (order: AdminOrder, newStatus: string) => {
-    // optimistic update UI cho mượt
+    const current = statusKey(order.status);
+    const next = statusKey(newStatus);
+
+    if (!next || current === next) return;
+
+    const allowed = allowedTransitions[current] || [];
+    if (!allowed.includes(next)) {
+      toast.error(`Cannot change order #${order.id} from ${current} to ${next}`);
+      return;
+    }
+
     const prev = order.status;
 
-    setRows((cur) => cur.map((x) => (x.id === order.id ? { ...x, status: newStatus } : x)));
-    setSelectedOrder((cur) => (cur?.id === order.id ? { ...cur, status: newStatus } : cur));
+    setRows((cur) => cur.map((x) => (x.id === order.id ? { ...x, status: next } : x)));
+    setSelectedOrder((cur) => (cur?.id === order.id ? { ...cur, status: next } : cur));
 
     try {
-      await updateOrderStatus(order.id, newStatus);
+      await updateOrderStatus(order.id, next);
       toast.success(`Order #${order.id} status updated`);
     } catch (err: any) {
-      // rollback
       setRows((cur) => cur.map((x) => (x.id === order.id ? { ...x, status: prev } : x)));
       setSelectedOrder((cur) => (cur?.id === order.id ? { ...cur, status: prev } : cur));
-      toast.error(err?.message || "Update status failed");
+      toast.error(err?.message || err?.error || "Update status failed");
     }
   };
 
@@ -133,13 +175,11 @@ export default function AdminOrdersListPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
         <h1 className="text-3xl font-bold mb-2">Orders Management</h1>
         <p className="text-muted-foreground">Track and manage customer orders</p>
       </div>
 
-      {/* Toolbar */}
       <div className="flex items-center gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -162,7 +202,6 @@ export default function AdminOrdersListPage() {
         </Button>
       </div>
 
-      {/* Filters */}
       {showFilters && (
         <div className="bg-card border border-border rounded-xl p-4 mb-4">
           <div className="space-y-4">
@@ -175,11 +214,11 @@ export default function AdminOrdersListPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All</SelectItem>
-                    <SelectItem value="PROCESSING">PROCESSING</SelectItem>
-                    <SelectItem value="PACKED">PACKED</SelectItem>
-                    <SelectItem value="SHIPPING">SHIPPING</SelectItem>
-                    <SelectItem value="DELIVERED">DELIVERED</SelectItem>
-                    <SelectItem value="CANCELED">CANCELED</SelectItem>
+                    {allStatuses.map((st) => (
+                      <SelectItem key={st} value={st}>
+                        {flowStatus(st)}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -214,7 +253,6 @@ export default function AdminOrdersListPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All</SelectItem>
-                    {/* backend trả string tự do -> lọc client theo string */}
                     <SelectItem value="COD">COD</SelectItem>
                     <SelectItem value="BANK_TRANSFER">BANK_TRANSFER</SelectItem>
                     <SelectItem value="PAYPAL">PAYPAL</SelectItem>
@@ -237,7 +275,6 @@ export default function AdminOrdersListPage() {
         </div>
       )}
 
-      {/* Orders Table */}
       <div className="bg-card border border-border rounded-xl overflow-hidden">
         <Table>
           <TableHeader>
@@ -287,7 +324,7 @@ export default function AdminOrdersListPage() {
                   <TableCell className="font-medium">{fmtMoney(order.final_amount)}</TableCell>
 
                   <TableCell>
-                    <StatusPill status={order.status} type="order" />
+                    <StatusPill status={flowStatus(order.status)} type="order" />
                   </TableCell>
 
                   <TableCell className="text-right">
@@ -303,7 +340,35 @@ export default function AdminOrdersListPage() {
         </Table>
       </div>
 
-      {/* Order Detail Dialog */}
+      {totalCount > PAGE_SIZE && (
+        <div className="mt-4">
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  className={page === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                />
+              </PaginationItem>
+              
+              {/* Simplistic pagination display */}
+              <PaginationItem>
+                <span className="text-sm px-4">
+                  Page {page} of {Math.ceil(totalCount / PAGE_SIZE)}
+                </span>
+              </PaginationItem>
+
+              <PaginationItem>
+                <PaginationNext
+                  onClick={() => setPage((p) => p + 1)}
+                  className={page >= Math.ceil(totalCount / PAGE_SIZE) ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
+
       <Dialog open={!!selectedOrder} onOpenChange={() => setSelectedOrder(null)}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           {selectedOrder && (
@@ -313,7 +378,6 @@ export default function AdminOrdersListPage() {
               </DialogHeader>
 
               <div className="space-y-6 py-4">
-                {/* Customer Info */}
                 <div className="bg-muted/50 rounded-lg p-4">
                   <h3 className="font-semibold mb-3">Customer Information</h3>
                   <div className="grid grid-cols-2 gap-4 text-sm">
@@ -349,7 +413,6 @@ export default function AdminOrdersListPage() {
                   </div>
                 </div>
 
-                {/* Order Items */}
                 <div className="bg-muted/50 rounded-lg p-4">
                   <h3 className="font-semibold mb-3">Order Items</h3>
                   {selectedOrder.items && selectedOrder.items.length > 0 ? (
@@ -369,24 +432,29 @@ export default function AdminOrdersListPage() {
                   )}
                 </div>
 
-                {/* Order Status */}
                 <div>
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="font-semibold">Order Status</h3>
 
                     <Select
-                      value={selectedOrder.status}
+                      value={statusKey(selectedOrder.status)}
                       onValueChange={(v: any) => handleStatusChange(selectedOrder, v)}
                     >
                       <SelectTrigger className="w-[180px]">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="PROCESSING">PROCESSING</SelectItem>
-                        <SelectItem value="PACKED">PACKED</SelectItem>
-                        <SelectItem value="SHIPPING">SHIPPING</SelectItem>
-                        <SelectItem value="DELIVERED">DELIVERED</SelectItem>
-                        <SelectItem value="CANCELED">CANCELED</SelectItem>
+                        {getNextStatuses(selectedOrder).length > 0 ? (
+                          getNextStatuses(selectedOrder).map((st) => (
+                            <SelectItem key={st} value={st}>
+                              {flowStatus(st)}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <SelectItem value={statusKey(selectedOrder.status)} disabled>
+                            {flowStatus(selectedOrder.status)}
+                          </SelectItem>
+                        )}
                       </SelectContent>
                     </Select>
                   </div>
@@ -394,33 +462,31 @@ export default function AdminOrdersListPage() {
                   <Timeline items={getTimelineItems(selectedOrder)} />
                 </div>
 
-                {/* Quick Actions */}
                 <div className="flex gap-2 pt-4 border-t border-border">
-                  {normStatus(selectedOrder.status) === "processing" && (
-                    <Button onClick={() => quickAction(selectedOrder, "PACKED")} className="bg-[var(--accent-blue)]">
+                  {statusKey(selectedOrder.status) === "PENDING" && (
+                    <Button onClick={() => quickAction(selectedOrder, "PROCESSING")} className="bg-[var(--accent-blue)]">
                       <Package className="h-4 w-4 mr-2" />
-                      Mark as Packed
+                      Mark as Processing
                     </Button>
                   )}
 
-                  {normStatus(selectedOrder.status) === "packed" && (
-                    <Button onClick={() => quickAction(selectedOrder, "SHIPPING")} className="bg-[var(--accent-blue)]">
-                      <Truck className="h-4 w-4 mr-2" />
-                      Ship Order
-                    </Button>
+                  {statusKey(selectedOrder.status) === "PROCESSING" && (
+                    <>
+                      <Button onClick={() => quickAction(selectedOrder, "SHIPPED")} className="bg-[var(--accent-blue)]">
+                        <Truck className="h-4 w-4 mr-2" />
+                        Ship Order
+                      </Button>
+                      <Button variant="destructive" onClick={() => quickAction(selectedOrder, "CANCELLED")}>
+                        <XCircle className="h-4 w-4 mr-2" />
+                        Cancel Order
+                      </Button>
+                    </>
                   )}
 
-                  {normStatus(selectedOrder.status) === "shipping" && (
+                  {statusKey(selectedOrder.status) === "SHIPPED" && (
                     <Button onClick={() => quickAction(selectedOrder, "DELIVERED")} className="bg-[var(--status-success)]">
                       <CheckCircle className="h-4 w-4 mr-2" />
                       Mark as Delivered
-                    </Button>
-                  )}
-
-                  {normStatus(selectedOrder.status) !== "canceled" && normStatus(selectedOrder.status) !== "delivered" && (
-                    <Button variant="destructive" onClick={() => quickAction(selectedOrder, "CANCELED")}>
-                      <XCircle className="h-4 w-4 mr-2" />
-                      Cancel Order
                     </Button>
                   )}
                 </div>

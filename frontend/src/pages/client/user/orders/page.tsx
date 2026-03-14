@@ -6,20 +6,33 @@ import { Package, XCircle, AlertCircle, RefreshCcw } from "lucide-react";
 import { Button } from "../../../../components/ui/button";
 import { useDispatch } from "react-redux";
 import { showAlert } from "../../../../features/ui/uiSlice";
+import {
+    Pagination,
+    PaginationContent,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from "../../../../components/ui/pagination";
 
 export default function UserOrdersPage() {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const [orders, setOrders] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [page, setPage] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
+    const PAGE_SIZE = 10;
 
     const fetchOrders = async () => {
         try {
             setLoading(true);
-            const data = await getUserOrders();
-            setOrders(Array.isArray(data) ? data : data?.results || []);
+            const data = await getUserOrders({ page });
+            setOrders(data?.items || []);
+            setTotalCount(data?.count || 0);
         } catch (err: any) {
             dispatch(showAlert({ type: "error", message: err.message || "Lỗi tải đơn hàng" }));
+            setTotalCount(0);
         } finally {
             setLoading(false);
         }
@@ -27,7 +40,7 @@ export default function UserOrdersPage() {
 
     useEffect(() => {
         fetchOrders();
-    }, []);
+    }, [page]);
 
     const handleCancel = async (id: string) => {
         if (!window.confirm("Bạn có chắc chắn muốn hủy đơn hàng này?")) return;
@@ -111,6 +124,34 @@ export default function UserOrdersPage() {
                             </div>
                         );
                     })}
+                </div>
+            )}
+            
+            {totalCount > PAGE_SIZE && (
+                <div className="mt-8">
+                    <Pagination>
+                        <PaginationContent>
+                            <PaginationItem>
+                                <PaginationPrevious
+                                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                                    className={page === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                />
+                            </PaginationItem>
+
+                            <PaginationItem>
+                                <span className="text-sm px-4">
+                                    Page {page} of {Math.ceil(totalCount / PAGE_SIZE)}
+                                </span>
+                            </PaginationItem>
+
+                            <PaginationItem>
+                                <PaginationNext
+                                    onClick={() => setPage((p) => p + 1)}
+                                    className={page >= Math.ceil(totalCount / PAGE_SIZE) ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                />
+                            </PaginationItem>
+                        </PaginationContent>
+                    </Pagination>
                 </div>
             )}
         </div>

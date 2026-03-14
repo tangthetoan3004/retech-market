@@ -23,8 +23,18 @@ function normalizePath(path: string) {
 }
 
 function unwrapApiData(payload: any) {
-  if (payload && typeof payload === "object" && "status" in payload) {
-    if ("data" in payload) return (payload as any).data;
+  if (payload && typeof payload === "object") {
+    // Custom DRF renderer maps pagination to { status: "success", data: [...], meta: { count, next, previous } }
+    if (payload.status === "success" && "data" in payload) {
+      if (payload.meta && typeof payload.meta === "object") {
+         return {
+           items: payload.data,
+           results: payload.data,
+           ...payload.meta
+         };
+      }
+      return payload.data;
+    }
   }
   return payload;
 }

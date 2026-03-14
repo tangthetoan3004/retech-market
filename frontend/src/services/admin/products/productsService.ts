@@ -113,7 +113,8 @@ export const getProducts = async (params: any = {}) => {
   const res: any = await get("/api/products/items/", { params });
   const list = unwrap(res);
   const items = Array.isArray(list) ? list.map(normalizeProduct) : [];
-  return { items };
+  const count = res?.count ?? items.length;
+  return { items, count };
 };
 
 export const getProductDetail = async (id: number | string) => {

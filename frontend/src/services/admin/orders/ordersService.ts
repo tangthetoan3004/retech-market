@@ -10,7 +10,7 @@ export type AdminOrderItem = {
 
 export type AdminOrder = {
   id: number;
-  user: number; 
+  user: number;
   user_email?: string;
   full_name: string | null;
   phone_number: string | null;
@@ -28,8 +28,9 @@ export type AdminOrder = {
 };
 
 export type GetOrdersParams = {
-  status?: string; 
+  status?: string;
   ordering?: "final_amount" | "-final_amount" | "created_at" | "-created_at";
+  page?: number;
 };
 
 function normalizeOrder(o: any): AdminOrder {
@@ -66,7 +67,9 @@ export async function getOrders(params: GetOrdersParams = {}) {
     [];
 
   const items = Array.isArray(rawList) ? rawList.map(normalizeOrder) : [];
-  return { items };
+  const count = res?.count ?? items.length;
+
+  return { items, count };
 }
 
 
