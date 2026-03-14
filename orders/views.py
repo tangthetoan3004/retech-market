@@ -1,3 +1,5 @@
+import logging
+
 from django.core.exceptions import ValidationError
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
@@ -13,6 +15,9 @@ from .serializers import (
     RefundSerializer,
 )
 from .services import OrderService, RefundService
+from payment.utils.zalopay import create_zalopay_order
+
+logger = logging.getLogger(__name__)
 
 
 class OrderViewSet(viewsets.ModelViewSet):
@@ -84,9 +89,20 @@ class OrderViewSet(viewsets.ModelViewSet):
             )
             CacheManager.invalidate_pattern(f"orders:user:{request.user.id}")
             read_serializer = OrderReadSerializer(order, context={"request": request})
-            return Response(read_serializer.data, status=status.HTTP_201_CREATED)
+            response_data = read_serializer.data
+
+            # Nếu chọn ZALOPAY → gọi API tạo đơn ZaloPay và trả order_url
+            if payment_method == "ZALOPAY":
+                payment = order.payments.first()
+                order_url = create_zalopay_order(payment)
+                response_data["order_url"] = order_url
+
+            return Response(response_data, status=status.HTTP_201_CREATED)
         except ValidationError as e:
             return Response({"error": e.message}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            logger.exception("Checkout error: %s", e)
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
     def partial_update(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=True)

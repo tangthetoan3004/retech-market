@@ -17,6 +17,8 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         )
         return user
     def validate_email(self, value):
+        if not value or value.strip() == "":
+            raise serializers.ValidationError("Email field cannot be empty.")
         if User.objects.filter(email=value).exists():
             raise serializers.ValidationError("Email is already in use.")
         return value

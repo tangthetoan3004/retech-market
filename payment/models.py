@@ -12,8 +12,8 @@ class Payment(models.Model):
 
     class PaymentMethod(models.TextChoices):
         CASH            = "CASH",            "Tiền mặt"
-        BANK_TRANSFER   = "BANK_TRANSFER",   "Chuyển khoản ngân hàng"
         COD             = "COD",             "Thanh toán khi nhận hàng"
+        ZALOPAY         = "ZALOPAY",         "Ví ZaloPay"
 
     class Direction(models.TextChoices):
         INBOUND  = "INBOUND",  "User trả tiền cho cửa hàng"

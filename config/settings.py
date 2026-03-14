@@ -170,6 +170,12 @@ GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID', '')
 GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET', '')
 GOOGLE_REDIRECT_URI = os.getenv('GOOGLE_REDIRECT_URI', 'http://localhost:5173/user/login')
 
+# ---------- ZaloPay Sandbox ----------
+ZALOPAY_APP_ID = os.getenv('ZALOPAY_APP_ID', '')
+ZALOPAY_KEY1 = os.getenv('ZALOPAY_KEY1', '')
+ZALOPAY_KEY2 = os.getenv('ZALOPAY_KEY2', '')
+NGROK_URL = os.getenv('NGROK_URL', '')
+
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
@@ -235,19 +241,19 @@ CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = TIME_ZONE
 
-from celery.schedules import crontab  # noqa: E402
+from celery.schedules import crontab 
 
 CELERY_BEAT_SCHEDULE = {
     "auto-cancel-expired-tradeins": {
         "task": "tradein.tasks.auto_cancel_expired_tradeins",
-        "schedule": crontab(minute=0),  # Mỗi giờ
+        "schedule": crontab(minute=0),  
     },
     "cleanup-orphaned-temp-images": {
         "task": "tradein.tasks.cleanup_orphaned_temp_images",
-        "schedule": crontab(hour=3, minute=0),  # 3h sáng mỗi ngày
+        "schedule": crontab(hour=3, minute=0), 
     },
     "auto-fail-expired-bank-transfer-payments": {
         "task": "payment.tasks.auto_fail_expired_bank_transfer_payments",
-        "schedule": crontab(minute=0),  # Mỗi giờ
+        "schedule": crontab(minute='*/5'),  
     },
 }

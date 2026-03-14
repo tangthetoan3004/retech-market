@@ -44,8 +44,8 @@ class OrderReadSerializer(serializers.ModelSerializer):
 
 
 ALLOWED_ORDER_PAYMENT_METHODS = [
-    ("BANK_TRANSFER", "Chuyển khoản ngân hàng"),
     ("COD", "Thanh toán khi nhận hàng"),
+    ("ZALOPAY", "Ví ZaloPay"),
 ]
 
 

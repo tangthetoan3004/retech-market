@@ -25,7 +25,7 @@ def on_payment_completed(payment: Payment) -> None:
     elif payment.payment_type == Payment.PaymentType.ORDER:
         # Order thường: tuỳ payment_method
         order = payment.order
-        if payment.payment_method == Payment.PaymentMethod.BANK_TRANSFER:
+        if payment.payment_method == Payment.PaymentMethod.ZALOPAY:
             # Đã nhận tiền chuyển khoản → chuyển sang xử lý đơn
             if order.status == Order.Status.PENDING:
                 order.change_status(Order.Status.PROCESSING)
