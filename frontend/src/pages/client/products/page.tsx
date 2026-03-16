@@ -33,7 +33,6 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
   const PAGE_SIZE = 10;
 
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -66,16 +65,12 @@ export default function ProductsPage() {
     const run = async () => {
       setIsLoading(true);
       try {
-        const payload: any = { page };
-        if (params?.slug) payload.category = String(params.slug);
-
+        const payload: any = { page_size: 1000 };
         const data = await getProducts(payload);
         const list = Array.isArray(data?.items) ? data.items : [];
 
         setProducts(list);
-        setTotalCount(data?.count || 0);
 
-        // --- FIX: tính max price từ list rồi set range ---
         const maxPrice = list.reduce((mx: number, p: any) => {
           const price = toNumber(p?.priceNew ?? p?.price ?? p?.salePrice);
           return price > mx ? price : mx;
@@ -95,9 +90,9 @@ export default function ProductsPage() {
 
   const categories = useMemo(
     () => [
-      { key: "smartphones", label: "smartphones" },
-      { key: "laptops", label: "laptops" },
-      { key: "tablets", label: "tablets" },
+      { key: "Điện thoại", label: "Điện thoại" },
+      { key: "Máy tính xách tay", label: "Laptop" },
+      { key: "Máy tính bảng", label: "Tablet" },
     ],
     []
   );
@@ -142,14 +137,14 @@ export default function ProductsPage() {
     if (selectedCategories.length > 0) {
       filtered = filtered.filter((p) => {
         const c = p?.categorySlug || p?.category?.slug || p?.category || p?.category_id || p?.categoryId;
-        return c ? selectedCategories.includes(String(c)) : false;
+        return c ? selectedCategories.some(cat => String(c).toLowerCase() === String(cat).toLowerCase()) : false;
       });
     }
 
     if (selectedBrands.length > 0) {
       filtered = filtered.filter((p) => {
         const b = p?.brand || p?.manufacturer || p?.vendor;
-        return b ? selectedBrands.includes(String(b)) : false;
+        return b ? selectedBrands.some(brand => String(b).toLowerCase() === String(brand).toLowerCase()) : false;
       });
     }
 
@@ -187,6 +182,16 @@ export default function ProductsPage() {
 
     return filtered;
   }, [products, selectedCategories, selectedBrands, selectedGrades, priceRange, sortBy]);
+
+  const paginatedProducts = useMemo(() => {
+    const startIndex = (page - 1) * PAGE_SIZE;
+    return filteredProducts.slice(startIndex, startIndex + PAGE_SIZE);
+  }, [filteredProducts, page]);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [filteredProducts.length]);
 
   const FilterContent = () => (
     <div className="space-y-6">
@@ -384,10 +389,10 @@ export default function ProductsPage() {
                 </div>
               </div>
             ) : viewMode === "grid" ? (
-              <ProductGrid items={filteredProducts} />
+              <ProductGrid items={paginatedProducts} />
             ) : (
               <div className="flex flex-col gap-4">
-                {filteredProducts.map((p: any, index: number) => {
+                {paginatedProducts.map((p: any, index: number) => {
                   const fmt = new Intl.NumberFormat("vi-VN");
                   const priceNew = p?.priceNew ?? p?.price ?? 0;
                   return (
@@ -416,8 +421,8 @@ export default function ProductsPage() {
                 })}
               </div>
             )}
-            
-            {totalCount > PAGE_SIZE && (
+
+            {filteredProducts.length > PAGE_SIZE && (
               <div className="mt-8">
                 <Pagination>
                   <PaginationContent>
@@ -430,14 +435,14 @@ export default function ProductsPage() {
 
                     <PaginationItem>
                       <span className="text-sm px-4">
-                        Page {page} of {Math.ceil(totalCount / PAGE_SIZE)}
+                        Page {page} of {Math.ceil(filteredProducts.length / PAGE_SIZE)}
                       </span>
                     </PaginationItem>
 
                     <PaginationItem>
                       <PaginationNext
                         onClick={() => setPage((p) => p + 1)}
-                        className={page >= Math.ceil(totalCount / PAGE_SIZE) ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                        className={page >= Math.ceil(filteredProducts.length / PAGE_SIZE) ? "pointer-events-none opacity-50" : "cursor-pointer"}
                       />
                     </PaginationItem>
                   </PaginationContent>

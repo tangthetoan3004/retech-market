@@ -1,22 +1,25 @@
 import { useState } from "react";
 import { motion } from "motion/react";
 import { Mail, Lock, Eye, EyeOff, ArrowRight, CheckCircle2 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import React from "react";
+import { useGoogleLogin } from "@react-oauth/google";
 
 import { Button } from "../../../../components/ui/button";
 import { Input } from "../../../../components/ui/input";
 import { Label } from "../../../../components/ui/label";
 import { Checkbox } from "../../../../components/ui/checkbox";
 
-import { loginClient } from "../../../../services/client/auth/authService";
+import { loginClient, googleLogin } from "../../../../services/client/auth/authService";
 import { setClientAuth } from "../../../../features/client/auth/clientAuthSlice";
 import { showAlert } from "../../../../features/ui/uiSlice";
 
 export default function UserLoginPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirect = searchParams.get("redirect") || "/";
 
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -47,7 +50,7 @@ export default function UserLoginPage() {
       const data = await loginClient({ username: identifier, password });
       dispatch(setClientAuth(data));
       dispatch(showAlert({ type: "success", message: "Đăng nhập thành công", timeout: 2000 }));
-      navigate("/", { replace: true });
+      navigate(redirect, { replace: true });
     } catch (err: any) {
       dispatch(showAlert({ type: "error", message: err?.message || "Đăng nhập thất bại", timeout: 3000 }));
     } finally {
@@ -55,9 +58,25 @@ export default function UserLoginPage() {
     }
   };
 
-  const handleSocialLogin = (provider: string) => {
-    dispatch(showAlert({ type: "info", message: `Chưa hỗ trợ ${provider} login`, timeout: 2500 }));
-  };
+  const handleGoogleLogin = useGoogleLogin({
+    flow: "auth-code",
+    onSuccess: async ({ code }) => {
+      setIsLoading(true);
+      try {
+        const data = await googleLogin(code);
+        dispatch(setClientAuth(data));
+        dispatch(showAlert({ type: "success", message: "Đăng nhập Google thành công", timeout: 2000 }));
+        navigate(redirect, { replace: true });
+      } catch (err: any) {
+        dispatch(showAlert({ type: "error", message: err?.message || "Đăng nhập Google thất bại", timeout: 3000 }));
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    onError: () => {
+      dispatch(showAlert({ type: "error", message: "Xác thực Google thất bại", timeout: 3000 }));
+    },
+  });
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">
@@ -150,14 +169,9 @@ export default function UserLoginPage() {
           </motion.div>
 
           <motion.div variants={itemVariants} className="space-y-3 mb-6">
-            <Button type="button" variant="outline" className="w-full h-11" onClick={() => handleSocialLogin("Google")}>
+            <Button type="button" variant="outline" className="w-full h-11" onClick={() => handleGoogleLogin()} disabled={isLoading}>
               <span className="font-semibold">G</span>
               <span className="ml-3">Continue with Google</span>
-            </Button>
-
-            <Button type="button" variant="outline" className="w-full h-11" onClick={() => handleSocialLogin("Apple")}>
-              <span className="text-lg"></span>
-              <span className="ml-3">Continue with Apple</span>
             </Button>
           </motion.div>
 

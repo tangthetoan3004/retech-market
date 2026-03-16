@@ -12,6 +12,14 @@ export const loginClient = async (options: { username?: string; email?: string; 
   return { user };
 };
 
+// ─── Google Login ─────────────────────────────────────────────────────────────
+
+export const googleLogin = async (code: string) => {
+  const result = await post("/api/users/google/login/", { code });
+  const user = result?.user ?? result;
+  return { user };
+};
+
 // ─── Logout ───────────────────────────────────────────────────────────────────
 
 export const logoutClient = async () => {

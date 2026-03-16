@@ -283,7 +283,7 @@ export default function AdminOrdersListPage() {
               <TableHead>Customer</TableHead>
               <TableHead>Phone</TableHead>
               <TableHead>Date</TableHead>
-              <TableHead>Final</TableHead>
+              <TableHead>Total</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -321,7 +321,7 @@ export default function AdminOrdersListPage() {
 
                   <TableCell>{order.phone_number || "-"}</TableCell>
                   <TableCell>{fmtDate(order.created_at)}</TableCell>
-                  <TableCell className="font-medium">{fmtMoney(order.final_amount)}</TableCell>
+                  <TableCell className="font-medium">{fmtMoney(order.total_amount)}</TableCell>
 
                   <TableCell>
                     <StatusPill status={flowStatus(order.status)} type="order" />
@@ -350,7 +350,7 @@ export default function AdminOrdersListPage() {
                   className={page === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
                 />
               </PaginationItem>
-              
+
               {/* Simplistic pagination display */}
               <PaginationItem>
                 <span className="text-sm px-4">
@@ -398,12 +398,8 @@ export default function AdminOrdersListPage() {
                       <p className="font-medium">{fmtDate(selectedOrder.created_at)}</p>
                     </div>
                     <div>
-                      <p className="text-muted-foreground mb-1">Total</p>
-                      <p className="font-medium">{fmtMoney(selectedOrder.total_amount)}</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground mb-1">Final</p>
-                      <p className="font-medium text-lg">{fmtMoney(selectedOrder.final_amount)}</p>
+                      <p className="text-muted-foreground mb-1">Total Amount</p>
+                      <p className="font-medium text-lg">{fmtMoney(selectedOrder.total_amount)}</p>
                     </div>
                   </div>
 
