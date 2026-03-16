@@ -57,8 +57,21 @@ function normalizeList(list: any) {
   return arr.map(normalizeProduct);
 }
 
+function extractList(res: any) {
+  return (
+    (Array.isArray(res) && res) ||
+    res?.results ||
+    res?.items ||
+    res?.data?.results ||
+    res?.data?.items ||
+    res?.data ||
+    []
+  );
+}
+
 export const getHomeProducts = async () => {
-  const list = await get("/api/products/items/", { params: { ordering: "-created_at" } });
+  const res = await get("/api/products/items/", { params: { ordering: "-created_at" } });
+  const list = extractList(res);
   const arr = normalizeList(list);
 
   return {
@@ -69,15 +82,7 @@ export const getHomeProducts = async () => {
 
 export const getProducts = async (params: any = {}) => {
   const result: any = await get("/api/products/items/", { params });
-  const rawList =
-    (Array.isArray(result) && result) ||
-    result?.results ||
-    result?.items ||
-    result?.data?.results ||
-    result?.data?.items ||
-    result?.data ||
-    [];
-
+  const rawList = extractList(result);
   const items = normalizeList(rawList);
   const count = result?.count ?? items.length;
   
@@ -85,7 +90,8 @@ export const getProducts = async (params: any = {}) => {
 };
 
 export const getProductDetailBySlug = async (slug: string) => {
-  const list = await get("/api/products/items/");
+  const res = await get("/api/products/items/");
+  const list = extractList(res);
   const arr = normalizeList(list);
   const found = arr.find((x: any) => String(x?.slug) === String(slug));
   if (!found) throw new Error("Không tìm thấy sản phẩm");
@@ -93,6 +99,7 @@ export const getProductDetailBySlug = async (slug: string) => {
 };
 
 export const searchProducts = async (keyword: string) => {
-  const list = await get("/api/products/items/", { params: { search: keyword || "" } });
+  const res = await get("/api/products/items/", { params: { search: keyword || "" } });
+  const list = extractList(res);
   return normalizeList(list);
 };

@@ -1,8 +1,8 @@
 import { useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import { deleteItem, updateQuantity } from "../../../features/client/cart/cartSlice";
-import { Trash2, ShoppingBag, Minus, Plus } from "lucide-react";
+import { deleteItem } from "../../../features/client/cart/cartSlice";
+import { Trash2, ShoppingBag } from "lucide-react";
 import { Button } from "../../../components/ui/button";
 
 function n(v: any) {
@@ -22,7 +22,7 @@ export default function CartPage() {
   const subtotal = useMemo(() => {
     return cart.reduce((sum: number, x: any) => {
       const price = n(x.info?.priceNew ?? x.info?.price ?? 0);
-      return sum + price * n(x.quantity ?? 0);
+      return sum + price; // Mỗi máy chỉ có 1
     }, 0);
   }, [cart]);
 
@@ -70,8 +70,6 @@ export default function CartPage() {
           <div className="lg:col-span-2 space-y-4">
             {cart.map((x: any) => {
               const price = n(x.info?.priceNew ?? x.info?.price ?? 0);
-              const qty = Math.max(1, n(x.quantity ?? 1));
-              const lineTotal = price * qty;
 
               return (
                 <div key={x.id} className="bg-card border border-border rounded-2xl p-4 md:p-5">
@@ -109,32 +107,10 @@ export default function CartPage() {
 
                         <div className="text-right">
                           <div className="font-semibold">{money(price)}</div>
-                          <div className="text-sm text-muted-foreground">{money(lineTotal)}</div>
                         </div>
                       </div>
 
-                      <div className="mt-4 flex items-center justify-between gap-4">
-                        <div className="flex items-center border border-border rounded-lg overflow-hidden h-9 w-28 bg-card">
-                          <button
-                            type="button"
-                            className="flex-1 flex items-center justify-center hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            onClick={() => dispatch(updateQuantity({ id: x.id, quantity: Math.max(1, qty - 1) }))}
-                            disabled={qty <= 1}
-                          >
-                            <Minus className="h-3.5 w-3.5" />
-                          </button>
-                          <div className="flex-1 flex items-center justify-center text-sm font-medium border-x border-border h-full">
-                            {qty}
-                          </div>
-                          <button
-                            type="button"
-                            className="flex-1 flex items-center justify-center hover:bg-muted transition-colors"
-                            onClick={() => dispatch(updateQuantity({ id: x.id, quantity: qty + 1 }))}
-                          >
-                            <Plus className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
-
+                      <div className="mt-4 flex items-center justify-end gap-4">
                         <Button
                           variant="outline"
                           type="button"

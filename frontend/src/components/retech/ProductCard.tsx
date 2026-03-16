@@ -110,22 +110,22 @@ export function ProductCard({
       </div>
 
       {/* Content */}
-      <div className="p-4 space-y-3">
+      <div className="p-3 space-y-2">
         <div>
-          <p className="text-xs text-muted-foreground uppercase tracking-wider">{brand}</p>
-          <h3 className="font-medium text-foreground line-clamp-2 mt-1">{name}</h3>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{brand}</p>
+          <h3 className="text-sm font-medium text-foreground line-clamp-2 mt-0.5">{name}</h3>
         </div>
 
         {/* Features */}
-        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+        <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
           {batteryHealth && (
             <div className="flex items-center gap-1">
-              <Battery className="h-3.5 w-3.5" />
+              <Battery className="h-3 w-3" />
               <span>{batteryHealth}%</span>
             </div>
           )}
           <div className="flex items-center gap-1">
-            <Shield className="h-3.5 w-3.5" />
+            <Shield className="h-3 w-3" />
             <span>{warranty}</span>
           </div>
         </div>
@@ -133,8 +133,8 @@ export function ProductCard({
         {/* Price */}
         <div className="flex items-center justify-between">
           <div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-lg font-semibold text-foreground">
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-base font-semibold text-foreground">
                 ${price.toLocaleString()}
               </span>
               {originalPrice && (

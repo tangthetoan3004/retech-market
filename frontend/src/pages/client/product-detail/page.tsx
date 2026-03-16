@@ -15,8 +15,6 @@ import {
   HardDrive,
   Monitor,
   ChevronLeft,
-  Minus,
-  Plus,
 } from "lucide-react";
 import { Button } from "../../../components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../components/ui/tabs";
@@ -70,7 +68,6 @@ export default function ProductDetailPage() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [addedToCart, setAddedToCart] = useState(false);
   const [wish, setWish] = useState(false);
-  const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
     const run = async () => {
@@ -141,7 +138,7 @@ export default function ProductDetailPage() {
       addToCart({
         id: product?.id || product?._id || product?.slug,
         item: product,
-        quantity: quantity,
+        quantity: 1,
       })
     );
     dispatch(showAlert({ type: "success", message: "Đã thêm vào giỏ hàng", timeout: 2000 }));
@@ -319,30 +316,6 @@ export default function ProductDetailPage() {
             </div>
 
             <div className="flex flex-col gap-4">
-              <div className="flex items-center gap-4">
-                <span className="text-sm font-medium">Số lượng:</span>
-                <div className="flex items-center border border-border rounded-lg overflow-hidden h-10 w-32">
-                  <button
-                    type="button"
-                    className="flex-1 flex items-center justify-center hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    disabled={quantity <= 1 || isSold}
-                  >
-                    <Minus className="h-4 w-4" />
-                  </button>
-                  <div className="flex-1 flex items-center justify-center text-sm font-medium border-x border-border h-full">
-                    {quantity}
-                  </div>
-                  <button
-                    type="button"
-                    className="flex-1 flex items-center justify-center hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    onClick={() => setQuantity(quantity + 1)}
-                    disabled={isSold}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
 
               <div className="flex gap-3">
                 <Button

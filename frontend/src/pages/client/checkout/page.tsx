@@ -24,7 +24,7 @@ export default function CheckoutPage() {
   const subtotal = useMemo(() => {
     return cart.reduce((sum, x) => {
       const price = Number(x.info?.priceNew || x.info?.price || 0);
-      return sum + price * Number(x.quantity || 0);
+      return sum + price; // Mỗi máy chỉ có 1
     }, 0);
   }, [cart]);
 
@@ -45,10 +45,18 @@ export default function CheckoutPage() {
         payment_method: paymentMethod,
         products: cart.map((x: any) => ({
           productId: x.id,
-          quantity: x.quantity
+          quantity: 1
         }))
       };
-      const data = await createOrder(payload);
+      const data: any = await createOrder(payload);
+
+      // Nếu là ZaloPay và backend trả về order_url → redirect sang trang thanh toán
+      if (paymentMethod === "ZALOPAY" && data?.order_url) {
+        dispatch(deleteAll());
+        window.location.href = data.order_url;
+        return;
+      }
+
       dispatch(deleteAll());
       navigate("/checkout/success", { state: { order: data?.order || data } });
     } catch (err: any) {
@@ -153,20 +161,20 @@ export default function CheckoutPage() {
                     </label>
 
                     <label
-                      className={`flex items-center p-4 border rounded-lg cursor-pointer transition-colors ${paymentMethod === "BANK_TRANSFER" ? "border-blue-500 bg-blue-50/50 dark:bg-blue-950/20" : "border-border hover:bg-muted/50"
+                      className={`flex items-center p-4 border rounded-lg cursor-pointer transition-colors ${paymentMethod === "ZALOPAY" ? "border-blue-500 bg-blue-50/50 dark:bg-blue-950/20" : "border-border hover:bg-muted/50"
                         }`}
                     >
                       <input
                         type="radio"
                         name="paymentMethod"
-                        value="BANK_TRANSFER"
-                        checked={paymentMethod === "BANK_TRANSFER"}
+                        value="ZALOPAY"
+                        checked={paymentMethod === "ZALOPAY"}
                         onChange={(e) => setPaymentMethod(e.target.value)}
                         className="mr-3 w-4 h-4 text-blue-600 focus:ring-blue-500"
                       />
                       <div className="flex-1 flex items-center justify-between text-sm font-medium">
-                        <span>Chuyển khoản / Thu hộ Online (VNPAY)</span>
-                        <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 rounded">Online</span>
+                        <span>Thanh toán qua ZaloPay</span>
+                        <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 rounded font-bold">ZaloPay</span>
                       </div>
                     </label>
                   </div>
@@ -196,9 +204,6 @@ export default function CheckoutPage() {
                             alt={item.info?.title || item.info?.name}
                             className="w-full h-full object-cover"
                           />
-                          <span className="absolute -top-2 -right-2 bg-foreground text-background text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center border-2 border-background">
-                            {item.quantity}
-                          </span>
                         </div>
                         <div className="flex-1 min-w-0 py-1 flex flex-col justify-between">
                           <div>

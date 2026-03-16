@@ -16,29 +16,19 @@ const cartSlice = createSlice({
   initialState: loadCart(),
   reducers: {
     addToCart: (state, action) => {
-      const { id, item, quantity } = action.payload || {};
-      const qty = Number(quantity || 1);
+      const { id, item } = action.payload || {};
 
       const exist = state.find((x) => x.id === id);
       if (exist) {
-        exist.quantity += qty;
+        // Vì mỗi sản phẩm là duy nhất (hàng cũ), không tăng số lượng
         return;
       }
 
-      return [
-        ...state,
-        {
-          id,
-          info: item,
-          quantity: qty
-        }
-      ];
-    },
-    updateQuantity: (state, action) => {
-      const { id, quantity } = action.payload || {};
-      const itemUpdate = state.find((x) => x.id === id);
-      if (!itemUpdate) return;
-      itemUpdate.quantity = Math.max(1, Number(quantity || 1));
+      state.push({
+        id,
+        info: item,
+        quantity: 1
+      });
     },
     deleteItem: (state, action) => {
       return state.filter((x) => x.id !== action.payload);
@@ -49,5 +39,5 @@ const cartSlice = createSlice({
   }
 });
 
-export const { addToCart, updateQuantity, deleteItem, deleteAll } = cartSlice.actions;
+export const { addToCart, deleteItem, deleteAll } = cartSlice.actions;
 export default cartSlice.reducer;
