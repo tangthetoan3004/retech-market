@@ -245,16 +245,64 @@
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
 }
+
 .scrollbar-thin::-webkit-scrollbar {
   width: 4px;
 }
+
 .scrollbar-thin::-webkit-scrollbar-track {
   background: transparent;
 }
+
 .scrollbar-thin::-webkit-scrollbar-thumb {
   background-color: var(--border);
   border-radius: 9999px;
 }
+
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
   background-color: var(--muted-foreground);
+}
+
+.gradient-reveal {
+  background-position: 100% 0;
+  animation: gradient-reveal-show var(--show-duration) linear forwards;
+}
+
+.gradient-conceal {
+  background-position: 0% 0;
+  animation: gradient-reveal-hide var(--hide-duration) linear forwards;
+}
+
+@keyframes gradient-reveal-show {
+  0% {
+    background-position: 100% 0;
+    opacity: 0.35;
+  }
+
+  100% {
+    background-position: 0% 0;
+    opacity: 1;
+  }
+}
+
+@keyframes gradient-reveal-hide {
+  0% {
+    background-position: 0% 0;
+    opacity: 1;
+  }
+
+  100% {
+    background-position: 100% 0;
+    opacity: 0.15;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .gradient-reveal,
+  .gradient-conceal {
+    animation: none;
+    background-position: 0% 0;
+    opacity: 1;
+  }
 }

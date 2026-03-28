@@ -13,7 +13,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { Button } from "../../../components/ui/button";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { showAlert } from "../../../features/ui/uiSlice";
@@ -28,6 +28,27 @@ export default function HomePage() {
   const [news, setNews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+
+  const searchSuggestions = useMemo(
+    () => [
+      "iPhone",
+      "MacBook",
+      "Samsung",
+      "iPad",
+      "AirPods",
+      "Apple Watch",
+      "Dell XPS",
+      "ThinkPad",
+      "PlayStation 5",
+      "Nintendo Switch",
+    ],
+    []
+  );
+
+  const [suggestionIndex, setSuggestionIndex] = useState(0);
+  const [suggestionPhase, setSuggestionPhase] = useState<"show" | "hide">("show");
+  const hideTimeoutRef = useRef<number | null>(null);
+  const switchTimeoutRef = useRef<number | null>(null);
 
   const categories = useMemo(
     () => [
@@ -89,6 +110,45 @@ export default function HomePage() {
     run();
   }, [dispatch]);
 
+  useEffect(() => {
+    const HIDE_DURATION = 1000;
+    const TOTAL_DURATION = 4500;
+
+    const clearTimers = () => {
+      if (hideTimeoutRef.current) {
+        window.clearTimeout(hideTimeoutRef.current);
+        hideTimeoutRef.current = null;
+      }
+
+      if (switchTimeoutRef.current) {
+        window.clearTimeout(switchTimeoutRef.current);
+        switchTimeoutRef.current = null;
+      }
+    };
+
+    const runCycle = () => {
+      setSuggestionPhase("show");
+
+      hideTimeoutRef.current = window.setTimeout(() => {
+        setSuggestionPhase("hide");
+      }, TOTAL_DURATION - HIDE_DURATION);
+
+      switchTimeoutRef.current = window.setTimeout(() => {
+        setSuggestionIndex((prev) => (prev + 1) % searchSuggestions.length);
+        runCycle();
+      }, TOTAL_DURATION);
+    };
+
+    clearTimers();
+    setSuggestionIndex(0);
+    setSuggestionPhase("show");
+    runCycle();
+
+    return () => {
+      clearTimers();
+    };
+  }, [searchSuggestions]);
+
   const onSearch = () => {
     const q = searchQuery.trim();
     if (!q) return;
@@ -135,10 +195,38 @@ export default function HomePage() {
               className="flex gap-2 max-w-2xl mx-auto"
             >
               <div className="flex-1 relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-foreground" />
+                <Search className="absolute left-4 top-1/2 z-20 -translate-y-1/2 h-5 w-5 text-foreground" />
+
+                {!searchQuery && (
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute left-12 right-4 top-1/2 z-10 inline-flex max-w-[calc(100%-4rem)] -translate-y-1/2 items-center overflow-hidden"
+                  >
+                    <span className="shrink-0 whitespace-nowrap text-foreground">
+                      Search for
+                    </span>
+
+                    <span
+                      key={`${suggestionIndex}-${suggestionPhase}`}
+                      className={`ml-1.5 inline-block max-w-full overflow-hidden text-ellipsis whitespace-nowrap bg-[linear-gradient(to_left,transparent_0%,transparent_33%,var(--gradient-color)_50%,#0e1016_66%,#0e1016_100%)] bg-[length:300%_100%] bg-clip-text text-transparent [-webkit-text-fill-color:transparent] ${suggestionPhase === "hide" ? "gradient-conceal" : "gradient-reveal"
+                        }`}
+                      style={
+                        {
+                          "--show-duration": "2000ms",
+                          "--hide-duration": "1000ms",
+                          "--gradient-color": "#3F55BF",
+                        } as CSSProperties
+                      }
+                    >
+                      {searchSuggestions[suggestionIndex]}
+                    </span>
+                  </span>
+                )}
+
                 <input
-                  placeholder="Search for iPhone, MacBook, Samsung..."
-                  className="pl-12 h-14 w-full bg-card text-foreground placeholder:text-foreground/70 border-0 shadow-xl rounded-md outline-none"
+                  aria-label="Search products"
+                  placeholder=""
+                  className="pl-12 h-14 w-full bg-card text-foreground border-0 shadow-xl rounded-md outline-none"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={(e) => {
@@ -146,7 +234,13 @@ export default function HomePage() {
                   }}
                 />
               </div>
-              <Button size="lg" className="h-14 bg-card text-foreground hover:bg-card" onClick={() => navigate("/")} type="button">
+
+              <Button
+                size="lg"
+                className="h-14 bg-card text-foreground hover:bg-card"
+                onClick={() => navigate("/")}
+                type="button"
+              >
                 <Upload className="h-5 w-5" />
               </Button>
             </motion.div>
