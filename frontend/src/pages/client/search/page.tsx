@@ -24,7 +24,7 @@ export default function SearchPage() {
         const data = await searchProducts(keyword);
         setItems(Array.isArray(data?.products) ? data.products : Array.isArray(data) ? data : []);
       } catch (e) {
-        dispatch(showAlert({ type: "error", message: e.message || "Không tìm được sản phẩm", timeout: 3000 }));
+        dispatch(showAlert({ type: "error", message: e.message || "Không tìm được sản phẩm", timeout: 1000 }));
       } finally {
         setLoading(false);
       }

@@ -76,7 +76,7 @@ export default function ProductDetailPage() {
         const data = await getProductDetailBySlug(slug as any);
         setProduct(data?.product || data);
       } catch (e: any) {
-        dispatch(showAlert({ type: "error", message: e?.message || "Không tải được chi tiết", timeout: 3000 }));
+        dispatch(showAlert({ type: "error", message: e?.message || "Không tải được chi tiết", timeout: 1000 }));
       } finally {
         setLoading(false);
       }

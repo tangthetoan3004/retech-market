@@ -27,11 +27,11 @@ function unwrapApiData(payload: any) {
     // Custom DRF renderer maps pagination to { status: "success", data: [...], meta: { count, next, previous } }
     if (payload.status === "success" && "data" in payload) {
       if (payload.meta && typeof payload.meta === "object") {
-         return {
-           items: payload.data,
-           results: payload.data,
-           ...payload.meta
-         };
+        return {
+          items: payload.data,
+          results: payload.data,
+          ...payload.meta
+        };
       }
       return payload.data;
     }
@@ -97,7 +97,12 @@ export default async function request(path: string, options: RequestOptions = {}
 
   const res = await fetch(url, init);
 
-  if (res.status === 401 && !_isRetry && !path.includes("token/refresh")) {
+  const isAuthEndpoint =
+    path.includes("/users/login") ||
+    path.includes("/users/register") ||
+    path.includes("/users/google/login");
+
+  if (res.status === 401 && !_isRetry && !path.includes("token/refresh") && !isAuthEndpoint) {
     const refreshed = await tryRefreshToken();
 
     if (refreshed) {

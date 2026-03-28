@@ -81,7 +81,7 @@ export default function HomePage() {
         setFeatured(Array.isArray(data?.productsFeatured) ? data.productsFeatured : []);
         setNews(Array.isArray(data?.productsNew) ? data.productsNew : []);
       } catch (e: any) {
-        dispatch(showAlert({ type: "error", message: e?.message || "Không tải được trang chủ", timeout: 3000 }));
+        dispatch(showAlert({ type: "error", message: e?.message || "Không tải được trang chủ", timeout: 1000 }));
       } finally {
         setLoading(false);
       }

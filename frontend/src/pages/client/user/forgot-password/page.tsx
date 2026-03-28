@@ -38,7 +38,7 @@ export default function ForgotPasswordPage() {
       dispatch(showAlert({ type: "success", message: "Yêu cầu đặt lại mật khẩu đã được gửi. Vui lòng kiểm tra email.", timeout: 3500 }));
       navigate("/user/password/otp", { state: { email } });
     } catch (err: any) {
-      dispatch(showAlert({ type: "error", message: err?.message || "Lỗi khi gửi yêu cầu quên mật khẩu", timeout: 3000 }));
+      dispatch(showAlert({ type: "error", message: err?.message || "Lỗi khi gửi yêu cầu quên mật khẩu", timeout: 1000 }));
     } finally {
       setIsLoading(false);
     }

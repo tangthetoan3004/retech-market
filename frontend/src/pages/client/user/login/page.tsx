@@ -47,10 +47,10 @@ export default function UserLoginPage() {
     try {
       const data = await loginClient({ username: identifier, password });
       dispatch(setClientAuth(data));
-      dispatch(showAlert({ type: "success", message: "Đăng nhập thành công", timeout: 2000 }));
+      dispatch(showAlert({ type: "success", message: "Đăng nhập thành công", timeout: 600 }));
       navigate("/", { replace: true });
     } catch (err: any) {
-      dispatch(showAlert({ type: "error", message: err?.message || "Đăng nhập thất bại", timeout: 3000 }));
+      dispatch(showAlert({ type: "error", message: err?.message || "Đăng nhập thất bại", timeout: 1000 }));
     } finally {
       setIsLoading(false);
     }
@@ -63,16 +63,16 @@ export default function UserLoginPage() {
       try {
         const data = await googleLogin(code);
         dispatch(setClientAuth(data));
-        dispatch(showAlert({ type: "success", message: "Đăng nhập Google thành công", timeout: 2000 }));
+        dispatch(showAlert({ type: "success", message: "Đăng nhập thành công", timeout: 600 }));
         navigate("/", { replace: true });
       } catch (err: any) {
-        dispatch(showAlert({ type: "error", message: err?.message || "Đăng nhập Google thất bại", timeout: 3000 }));
+        dispatch(showAlert({ type: "error", message: err?.message || "Đăng nhập thất bại", timeout: 1000 }));
       } finally {
         setIsLoading(false);
       }
     },
     onError: () => {
-      dispatch(showAlert({ type: "error", message: "Xác thực Google thất bại", timeout: 3000 }));
+      dispatch(showAlert({ type: "error", message: "Xác thực thất bại", timeout: 1000 }));
     },
   });
 

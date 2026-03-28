@@ -49,7 +49,7 @@ export default function OtpPage() {
       dispatch(showAlert({ type: "success", message: "OTP hợp lệ. Bạn có thể đặt lại mật khẩu.", timeout: 2500 }));
       navigate("/user/password/reset", { state: { email, reset_token: resp?.reset_token } });
     } catch (err: any) {
-      dispatch(showAlert({ type: "error", message: err?.message || "Mã OTP không hợp lệ.", timeout: 3000 }));
+      dispatch(showAlert({ type: "error", message: err?.message || "Mã OTP không hợp lệ.", timeout: 1000 }));
     } finally {
       setIsLoading(false);
     }

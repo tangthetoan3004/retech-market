@@ -78,7 +78,7 @@ export default function UserInfoPage() {
         setPhoneNumber(user?.phone_number || user?.phoneNumber || "");
         setAddress(user?.address || "");
       } catch (err: any) {
-        dispatch(showAlert({ type: "error", message: err?.message || "Không tải được thông tin", timeout: 3000 }));
+        dispatch(showAlert({ type: "error", message: err?.message || "Không tải được thông tin", timeout: 1000 }));
       } finally {
         setLoading(false);
       }
@@ -113,7 +113,7 @@ export default function UserInfoPage() {
 
       dispatch(showAlert({ type: "success", message: "Cập nhật thành công", timeout: 2000 }));
     } catch (err: any) {
-      dispatch(showAlert({ type: "error", message: err?.message || "Cập nhật thất bại", timeout: 3000 }));
+      dispatch(showAlert({ type: "error", message: err?.message || "Cập nhật thất bại", timeout: 1000 }));
     } finally {
       setSaving(false);
     }
@@ -133,7 +133,7 @@ export default function UserInfoPage() {
     setCpSaving(true);
     try {
       await changePassword({ old_password: cpOld, new_password: cpNew, confirm_password: cpConfirm });
-      dispatch(showAlert({ type: "success", message: "Đổi mật khẩu thành công! Vui lòng đăng nhập lại.", timeout: 3000 }));
+      dispatch(showAlert({ type: "success", message: "Đổi mật khẩu thành công! Vui lòng đăng nhập lại.", timeout: 1000 }));
       // Backend clears auth cookies; clear redux state and redirect to login
       dispatch(clearClientAuth());
       setTimeout(() => { window.location.href = "/user/login"; }, 1500);

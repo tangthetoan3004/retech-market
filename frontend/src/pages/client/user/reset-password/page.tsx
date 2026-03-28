@@ -23,7 +23,7 @@ export default function ResetPasswordPage() {
   const onSubmit = async (e) => {
     e.preventDefault();
     if (password !== confirmPassword) {
-      dispatch(showAlert({ type: "error", message: "Mật khẩu xác nhận không khớp", timeout: 3000 }));
+      dispatch(showAlert({ type: "error", message: "Mật khẩu xác nhận không khớp", timeout: 1000 }));
       return;
     }
 
@@ -33,7 +33,7 @@ export default function ResetPasswordPage() {
       dispatch(showAlert({ type: "success", message: "Đổi mật khẩu thành công", timeout: 2000 }));
       navigate("/user/login", { replace: true });
     } catch (err: any) {
-      dispatch(showAlert({ type: "error", message: err?.message || "Đổi mật khẩu thất bại", timeout: 3000 }));
+      dispatch(showAlert({ type: "error", message: err?.message || "Đổi mật khẩu thất bại", timeout: 1000 }));
     } finally {
       setLoading(false);
     }

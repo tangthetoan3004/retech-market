@@ -85,7 +85,7 @@ export default function ProductsPage() {
         setPriceMax(newMax);
         setPriceRange([0, newMax]);
       } catch (e: any) {
-        dispatch(showAlert({ type: "error", message: e?.message || "Không tải được sản phẩm", timeout: 3000 }));
+        dispatch(showAlert({ type: "error", message: e?.message || "Không tải được sản phẩm", timeout: 1000 }));
       } finally {
         setIsLoading(false);
       }

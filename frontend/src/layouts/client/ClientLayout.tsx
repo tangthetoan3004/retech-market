@@ -18,7 +18,7 @@ export default function ClientLayout() {
         setCategories(Array.isArray(data?.items) ? data.items : Array.isArray(data) ? data : []);
         setSettingGeneral(data?.settingGeneral || null);
       } catch (e) {
-        dispatch(showAlert({ type: "error", message: e.message || "Không tải được dữ liệu menu", timeout: 3000 }));
+        dispatch(showAlert({ type: "error", message: e.message || "Không tải được dữ liệu menu", timeout: 1000 }));
       }
     };
     run();
