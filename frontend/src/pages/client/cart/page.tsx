@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { deleteItem } from "../../../features/client/cart/cartSlice";
 import { Trash2, ShoppingBag } from "lucide-react";
 import { Button } from "../../../components/ui/button";
@@ -17,17 +17,7 @@ function money(v: any) {
 
 export default function CartPage() {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const cart = useSelector((s: any) => s.cart) || [];
-  const user = useSelector((s: any) => s.clientAuth?.user);
-
-  const handleCheckout = () => {
-    if (user) {
-      navigate("/checkout");
-    } else {
-      navigate("/user/login?redirect=/checkout");
-    }
-  };
 
   const subtotal = useMemo(() => {
     return cart.reduce((sum: number, x: any) => {
@@ -160,11 +150,11 @@ export default function CartPage() {
               </div>
 
               <div className="mt-6 space-y-3">
-                <div onClick={handleCheckout} className="block cursor-pointer">
+                <Link to="/checkout" className="block">
                   <Button className="w-full rt-bg-brand text-white hover:opacity-90" size="lg" type="button">
                     Thanh toán
                   </Button>
-                </div>
+                </Link>
 
                 <Link to="/products" className="block">
                   <Button className="w-full" variant="outline" size="lg" type="button">

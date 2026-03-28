@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "motion/react";
 import { Mail, Lock, Eye, EyeOff, ArrowRight, CheckCircle2 } from "lucide-react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import React from "react";
 import { useGoogleLogin } from "@react-oauth/google";
@@ -18,8 +18,6 @@ import { showAlert } from "../../../../features/ui/uiSlice";
 export default function UserLoginPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const redirect = searchParams.get("redirect") || "/";
 
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -50,7 +48,7 @@ export default function UserLoginPage() {
       const data = await loginClient({ username: identifier, password });
       dispatch(setClientAuth(data));
       dispatch(showAlert({ type: "success", message: "Đăng nhập thành công", timeout: 2000 }));
-      navigate(redirect, { replace: true });
+      navigate("/", { replace: true });
     } catch (err: any) {
       dispatch(showAlert({ type: "error", message: err?.message || "Đăng nhập thất bại", timeout: 3000 }));
     } finally {
@@ -66,7 +64,7 @@ export default function UserLoginPage() {
         const data = await googleLogin(code);
         dispatch(setClientAuth(data));
         dispatch(showAlert({ type: "success", message: "Đăng nhập Google thành công", timeout: 2000 }));
-        navigate(redirect, { replace: true });
+        navigate("/", { replace: true });
       } catch (err: any) {
         dispatch(showAlert({ type: "error", message: err?.message || "Đăng nhập Google thất bại", timeout: 3000 }));
       } finally {
