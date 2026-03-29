@@ -157,34 +157,34 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen">
-      <section className="relative bg-gradient-to-br from-[#1a1d2e] via-[#1a1d2e] to-[#0f1117] text-white overflow-hidden">
-        <div className="absolute inset-0 opacity-30 rt-gradient-brand" />
+      <section className="relative overflow-hidden bg-gradient-to-br from-[#1a1d2e] via-[#1a1d2e] to-[#0f1117] text-white">
+        <div className="absolute inset-0 rt-gradient-brand opacity-30" />
 
-        <div className="container mx-auto px-4 py-20 md:py-32 relative z-10">
+        <div className="relative z-10 mx-auto w-full max-w-[1260px] px-5 py-20 lg:px-7 xl:px-9 md:py-32">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="max-w-3xl mx-auto text-center"
+            className="mx-auto max-w-3xl text-center"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2 }}
-              className="inline-block mb-4 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full text-sm"
+              className="mb-4 inline-block rounded-full bg-white/10 px-4 py-2 text-sm backdrop-blur-sm"
             >
               ✨ Premium Refurbished Tech at Unbeatable Prices
             </motion.div>
 
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
+            <h1 className="mb-6 text-4xl font-bold md:text-6xl">
               Trade Smart,
               <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0066ff] to-[#00d9a3] dark:from-[#3b8eff] dark:to-[#00edb7]">
+              <span className="bg-gradient-to-r from-[#0066ff] to-[#00d9a3] bg-clip-text text-transparent dark:from-[#3b8eff] dark:to-[#00edb7]">
                 Buy Smarter
               </span>
             </h1>
 
-            <p className="text-lg md:text-xl text-white/80 mb-8">
+            <p className="mb-8 text-lg text-white/80 md:text-xl">
               Discover certified refurbished devices with warranty. Trade in your old tech and upgrade with confidence.
             </p>
 
@@ -192,33 +192,18 @@ export default function HomePage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="flex gap-2 max-w-2xl mx-auto"
+              className="mx-auto flex max-w-2xl gap-2"
             >
-              <div className="flex-1 relative">
-                <Search className="absolute left-4 top-1/2 z-20 -translate-y-1/2 h-5 w-5 text-foreground" />
+              <div className="relative flex-1">
+                <Search className="absolute left-4 top-1/2 z-20 h-5 w-5 -translate-y-1/2 text-foreground" />
 
                 {!searchQuery && (
                   <span
                     aria-hidden="true"
                     className="pointer-events-none absolute left-12 right-4 top-1/2 z-10 inline-flex max-w-[calc(100%-4rem)] -translate-y-1/2 items-center overflow-hidden"
                   >
-                    <span className="shrink-0 whitespace-nowrap text-foreground">
-                      Search for
-                    </span>
-
-                    <span
-                      key={`${suggestionIndex}-${suggestionPhase}`}
-                      className={`ml-1.5 inline-block max-w-full overflow-hidden text-ellipsis whitespace-nowrap bg-[linear-gradient(to_left,transparent_0%,transparent_33%,var(--gradient-color)_50%,#0e1016_66%,#0e1016_100%)] bg-[length:300%_100%] bg-clip-text text-transparent [-webkit-text-fill-color:transparent] ${suggestionPhase === "hide" ? "gradient-conceal" : "gradient-reveal"
-                        }`}
-                      style={
-                        {
-                          "--show-duration": "2000ms",
-                          "--hide-duration": "1000ms",
-                          "--gradient-color": "#3F55BF",
-                        } as CSSProperties
-                      }
-                    >
-                      {searchSuggestions[suggestionIndex]}
+                    <span className="shrink-0 whitespace-nowrap text-white/55">
+                      Search for iPhone, MacBook, Samsung...
                     </span>
                   </span>
                 )}
@@ -226,7 +211,7 @@ export default function HomePage() {
                 <input
                   aria-label="Search products"
                   placeholder=""
-                  className="pl-12 h-14 w-full bg-card text-foreground border-0 shadow-xl rounded-md outline-none"
+                  className="h-14 w-full rounded-md border-0 bg-card pl-12 text-foreground shadow-xl outline-none"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={(e) => {
@@ -249,16 +234,16 @@ export default function HomePage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.6 }}
-              className="flex flex-wrap gap-4 justify-center mt-8"
+              className="mt-8 flex flex-wrap justify-center gap-4"
             >
-              <Button size="lg" className="rt-bg-brand hover:opacity-90 text-white" onClick={() => navigate("/products")} type="button">
+              <Button size="lg" className="rt-bg-brand text-white hover:opacity-90" onClick={() => navigate("/products")} type="button">
                 Browse Products
                 <ChevronRight className="ml-2 h-5 w-5" />
               </Button>
               <Button
                 size="lg"
                 variant="outline"
-                className="border-white/20 hover:bg-white/10 text-foreground"
+                className="border-white/20 text-foreground hover:bg-white/10"
                 onClick={() => navigate("/")}
                 type="button"
               >
@@ -269,9 +254,14 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="py-16 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <section className="bg-muted/30 py-16">
+        <div className="mx-auto w-full max-w-[1260px] px-5 lg:px-7 xl:px-9">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="grid grid-cols-2 gap-4 md:grid-cols-4"
+          >
             {categories.map((category, index) => (
               <motion.button
                 key={category.name}
@@ -282,11 +272,11 @@ export default function HomePage() {
                 whileHover={{ scale: 1.05, y: -4 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => navigate("/products")}
-                className="bg-card border border-border rounded-xl p-6 text-center hover:border-[#0066ff] dark:hover:border-[#3b8eff] transition-all group"
+                className="group rounded-xl border border-border bg-card p-6 text-center transition-all hover:border-[#0066ff] dark:hover:border-[#3b8eff]"
                 type="button"
               >
-                <category.icon className="h-12 w-12 mx-auto mb-3 text-muted-foreground group-hover:text-[#0066ff] dark:group-hover:text-[#3b8eff] transition-colors" />
-                <h3 className="font-medium mb-1">{category.name}</h3>
+                <category.icon className="mx-auto mb-3 h-12 w-12 text-muted-foreground transition-colors group-hover:text-[#0066ff] dark:group-hover:text-[#3b8eff]" />
+                <h3 className="mb-1 font-medium">{category.name}</h3>
                 <p className="text-sm text-muted-foreground">{category.count} items</p>
               </motion.button>
             ))}
@@ -295,10 +285,10 @@ export default function HomePage() {
       </section>
 
       <section className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between mb-8">
+        <div className="mx-auto w-full max-w-[1260px] px-5 lg:px-7 xl:px-9">
+          <div className="mb-8 flex items-center justify-between">
             <div>
-              <h2 className="text-3xl font-bold mb-2">Featured Deals</h2>
+              <h2 className="mb-2 text-3xl font-bold">Featured Deals</h2>
               <p className="text-muted-foreground">Handpicked premium devices at great prices</p>
             </div>
             <Button variant="ghost" onClick={() => navigate("/products")} type="button">
@@ -311,14 +301,14 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="py-16 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-2">How Trade-In Works</h2>
+      <section className="bg-muted/30 py-16">
+        <div className="mx-auto w-full max-w-[1260px] px-5 lg:px-7 xl:px-9">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-12 text-center">
+            <h2 className="mb-2 text-3xl font-bold">How Trade-In Works</h2>
             <p className="text-muted-foreground">Get instant value for your old devices in 3 easy steps</p>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-3">
             {[
               { step: "1", title: "Get Estimate", desc: "Answer a few questions about your device" },
               { step: "2", title: "Ship for Free", desc: "We'll send you a prepaid shipping label" },
@@ -332,20 +322,20 @@ export default function HomePage() {
                 transition={{ delay: index * 0.1 }}
                 className="relative text-center"
               >
-                <div className="w-16 h-16 rounded-full rt-bg-brand text-white flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full rt-bg-brand text-2xl font-bold text-white">
                   {item.step}
                 </div>
-                <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
+                <h3 className="mb-2 text-xl font-semibold">{item.title}</h3>
                 <p className="text-muted-foreground">{item.desc}</p>
                 {index < 2 && (
-                  <ChevronRight className="hidden md:block absolute top-8 -right-4 h-6 w-6 text-muted-foreground" />
+                  <ChevronRight className="absolute -right-4 top-8 hidden h-6 w-6 text-muted-foreground md:block" />
                 )}
               </motion.div>
             ))}
           </div>
 
-          <div className="text-center mt-12">
-            <Button size="lg" className="rt-bg-brand hover:opacity-90 text-white" onClick={() => navigate("/")} type="button">
+          <div className="mt-12 text-center">
+            <Button size="lg" className="rt-bg-brand text-white hover:opacity-90" onClick={() => navigate("/")} type="button">
               Start Trade-In
               <ChevronRight className="ml-2 h-5 w-5" />
             </Button>
@@ -354,8 +344,8 @@ export default function HomePage() {
       </section>
 
       <section className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-4 gap-6">
+        <div className="mx-auto w-full max-w-[1260px] px-5 lg:px-7 xl:px-9">
+          <div className="grid gap-6 md:grid-cols-4">
             {features.map((feature, index) => (
               <motion.div
                 key={feature.title}
@@ -363,12 +353,12 @@ export default function HomePage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="text-center p-6"
+                className="p-6 text-center"
               >
-                <div className="w-14 h-14 rounded-full bg-[#0066ff]/10 text-[#0066ff] dark:bg-[#3b8eff]/10 dark:text-[#3b8eff] flex items-center justify-center mx-auto mb-4">
+                <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#0066ff]/10 text-[#0066ff] dark:bg-[#3b8eff]/10 dark:text-[#3b8eff]">
                   <feature.icon className="h-7 w-7" />
                 </div>
-                <h3 className="font-semibold mb-2">{feature.title}</h3>
+                <h3 className="mb-2 font-semibold">{feature.title}</h3>
                 <p className="text-sm text-muted-foreground">{feature.description}</p>
               </motion.div>
             ))}
@@ -376,14 +366,14 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="py-16 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-2">Trusted by Thousands</h2>
+      <section className="bg-muted/30 py-16">
+        <div className="mx-auto w-full max-w-[1260px] px-5 lg:px-7 xl:px-9">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-12 text-center">
+            <h2 className="mb-2 text-3xl font-bold">Trusted by Thousands</h2>
             <p className="text-muted-foreground">See what our customers say about us</p>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          <div className="mx-auto grid max-w-6xl gap-6 md:grid-cols-3">
             {testimonials.map((testimonial, index) => (
               <motion.div
                 key={testimonial.name}
@@ -391,14 +381,14 @@ export default function HomePage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="bg-card border border-border rounded-xl p-6"
+                className="rounded-xl border border-border bg-card p-6"
               >
-                <div className="flex items-center gap-1 mb-3">
+                <div className="mb-3 flex items-center gap-1">
                   {Array.from({ length: testimonial.rating }).map((_, i) => (
                     <Star key={i} className="h-4 w-4 fill-[#fbbf24] text-[#fbbf24]" />
                   ))}
                 </div>
-                <p className="text-foreground mb-4">{testimonial.text}</p>
+                <p className="mb-4 text-foreground">{testimonial.text}</p>
                 <div className="flex items-center justify-between">
                   <span className="font-medium">{testimonial.name}</span>
                   <span className="text-xs text-muted-foreground">{testimonial.date}</span>
@@ -409,11 +399,11 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="py-16 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between mb-8">
+      <section className="bg-muted/30 py-16">
+        <div className="mx-auto w-full max-w-[1260px] px-5 lg:px-7 xl:px-9">
+          <div className="mb-8 flex items-center justify-between">
             <div>
-              <h2 className="text-3xl font-bold mb-2">New Arrivals</h2>
+              <h2 className="mb-2 text-3xl font-bold">New Arrivals</h2>
               <p className="text-muted-foreground">Fresh inventory, just landed</p>
             </div>
             <Button variant="ghost" onClick={() => navigate("/products")} type="button">

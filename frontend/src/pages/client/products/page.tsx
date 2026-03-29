@@ -191,7 +191,7 @@ export default function ProductsPage() {
   const FilterContent = () => (
     <div className="space-y-6">
       <div>
-        <h3 className="font-semibold mb-3">Category</h3>
+        <h3 className="mb-3 font-semibold">Category</h3>
         <div className="space-y-2">
           {categories.map((c) => (
             <div key={c.key} className="flex items-center space-x-2">
@@ -200,7 +200,7 @@ export default function ProductsPage() {
                 checked={selectedCategories.includes(c.key)}
                 onCheckedChange={() => toggleCategory(c.key)}
               />
-              <Label htmlFor={`category-${c.key}`} className="text-sm cursor-pointer capitalize">
+              <Label htmlFor={`category-${c.key}`} className="cursor-pointer text-sm capitalize">
                 {c.label}
               </Label>
             </div>
@@ -209,12 +209,12 @@ export default function ProductsPage() {
       </div>
 
       <div>
-        <h3 className="font-semibold mb-3">Brand</h3>
+        <h3 className="mb-3 font-semibold">Brand</h3>
         <div className="space-y-2">
           {brands.slice(0, 6).map((b) => (
             <div key={b} className="flex items-center space-x-2">
               <Checkbox id={`brand-${b}`} checked={selectedBrands.includes(b)} onCheckedChange={() => toggleBrand(b)} />
-              <Label htmlFor={`brand-${b}`} className="text-sm cursor-pointer">
+              <Label htmlFor={`brand-${b}`} className="cursor-pointer text-sm">
                 {b}
               </Label>
             </div>
@@ -223,12 +223,12 @@ export default function ProductsPage() {
       </div>
 
       <div>
-        <h3 className="font-semibold mb-3">Grade</h3>
+        <h3 className="mb-3 font-semibold">Grade</h3>
         <div className="space-y-2">
           {["A", "B", "C"].map((g) => (
             <div key={g} className="flex items-center space-x-2">
               <Checkbox id={`grade-${g}`} checked={selectedGrades.includes(g)} onCheckedChange={() => toggleGrade(g)} />
-              <Label htmlFor={`grade-${g}`} className="text-sm cursor-pointer">
+              <Label htmlFor={`grade-${g}`} className="cursor-pointer text-sm">
                 Grade {g}
               </Label>
             </div>
@@ -237,7 +237,7 @@ export default function ProductsPage() {
       </div>
 
       <div>
-        <h3 className="font-semibold mb-3">
+        <h3 className="mb-3 font-semibold">
           Price Range: {priceRange[0]} - {priceRange[1]}
         </h3>
         <Slider
@@ -252,7 +252,7 @@ export default function ProductsPage() {
 
       {activeFiltersCount > 0 && (
         <Button variant="outline" className="w-full" onClick={clearFilters} type="button">
-          <X className="h-4 w-4 mr-2" />
+          <X className="mr-2 h-4 w-4" />
           Clear All Filters
         </Button>
       )}
@@ -261,7 +261,7 @@ export default function ProductsPage() {
 
   return (
     <div className="min-h-screen py-8">
-      <div className="container mx-auto px-4">
+      <div className="mx-auto w-full max-w-[1260px] px-5 lg:px-7 xl:px-9">
         {/* <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Browse Products</h1>
           <p className="text-muted-foreground">
@@ -270,19 +270,19 @@ export default function ProductsPage() {
         </div> */}
 
         <div className="flex gap-8">
-          <aside className="hidden lg:block w-64 flex-shrink-0">
+          <aside className="hidden w-64 flex-shrink-0 lg:block">
             {/* sticky + max-height = vừa khít viewport, cuộn nội dung bên trong */}
             <div
-              className="sticky top-20 bg-card border border-border rounded-xl overflow-hidden flex flex-col"
+              className="sticky top-20 flex flex-col overflow-hidden rounded-xl border border-border bg-card"
               style={{ maxHeight: "calc(100vh - 6rem)" }}
             >
               {/* Header filter — không cuộn */}
-              <div className="flex items-center justify-between px-6 pt-6 pb-4 flex-shrink-0 border-b border-border">
-                <h2 className="font-semibold flex items-center gap-2">
+              <div className="flex flex-shrink-0 items-center justify-between border-b border-border px-6 pb-4 pt-6">
+                <h2 className="flex items-center gap-2 font-semibold">
                   <Filter className="h-5 w-5" />
                   Filters
                   {activeFiltersCount > 0 && (
-                    <span className="rt-bg-brand text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full rt-bg-brand text-xs text-white">
                       {activeFiltersCount}
                     </span>
                   )}
@@ -290,22 +290,22 @@ export default function ProductsPage() {
               </div>
 
               {/* Nội dung filter — cuộn bên trong khi quá dài */}
-              <div className="flex-1 overflow-y-auto px-6 py-4 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
+              <div className="scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent flex-1 overflow-y-auto px-6 py-4">
                 <FilterContent />
               </div>
             </div>
           </aside>
 
           <div className="flex-1">
-            <div className="flex items-center justify-between mb-6 gap-4">
+            <div className="mb-6 flex items-center justify-between gap-4">
               <div className="flex items-center gap-2">
                 <Sheet open={mobileFiltersOpen} onOpenChange={setMobileFiltersOpen}>
                   <SheetTrigger asChild>
                     <Button variant="outline" className="lg:hidden" type="button">
-                      <Filter className="h-4 w-4 mr-2" />
+                      <Filter className="mr-2 h-4 w-4" />
                       Filters
                       {activeFiltersCount > 0 && (
-                        <span className="ml-2 rt-bg-brand text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                        <span className="ml-2 flex h-5 w-5 items-center justify-center rounded-full rt-bg-brand text-xs text-white">
                           {activeFiltersCount}
                         </span>
                       )}
@@ -323,7 +323,7 @@ export default function ProductsPage() {
 
                 <Select value={sortBy} onValueChange={setSortBy}>
                   <SelectTrigger className="w-[180px]">
-                    <SortAsc className="h-4 w-4 mr-2" />
+                    <SortAsc className="mr-2 h-4 w-4" />
                     <SelectValue placeholder="Sort by" />
                   </SelectTrigger>
                   <SelectContent>
@@ -335,7 +335,7 @@ export default function ProductsPage() {
                 </Select>
               </div>
 
-              <div className="hidden md:flex items-center gap-2 border border-border rounded-lg p-1">
+              <div className="hidden items-center gap-2 rounded-lg border border-border p-1 md:flex">
                 <Button
                   size="sm"
                   variant={viewMode === "grid" ? "default" : "ghost"}
@@ -358,21 +358,21 @@ export default function ProductsPage() {
             </div>
 
             {isLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="bg-card border border-border rounded-xl overflow-hidden animate-pulse">
-                    <div className="w-full aspect-[4/3] bg-muted" />
-                    <div className="p-4 space-y-3">
-                      <div className="h-4 bg-muted rounded w-4/5" />
-                      <div className="h-4 bg-muted rounded w-2/3" />
-                      <div className="h-6 bg-muted rounded w-1/3" />
+                  <div key={i} className="animate-pulse overflow-hidden rounded-xl border border-border bg-card">
+                    <div className="aspect-[4/3] w-full bg-muted" />
+                    <div className="space-y-3 p-4">
+                      <div className="h-4 w-4/5 rounded bg-muted" />
+                      <div className="h-4 w-2/3 rounded bg-muted" />
+                      <div className="h-6 w-1/3 rounded bg-muted" />
                     </div>
                   </div>
                 ))}
               </div>
             ) : filteredProducts.length === 0 ? (
-              <div className="bg-card border border-border rounded-xl p-10 text-center">
-                <div className="mx-auto w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+              <div className="rounded-xl border border-border bg-card p-10 text-center">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted">
                   <Filter className="h-6 w-6 text-muted-foreground" />
                 </div>
                 <div className="mt-4 text-lg font-semibold">No products found</div>
@@ -396,16 +396,16 @@ export default function ProductsPage() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.03 }}
-                      className="bg-card border border-border rounded-xl overflow-hidden"
+                      className="overflow-hidden rounded-xl border border-border bg-card"
                     >
-                      <div className="flex gap-4 p-4 items-center">
-                        <div className="w-28 h-24 rounded-lg overflow-hidden flex-shrink-0 bg-muted">
+                      <div className="flex items-center gap-4 p-4">
+                        <div className="h-24 w-28 flex-shrink-0 overflow-hidden rounded-lg bg-muted">
                           {p?.thumbnail ? (
-                            <img src={p.thumbnail} alt={p?.title || ""} className="w-full h-full object-cover" />
+                            <img src={p.thumbnail} alt={p?.title || ""} className="h-full w-full object-cover" />
                           ) : null}
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-semibold line-clamp-2">{p?.title || p?.name}</div>
+                        <div className="min-w-0 flex-1">
+                          <div className="line-clamp-2 font-semibold">{p?.title || p?.name}</div>
                           <div className="mt-2 text-lg font-bold text-foreground">
                             {fmt.format(Number(priceNew))}₫
                           </div>
@@ -429,7 +429,7 @@ export default function ProductsPage() {
                     </PaginationItem>
 
                     <PaginationItem>
-                      <span className="text-sm px-4">
+                      <span className="px-4 text-sm">
                         Page {page} of {Math.ceil(totalCount / PAGE_SIZE)}
                       </span>
                     </PaginationItem>

@@ -91,7 +91,7 @@ export default function ProductDetailPage() {
   const images = useMemo(() => (product ? safeImages(product) : []), [product]);
 
   if (loading) {
-    return <div className="container mx-auto px-4 py-10">Loading...</div>;
+    return <div className="mx-auto w-full max-w-[1260px] px-5 py-10 lg:px-7 xl:px-9">Loading...</div>;
   }
 
   if (!product) {
@@ -115,7 +115,6 @@ export default function ProductDetailPage() {
   const originalPrice = num(product?.priceOld ?? (product?.priceNew ? product?.price : 0) ?? 0);
   const hasOriginal = originalPrice > 0 && originalPrice > price;
 
-  // Hàng refurbished: mỗi sản phẩm = 1 thiết bị vật lý → dùng is_sold
   const isSold = Boolean(product?.is_sold ?? product?.isSold ?? false);
   const inStock = !isSold;
 
@@ -141,22 +140,22 @@ export default function ProductDetailPage() {
         quantity: 1,
       })
     );
-    dispatch(showAlert({ type: "success", message: "Đã thêm vào giỏ hàng", timeout: 2000 }));
+    dispatch(showAlert({ type: "success", message: "Đã thêm vào giỏ hàng", timeout: 1000 }));
     setTimeout(() => setAddedToCart(false), 2000);
   };
 
   return (
     <div className="min-h-screen py-8">
-      <div className="container mx-auto px-4">
+      <div className="mx-auto w-full max-w-[1260px] px-5 lg:px-7 xl:px-9">
         <Button variant="ghost" className="mb-6" onClick={() => navigate(-1)} type="button">
           <ChevronLeft className="h-4 w-4 mr-2" />
           Back to Products
         </Button>
 
-        <div className="grid lg:grid-cols-2 gap-12">
+        <div className="grid gap-12 lg:grid-cols-2">
           <div className="space-y-4">
             <motion.div
-              className="aspect-square rounded-2xl overflow-hidden bg-muted border border-border"
+              className="aspect-square overflow-hidden rounded-2xl border border-border bg-muted"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
             >
@@ -164,13 +163,13 @@ export default function ProductDetailPage() {
                 <img
                   src={activeImg}
                   alt={title}
-                  className="w-full h-full object-cover"
+                  className="h-full w-full object-cover"
                   onError={(e) => {
                     (e.currentTarget as HTMLImageElement).style.display = "none";
                   }}
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">No image</div>
+                <div className="flex h-full w-full items-center justify-center text-sm text-muted-foreground">No image</div>
               )}
             </motion.div>
 
@@ -179,7 +178,7 @@ export default function ProductDetailPage() {
                 {images.slice(0, 4).map((image: string, index: number) => (
                   <motion.button
                     key={image}
-                    className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${selectedImage === index
+                    className={`aspect-square overflow-hidden rounded-lg border-2 transition-all ${selectedImage === index
                       ? "border-[var(--accent-blue)]"
                       : "border-border hover:border-[var(--accent-blue)]/50"
                       }`}
@@ -188,7 +187,7 @@ export default function ProductDetailPage() {
                     whileTap={{ scale: 0.95 }}
                     type="button"
                   >
-                    <img src={image} alt="" className="w-full h-full object-cover" />
+                    <img src={image} alt="" className="h-full w-full object-cover" />
                   </motion.button>
                 ))}
               </div>
@@ -197,11 +196,11 @@ export default function ProductDetailPage() {
 
           <div className="space-y-6">
             <div>
-              <p className="text-sm text-muted-foreground uppercase tracking-wider mb-2">{brand}</p>
-              <h1 className="text-3xl font-bold mb-4">{title}</h1>
+              <p className="mb-2 text-sm uppercase tracking-wider text-muted-foreground">{brand}</p>
+              <h1 className="mb-4 text-3xl font-bold">{title}</h1>
 
               <div className="flex items-center gap-3">
-                <span className="inline-flex items-center px-3 py-1 rounded-full border border-border bg-muted/50 text-sm">
+                <span className="inline-flex items-center rounded-full border border-border bg-muted/50 px-3 py-1 text-sm">
                   Grade {grade}
                 </span>
 
@@ -213,7 +212,7 @@ export default function ProductDetailPage() {
                         }`}
                     />
                   ))}
-                  <span className="text-sm text-muted-foreground ml-2">
+                  <span className="ml-2 text-sm text-muted-foreground">
                     ({rating.toFixed(1)}) • {reviewCount} reviews
                   </span>
                 </div>
@@ -221,7 +220,7 @@ export default function ProductDetailPage() {
             </div>
 
             <div className="border-y border-border py-6">
-              <div className="flex items-baseline gap-3 mb-2">
+              <div className="mb-2 flex items-baseline gap-3">
                 <span className="text-4xl font-bold">{money(price)}</span>
                 {hasOriginal ? (
                   <span className="text-xl text-muted-foreground line-through">{money(originalPrice)}</span>
@@ -229,22 +228,21 @@ export default function ProductDetailPage() {
               </div>
 
               {hasOriginal ? (
-                <p className="text-[var(--secondary)] font-medium">
+                <p className="font-medium text-[var(--secondary)]">
                   Save {money(originalPrice - price)} ({Math.round(((originalPrice - price) / originalPrice) * 100)}% off)
                 </p>
               ) : null}
             </div>
 
-            {/* Trạng thái tồn kho — refurbished: Còn hàng / Đã bán */}
             <div className="flex items-center gap-2">
               {inStock ? (
-                <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium bg-green-500/10 text-green-500 border border-green-500/20">
-                  <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-green-500/20 bg-green-500/10 px-3 py-1 text-sm font-medium text-green-500">
+                  <span className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
                   Còn hàng
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium bg-red-500/10 text-red-500 border border-red-500/20">
-                  <span className="w-2 h-2 rounded-full bg-red-500" />
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-red-500/20 bg-red-500/10 px-3 py-1 text-sm font-medium text-red-500">
+                  <span className="h-2 w-2 rounded-full bg-red-500" />
                   Đã bán
                 </span>
               )}
@@ -252,7 +250,7 @@ export default function ProductDetailPage() {
 
             <div className="grid grid-cols-2 gap-4">
               {batteryHealth ? (
-                <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
+                <div className="flex items-center gap-3 rounded-lg bg-muted/50 p-4">
                   <Battery className="h-5 w-5 text-[var(--accent-blue)]" />
                   <div>
                     <p className="text-xs text-muted-foreground">Battery Health</p>
@@ -262,7 +260,7 @@ export default function ProductDetailPage() {
               ) : null}
 
               {storage ? (
-                <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
+                <div className="flex items-center gap-3 rounded-lg bg-muted/50 p-4">
                   <HardDrive className="h-5 w-5 text-[var(--accent-blue)]" />
                   <div>
                     <p className="text-xs text-muted-foreground">Storage</p>
@@ -272,7 +270,7 @@ export default function ProductDetailPage() {
               ) : null}
 
               {ram ? (
-                <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
+                <div className="flex items-center gap-3 rounded-lg bg-muted/50 p-4">
                   <Cpu className="h-5 w-5 text-[var(--accent-blue)]" />
                   <div>
                     <p className="text-xs text-muted-foreground">RAM</p>
@@ -282,7 +280,7 @@ export default function ProductDetailPage() {
               ) : null}
 
               {screen ? (
-                <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
+                <div className="flex items-center gap-3 rounded-lg bg-muted/50 p-4">
                   <Monitor className="h-5 w-5 text-[var(--accent-blue)]" />
                   <div>
                     <p className="text-xs text-muted-foreground">Display</p>
@@ -290,7 +288,7 @@ export default function ProductDetailPage() {
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
+                <div className="flex items-center gap-3 rounded-lg bg-muted/50 p-4">
                   <Shield className="h-5 w-5 text-[var(--accent-blue)]" />
                   <div>
                     <p className="text-xs text-muted-foreground">Warranty</p>
@@ -316,14 +314,13 @@ export default function ProductDetailPage() {
             </div>
 
             <div className="flex flex-col gap-4">
-
               <div className="flex gap-3">
                 <Button
                   size="lg"
                   className={`flex-1 transition-all ${isSold
-                    ? "bg-muted text-muted-foreground cursor-not-allowed"
+                    ? "cursor-not-allowed bg-muted text-muted-foreground"
                     : addedToCart
-                      ? "bg-[var(--status-success)] hover:bg-[var(--status-success)] text-white"
+                      ? "bg-[var(--status-success)] text-white hover:bg-[var(--status-success)]"
                       : "rt-bg-brand text-white hover:opacity-90"
                     }`}
                   onClick={handleAddToCart}
@@ -337,12 +334,12 @@ export default function ProductDetailPage() {
                     </>
                   ) : addedToCart ? (
                     <>
-                      <Check className="h-5 w-5 mr-2" />
+                      <Check className="mr-2 h-5 w-5" />
                       Đã thêm vào giỏ
                     </>
                   ) : (
                     <>
-                      <ShoppingCart className="h-5 w-5 mr-2" />
+                      <ShoppingCart className="mr-2 h-5 w-5" />
                       Thêm vào giỏ hàng
                     </>
                   )}
@@ -370,7 +367,7 @@ export default function ProductDetailPage() {
 
         <div className="mt-16">
           <Tabs defaultValue="description" className="w-full">
-            <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent">
+            <TabsList className="h-auto w-full justify-start rounded-none border-b bg-transparent p-0">
               <TabsTrigger
                 value="description"
                 className="rounded-none border-b-2 data-[state=active]:border-[var(--accent-blue)]"
@@ -398,7 +395,7 @@ export default function ProductDetailPage() {
                 ) : (
                   <p className="text-lg text-muted-foreground">No description available.</p>
                 )}
-                <h3 className="mt-6 mb-4">What's Included</h3>
+                <h3 className="mb-4 mt-6">What's Included</h3>
                 <ul className="space-y-2">
                   <li>Device in excellent working condition</li>
                   <li>Original charging cable and adapter</li>
@@ -409,12 +406,12 @@ export default function ProductDetailPage() {
             </TabsContent>
 
             <TabsContent value="specs" className="mt-6">
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid gap-4 md:grid-cols-2">
                 {product?.specs && typeof product.specs === "object" ? (
                   Object.entries(product.specs).map(([key, value]: any) => (
-                    <div key={key} className="flex justify-between py-3 border-b border-border">
+                    <div key={key} className="flex justify-between border-b border-border py-3">
                       <span className="text-muted-foreground">{key}</span>
-                      <span className="font-medium text-right">{String(value)}</span>
+                      <span className="text-right font-medium">{String(value)}</span>
                     </div>
                   ))
                 ) : (
@@ -425,12 +422,12 @@ export default function ProductDetailPage() {
 
             <TabsContent value="condition" className="mt-6">
               <div className="space-y-4">
-                <div className="bg-muted/50 rounded-lg p-6">
-                  <h3 className="font-semibold mb-4">Grade {grade} Condition</h3>
+                <div className="rounded-lg bg-muted/50 p-6">
+                  <h3 className="mb-4 font-semibold">Grade {grade} Condition</h3>
                   <p className="mb-4">{product?.condition ? String(product.condition) : ""}</p>
-                  <div className="grid md:grid-cols-2 gap-4">
+                  <div className="grid gap-4 md:grid-cols-2">
                     <div>
-                      <p className="text-sm font-medium mb-2">✓ Checked Items:</p>
+                      <p className="mb-2 text-sm font-medium">✓ Checked Items:</p>
                       <ul className="space-y-1 text-sm text-muted-foreground">
                         <li>• Screen quality and touch response</li>
                         <li>• Camera functionality</li>
@@ -440,7 +437,7 @@ export default function ProductDetailPage() {
                       </ul>
                     </div>
                     <div>
-                      <p className="text-sm font-medium mb-2">Cosmetic Condition:</p>
+                      <p className="mb-2 text-sm font-medium">Cosmetic Condition:</p>
                       <ul className="space-y-1 text-sm text-muted-foreground">
                         <li>
                           •{" "}

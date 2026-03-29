@@ -36,13 +36,13 @@ export default function CartPage() {
   if (!cart.length) {
     return (
       <div className="min-h-screen py-10">
-        <div className="container mx-auto px-4">
-          <div className="bg-card border border-border rounded-2xl p-10 text-center">
-            <div className="mx-auto w-14 h-14 rounded-full bg-muted flex items-center justify-center">
+        <div className="mx-auto w-full max-w-[1260px] px-5 lg:px-7 xl:px-9">
+          <div className="rounded-2xl border border-border bg-card p-10 text-center">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-muted">
               <ShoppingBag className="h-7 w-7 text-muted-foreground" />
             </div>
-            <h1 className="text-2xl font-bold mt-4">Giỏ hàng trống</h1>
-            <p className="text-muted-foreground mt-2">Thêm sản phẩm để tiếp tục mua sắm.</p>
+            <h1 className="mt-4 text-2xl font-bold">Giỏ hàng trống</h1>
+            <p className="mt-2 text-muted-foreground">Thêm sản phẩm để tiếp tục mua sắm.</p>
             <div className="mt-6">
               <Link to="/products">
                 <Button className="rt-bg-brand text-white hover:opacity-90" type="button">
@@ -58,28 +58,28 @@ export default function CartPage() {
 
   return (
     <div className="min-h-screen py-8">
-      <div className="container mx-auto px-4">
+      <div className="mx-auto w-full max-w-[1260px] px-5 lg:px-7 xl:px-9">
         <div className="mb-8">
           <h1 className="text-3xl font-bold">Giỏ hàng</h1>
-          <p className="text-muted-foreground mt-1">
+          <p className="mt-1 text-muted-foreground">
             {cart.length} sản phẩm trong giỏ
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-4">
+        <div className="grid gap-8 lg:grid-cols-3">
+          <div className="space-y-4 lg:col-span-2">
             {cart.map((x: any) => {
               const price = n(x.info?.priceNew ?? x.info?.price ?? 0);
 
               return (
-                <div key={x.id} className="bg-card border border-border rounded-2xl p-4 md:p-5">
+                <div key={x.id} className="rounded-2xl border border-border bg-card p-4 md:p-5">
                   <div className="flex gap-4">
-                    <div className="w-24 h-24 rounded-xl overflow-hidden bg-muted flex-shrink-0">
+                    <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-xl bg-muted">
                       {x.info?.thumbnail ? (
                         <img
                           src={x.info.thumbnail}
                           alt={x.info?.title || ""}
-                          className="w-full h-full object-cover"
+                          className="h-full w-full object-cover"
                           loading="lazy"
                           onError={(e) => {
                             (e.currentTarget as HTMLImageElement).style.display = "none";
@@ -88,10 +88,10 @@ export default function CartPage() {
                       ) : null}
                     </div>
 
-                    <div className="flex-1 min-w-0">
+                    <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-4">
                         <div className="min-w-0">
-                          <div className="font-semibold text-base line-clamp-2">
+                          <div className="line-clamp-2 text-base font-semibold">
                             {x.info?.title || ""}
                           </div>
 
@@ -129,8 +129,8 @@ export default function CartPage() {
           </div>
 
           <div className="lg:col-span-1">
-            <div className="bg-card border border-border rounded-2xl p-6 sticky top-24">
-              <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
+            <div className="sticky top-24 rounded-2xl border border-border bg-card p-6">
+              <h2 className="mb-4 text-lg font-semibold">Order Summary</h2>
 
               <div className="space-y-3 text-sm">
                 <div className="flex items-center justify-between">
@@ -143,9 +143,9 @@ export default function CartPage() {
                   <span className="font-medium">{shipping === 0 ? "Free" : money(shipping)}</span>
                 </div>
 
-                <div className="border-t border-border pt-3 flex items-center justify-between">
+                <div className="flex items-center justify-between border-t border-border pt-3">
                   <span className="font-semibold">Total</span>
-                  <span className="font-semibold text-lg">{money(total)}</span>
+                  <span className="text-lg font-semibold">{money(total)}</span>
                 </div>
               </div>
 

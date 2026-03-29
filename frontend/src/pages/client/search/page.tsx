@@ -23,7 +23,7 @@ export default function SearchPage() {
       try {
         const data = await searchProducts(keyword);
         setItems(Array.isArray(data) ? data : []);
-      } catch (e) {
+      } catch (e: any) {
         dispatch(showAlert({ type: "error", message: e.message || "Không tìm được sản phẩm", timeout: 1000 }));
       } finally {
         setLoading(false);
@@ -33,7 +33,7 @@ export default function SearchPage() {
   }, [keyword, dispatch]);
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-6 space-y-3">
+    <div className="mx-auto w-full max-w-[1260px] px-5 py-6 space-y-3 lg:px-7 xl:px-9">
       <h1 className="text-xl font-semibold">Kết quả tìm kiếm</h1>
       <div className="text-slate-600">Từ khóa: {keyword || "(trống)"}</div>
       {loading ? <div>Loading...</div> : <ProductGrid items={items} />}
