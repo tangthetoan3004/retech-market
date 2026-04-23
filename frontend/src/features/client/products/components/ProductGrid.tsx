@@ -42,7 +42,7 @@ export default function ProductGrid({ items }: Props) {
   };
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-4 gap-4 md:gap-6">
       {list.map((p: any, idx: number) => {
         const id = p?.id ?? p?._id ?? p?.slug ?? `item-${idx}`;
         const isInWishlist = wishlist.some((w) => w.id === id);

@@ -60,7 +60,7 @@ export default function CheckoutPage() {
       dispatch(deleteAll());
       navigate("/checkout/success", { state: { order: data?.order || data } });
     } catch (err: any) {
-      dispatch(showAlert({ type: "error", message: err.message || "Đặt hàng thất bại", timeout: 3000 }));
+      dispatch(showAlert({ type: "error", message: err.message || "Đặt hàng thất bại", timeout: 1000 }));
     } finally {
       setLoading(false);
     }
