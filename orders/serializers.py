@@ -24,7 +24,8 @@ class OrderReadSerializer(serializers.ModelSerializer):
     class Meta:
         model  = Order
         fields = [
-            "id", "user_email", "status", "status_display",
+            "id", "user_email", "full_name", "phone", "shipping_address",
+            "status", "status_display",
             "total_amount", "items", "payment", "created_at", "updated_at",
         ]
 
@@ -50,8 +51,11 @@ ALLOWED_ORDER_PAYMENT_METHODS = [
 
 
 class OrderCreateSerializer(serializers.Serializer):
-    items          = OrderItemWriteSerializer(many=True)
-    payment_method = serializers.ChoiceField(choices=ALLOWED_ORDER_PAYMENT_METHODS)
+    items            = OrderItemWriteSerializer(many=True)
+    payment_method   = serializers.ChoiceField(choices=ALLOWED_ORDER_PAYMENT_METHODS)
+    full_name        = serializers.CharField(max_length=255, required=False, default="")
+    phone_number     = serializers.CharField(max_length=20, required=False, default="")
+    shipping_address = serializers.CharField(required=False, default="")
 
     def validate_items(self, value):
         if not value:

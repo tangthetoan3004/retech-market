@@ -86,6 +86,9 @@ class OrderViewSet(viewsets.ModelViewSet):
                 user=request.user,
                 product_ids=product_ids,
                 payment_method=payment_method,
+                full_name=serializer.validated_data.get('full_name', ''),
+                phone=serializer.validated_data.get('phone_number', ''),
+                shipping_address=serializer.validated_data.get('shipping_address', ''),
             )
             CacheManager.invalidate_pattern(f"orders:user:{request.user.id}")
             read_serializer = OrderReadSerializer(order, context={"request": request})

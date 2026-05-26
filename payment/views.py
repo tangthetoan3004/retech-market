@@ -17,7 +17,7 @@ from .serializers import (
     PaymentRefundSerializer,
 )
 from .services import PaymentService
-from .utils.zalopay import verify_callback
+from .utils.zalopay import verify_callback, query_zalopay_order_status
 
 logger = logging.getLogger(__name__)
 
@@ -148,6 +148,40 @@ class PaymentStatusView(APIView):
             payment = Payment.objects.get(pk=pk, user=request.user)
         except Payment.DoesNotExist:
             return Response({"detail": "Không tìm thấy giao dịch."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Nếu ZaloPay PENDING → chủ động query ZaloPay API để kiểm tra trạng thái
+        if (
+            payment.status == Payment.Status.PENDING
+            and payment.payment_method == Payment.PaymentMethod.ZALOPAY
+            and payment.transaction_ref
+        ):
+            try:
+                zp_result = query_zalopay_order_status(payment.transaction_ref)
+                return_code = zp_result.get("return_code")
+                if return_code == 1:
+                    # Thanh toán thành công trên ZaloPay → complete payment
+                    with transaction.atomic():
+                        payment = Payment.objects.select_for_update().get(pk=payment.pk)
+                        if payment.status == Payment.Status.PENDING:
+                            zp_trans_id = str(zp_result.get("zp_trans_id", ""))
+                            if zp_trans_id:
+                                payment.transaction_ref = zp_trans_id
+                                payment.save(update_fields=["transaction_ref", "updated_at"])
+                            payment.change_status(Payment.Status.COMPLETED)
+                            from .signals import on_payment_completed
+                            on_payment_completed(payment)
+                    payment.refresh_from_db()
+                elif return_code == 2:
+                    # Thanh toán thất bại trên ZaloPay → fail payment
+                    PaymentService.fail_payment(
+                        payment=payment,
+                        staff_user=None,
+                        note="ZaloPay query: giao dịch thất bại.",
+                    )
+                    payment.refresh_from_db()
+                # return_code == 3: đang xử lý → giữ PENDING
+            except Exception as e:
+                logger.warning("ZaloPay query error for Payment #%s: %s", pk, e)
 
         return Response({
             "id": payment.id,

@@ -15,10 +15,14 @@ class CacheKey:
     USER_CART      = "cart:user:{user_id}"
 
     @staticmethod
-    def make_product_list_key(filters: dict) -> str:
-        canonical = json.dumps(filters, sort_keys=True)
+    def make_key(prefix: str, params: dict) -> str:
+        canonical = json.dumps(params, sort_keys=True)
         hash_val  = hashlib.md5(canonical.encode()).hexdigest()[:8]
-        return CacheKey.PRODUCT_LIST.format(hash=hash_val)
+        return f"{prefix}{hash_val}"
+
+    @staticmethod
+    def make_product_list_key(filters: dict) -> str:
+        return CacheKey.make_key("product:list:", filters)
 
 
 class CacheManager:

@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'orders',
     'tradein',
     'payment',
+    'ai_models',
 ]
 
 MIDDLEWARE = [
@@ -105,6 +106,7 @@ USE_TZ = True
 
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -119,8 +121,8 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_PARSER_CLASSES': (
         'rest_framework.parsers.JSONParser',       
+        'rest_framework.parsers.FormParser',
         'rest_framework.parsers.MultiPartParser',  
-        'rest_framework.parsers.FileUploadParser', 
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'core.authentication.CookieJWTAuthentication',
@@ -153,6 +155,10 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5173",
     "http://localhost:8000",   # Cho phép Swagger UI / trình duyệt direct gọi API
 ]
+# Thêm Ngrok URL vào CORS nếu có
+NGROK_URL = os.getenv('NGROK_URL', '')
+if NGROK_URL:
+    CORS_ALLOWED_ORIGINS.append(NGROK_URL)
 CORS_ALLOW_CREDENTIALS = True  # Bắt buộc để browser gửi cookie cross-origin
 
 # ---------- Email ----------
@@ -174,7 +180,6 @@ GOOGLE_REDIRECT_URI = os.getenv('GOOGLE_REDIRECT_URI', 'http://localhost:5173/us
 ZALOPAY_APP_ID = os.getenv('ZALOPAY_APP_ID', '')
 ZALOPAY_KEY1 = os.getenv('ZALOPAY_KEY1', '')
 ZALOPAY_KEY2 = os.getenv('ZALOPAY_KEY2', '')
-NGROK_URL = os.getenv('NGROK_URL', '')
 
 
 SIMPLE_JWT = {
@@ -193,10 +198,15 @@ SIMPLE_JWT = {
 ACCESS_TOKEN_COOKIE  = "access_token"
 REFRESH_TOKEN_COOKIE = "refresh_token"
 
-COOKIE_SECURE   = not DEBUG   
+COOKIE_SECURE   = not DEBUG
 
 COOKIE_HTTPONLY = True
 COOKIE_SAMESITE = "Lax"
+
+# Khi chạy qua Ngrok HTTPS (non-DEBUG), cần SameSite=None + Secure=True
+if not DEBUG:
+    COOKIE_SAMESITE = "None"
+    COOKIE_SECURE = True
 
 ACCESS_TOKEN_COOKIE_MAX_AGE  = 15 * 60      
 REFRESH_TOKEN_COOKIE_MAX_AGE = 7 * 24 * 3600
@@ -240,6 +250,11 @@ CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = TIME_ZONE
+
+# Fallback cho môi trường dev không có Redis
+if DEBUG:
+    CELERY_TASK_ALWAYS_EAGER = True
+    CELERY_TASK_EAGER_PROPAGATES = True
 
 from celery.schedules import crontab 
 

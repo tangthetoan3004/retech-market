@@ -5,12 +5,13 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('django-admin/', admin.site.urls),
     path('api/users/', include('users.urls')),
     path('api/products/', include('products.urls')),
     path('api/tradein/', include('tradein.urls')),
     path('api/orders/', include('orders.urls')),
     path('api/payments/', include('payment.urls')),
+    path('api/ai/', include('ai_models.urls')),
 
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),

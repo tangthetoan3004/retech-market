@@ -12,6 +12,7 @@ from django.conf import settings
 logger = logging.getLogger(__name__)
 
 ZALOPAY_CREATE_ORDER_URL = "https://sb-openapi.zalopay.vn/v2/create"
+ZALOPAY_QUERY_ORDER_URL = "https://sb-openapi.zalopay.vn/v2/query"
 
 
 def create_zalopay_order(payment):
@@ -22,6 +23,7 @@ def create_zalopay_order(payment):
     app_id = int(settings.ZALOPAY_APP_ID)
     key1 = settings.ZALOPAY_KEY1
     callback_url = f"{settings.NGROK_URL}/api/payments/zalopay-callback/"
+    #   callback_url = "http://localhost:8000/api/payments/zalopay-callback/"
 
     now = datetime.now()
     app_trans_id = f"{now.strftime('%y%m%d')}_{random.randint(100000, 999999)}"
@@ -29,7 +31,8 @@ def create_zalopay_order(payment):
 
     embed_data = json.dumps({
         "payment_id": payment.id,
-        "redirecturl": "http://localhost:5173/checkout/success",
+        "redirecturl": f"{settings.NGROK_URL}/checkout/success" if settings.NGROK_URL else "http://localhost:5173/checkout/success",
+        #   "redirecturl": "http://localhost:5173/checkout/success",
     })
     item = json.dumps([{
         "itemid": str(payment.order_id),
@@ -84,3 +87,28 @@ def verify_callback(data: str, mac: str) -> bool:
     key2 = settings.ZALOPAY_KEY2
     computed_mac = hmac.new(key2.encode(), data.encode(), hashlib.sha256).hexdigest()
     return hmac.compare_digest(computed_mac, mac)
+
+
+def query_zalopay_order_status(app_trans_id: str) -> dict:
+    """
+    Gọi ZaloPay Query API /v2/query để kiểm tra trạng thái giao dịch.
+    return_code: 1 = thành công, 2 = thất bại, 3 = đang xử lý
+    """
+    app_id = str(settings.ZALOPAY_APP_ID)
+    key1 = settings.ZALOPAY_KEY1
+
+    raw_mac = f"{app_id}|{app_trans_id}|{key1}"
+    mac = hmac.new(key1.encode(), raw_mac.encode(), hashlib.sha256).hexdigest()
+
+    params = {
+        "app_id": app_id,
+        "app_trans_id": app_trans_id,
+        "mac": mac,
+    }
+
+    try:
+        response = requests.post(ZALOPAY_QUERY_ORDER_URL, json=params, timeout=10)
+        return response.json()
+    except Exception as e:
+        logger.warning("ZaloPay query failed for %s: %s", app_trans_id, e)
+        return {"return_code": 3, "return_message": "query failed"}

@@ -3,6 +3,7 @@ from decimal import Decimal
 from django.core.exceptions import ValidationError
 from django.db import transaction
 
+from core.cache import CacheManager
 from payment.models import Payment
 from products.models import Product
 from .models import Order, OrderItem, Refund, RefundItem
@@ -12,7 +13,8 @@ class OrderService:
 
     @staticmethod
     @transaction.atomic
-    def create_order(user, product_ids: list[int], payment_method: str) -> Order:
+    def create_order(user, product_ids: list[int], payment_method: str,
+                     full_name: str = "", phone: str = "", shipping_address: str = "") -> Order:
         if not product_ids:
             raise ValidationError("Đơn hàng phải có ít nhất một sản phẩm.")
 
@@ -29,7 +31,12 @@ class OrderService:
                 f"ID không hợp lệ: {list(missing)}"
             )
 
-        order = Order.objects.create(user=user)
+        order = Order.objects.create(
+            user=user,
+            full_name=full_name,
+            phone=phone,
+            shipping_address=shipping_address,
+        )
 
         order_items  = []
         total_amount = Decimal("0")
@@ -42,6 +49,11 @@ class OrderService:
 
         OrderItem.objects.bulk_create(order_items)
         Product.objects.bulk_update(locked_products, ["is_sold"])
+
+        # Invalidate product list cache khi is_sold thay đổi
+        CacheManager.invalidate_pattern("product:list")
+        for product in locked_products:
+            CacheManager.invalidate(f"product:detail:{product.slug}")
 
         order.total_amount = total_amount
         order.save(update_fields=["total_amount", "updated_at"])
@@ -82,6 +94,11 @@ class OrderService:
         for p in products:
             p.is_sold = False
         Product.objects.bulk_update(products, ["is_sold"])
+
+        # Invalidate product list cache khi is_sold revert
+        CacheManager.invalidate_pattern("product:list")
+        for p in products:
+            CacheManager.invalidate(f"product:detail:{p.slug}")
 
         # Auto-fail Payment PENDING liên kết với Order
         order.payments.filter(status=Payment.Status.PENDING).update(
@@ -141,6 +158,11 @@ class RefundService:
         for p in products:
             p.is_sold = False
         Product.objects.bulk_update(products, ["is_sold"])
+
+        # Invalidate product list cache khi is_sold revert sau refund
+        CacheManager.invalidate_pattern("product:list")
+        for p in products:
+            CacheManager.invalidate(f"product:detail:{p.slug}")
 
         return refund
 

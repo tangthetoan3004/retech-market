@@ -14,9 +14,10 @@ class ProductViewSet(viewsets.ModelViewSet):
     serializer_class = ProductSerializer
     pagination_class = ProductPagination
     permission_classes = [IsOwnerOrReadOnly]
+    lookup_field = 'slug'
     
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['category', 'brand', 'condition']
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = []
     search_fields = ['name', 'description']
     ordering_fields = ['price', 'created_at']
 
@@ -28,14 +29,17 @@ class ProductViewSet(viewsets.ModelViewSet):
 
         category = self.request.query_params.get("category")
         brand = self.request.query_params.get("brand")
+        condition = self.request.query_params.get("condition")
         min_price = self.request.query_params.get("min_price")
         max_price = self.request.query_params.get("max_price")
         search = self.request.query_params.get("search")
 
         if category:
-            queryset = queryset.filter(category__slug=category)
+            queryset = queryset.filter(category__slug__in=category.split(","))
         if brand:
-            queryset = queryset.filter(brand__slug=brand)
+            queryset = queryset.filter(brand__slug__in=brand.split(","))
+        if condition:
+            queryset = queryset.filter(condition__in=condition.split(","))
         if min_price:
             queryset = queryset.filter(price__gte=min_price)
         if max_price:
@@ -98,6 +102,7 @@ class ProductViewSet(viewsets.ModelViewSet):
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    pagination_class = ProductPagination
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
@@ -105,10 +110,16 @@ class CategoryViewSet(viewsets.ModelViewSet):
         return [IsStaffOrSuperAdmin()]
 
     def list(self, request, *args, **kwargs):
-        cache_key = CacheKey.CATEGORY_LIST
+        params = request.query_params.dict()
+        cache_key = CacheKey.make_key("category:list:", params)
         
         def db_query():
             queryset = self.filter_queryset(self.get_queryset())
+            page = self.paginate_queryset(queryset)
+            if page is not None:
+                serializer = self.get_serializer(page, many=True)
+                return self.get_paginated_response(serializer.data).data
+            
             serializer = self.get_serializer(queryset, many=True)
             return serializer.data
 
@@ -131,6 +142,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
 class BrandViewSet(viewsets.ModelViewSet):
     queryset = Brand.objects.all()
     serializer_class = BrandSerializer
+    pagination_class = ProductPagination
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
@@ -138,10 +150,16 @@ class BrandViewSet(viewsets.ModelViewSet):
         return [IsStaffOrSuperAdmin()]
 
     def list(self, request, *args, **kwargs):
-        cache_key = CacheKey.BRAND_LIST
+        params = request.query_params.dict()
+        cache_key = CacheKey.make_key("brand:list:", params)
         
         def db_query():
             queryset = self.filter_queryset(self.get_queryset())
+            page = self.paginate_queryset(queryset)
+            if page is not None:
+                serializer = self.get_serializer(page, many=True)
+                return self.get_paginated_response(serializer.data).data
+            
             serializer = self.get_serializer(queryset, many=True)
             return serializer.data
 

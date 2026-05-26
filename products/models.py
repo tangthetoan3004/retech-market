@@ -1,5 +1,7 @@
 from django.db import models
-from django.utils.text import slugify
+from django.utils.text import slugify as django_slugify
+import unicodedata
+import re
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.conf import settings
@@ -30,6 +32,17 @@ class SoftDeleteModel(models.Model):
     def hard_delete(self):
         super().delete()
 
+def vietnamese_slugify(text):
+    if not text:
+        return ""
+    text = str(text)
+    text = text.replace('đ', 'd').replace('Đ', 'D')
+    text = unicodedata.normalize('NFD', text)
+    text = text.encode('ascii', 'ignore').decode('utf-8')
+    text = text.lower()
+    text = re.sub(r'[^a-z0-9]+', '-', text)
+    return text.strip('-')
+
 
 class SlugModel(models.Model):
     slug = models.SlugField(unique=True, blank=True, db_index=True, null=True)
@@ -38,7 +51,7 @@ class SlugModel(models.Model):
         abstract = True
 
     def generate_unique_slug(self, base_field="name"):
-        base_slug = slugify(getattr(self, base_field))
+        base_slug = vietnamese_slugify(getattr(self, base_field))
         slug = base_slug
         counter = 1
 
@@ -53,7 +66,7 @@ class SlugModel(models.Model):
 
 class Category(SoftDeleteModel, SlugModel):
     name = models.CharField(max_length=100, unique=True)
-    icon = models.ImageField(upload_to="categories/", blank=True, null=True)
+    icon = models.TextField(blank=True, null=True, help_text="Dán mã code <svg>...</svg> vào đây")
 
     class Meta:
         ordering = ["name"]
@@ -72,7 +85,9 @@ class Category(SoftDeleteModel, SlugModel):
 
 class Brand(SoftDeleteModel, SlugModel):
     name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(blank=True, null=True)
     logo = models.ImageField(upload_to="brands/", blank=True, null=True)
+    logo_svg = models.TextField(blank=True, null=True, help_text="Dán mã SVG")
 
     class Meta:
         ordering = ["name"]
@@ -132,6 +147,7 @@ class Product(SoftDeleteModel, SlugModel):
     warranty_period = models.IntegerField(default=0)
 
     main_image = models.ImageField(upload_to="products/", blank=True, null=True)
+    main_image_url = models.TextField(blank=True, null=True, help_text="Link ảnh online")
 
     is_sold = models.BooleanField(default=False, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)

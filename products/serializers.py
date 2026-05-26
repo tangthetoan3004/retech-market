@@ -24,6 +24,7 @@ class ProductSerializer(serializers.ModelSerializer):
             "battery_health",
             "warranty_period",
             "main_image",
+            "main_image_url",
             "is_sold",
             "created_at",
             "seller_username",
@@ -32,7 +33,6 @@ class ProductSerializer(serializers.ModelSerializer):
         )
         read_only_fields = (
             "seller",
-            "slug",
             "is_sold",
             "created_at",
         )
@@ -102,6 +102,8 @@ class ProductSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
 class CategorySerializer(serializers.ModelSerializer):
+    name = serializers.CharField()
+
     class Meta:
         model = Category
         fields = (
@@ -110,16 +112,57 @@ class CategorySerializer(serializers.ModelSerializer):
             "slug",
             "icon",
         )
-        read_only_fields = ("slug",)
+
+    def validate_name(self, value):
+        if Category.objects.filter(name=value).exists():
+            raise serializers.ValidationError("Danh mục này đã tồn tại.")
+        return value
+
+    def create(self, validated_data):
+        name = validated_data.get("name")
+        instance = Category.all_objects.filter(name=name, is_deleted=True).first()
+        if instance:
+            instance.is_deleted = False
+            for attr, value in validated_data.items():
+                setattr(instance, attr, value)
+            instance.save()
+            return instance
+        return super().create(validated_data)
 
 
 class BrandSerializer(serializers.ModelSerializer):
+    name = serializers.CharField()
     class Meta:
         model = Brand
         fields = (
             "id",
             "name",
             "slug",
+            "description",
             "logo",
+            "logo_svg",
         )
-        read_only_fields = ("slug",)
+
+    def validate_name(self, value):
+        if Brand.objects.filter(name=value).exists():
+            raise serializers.ValidationError("Thương hiệu này đã tồn tại.")
+        return value
+
+    def validate_logo(self, value):
+        if not value:
+            return value
+
+        if value.size > 2 * 1024 * 1024:
+            raise serializers.ValidationError("Kích thước logo tối đa là 2MB.")
+        return value
+
+    def create(self, validated_data):
+        name = validated_data.get("name")
+        instance = Brand.all_objects.filter(name=name, is_deleted=True).first()
+        if instance:
+            instance.is_deleted = False
+            for attr, value in validated_data.items():
+                setattr(instance, attr, value)
+            instance.save()
+            return instance
+        return super().create(validated_data)
