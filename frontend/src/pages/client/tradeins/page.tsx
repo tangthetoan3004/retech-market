@@ -1,24 +1,28 @@
-import React, { useMemo, useState, useEffect } from "react";
-import { Phone, Laptop, Tablet, Watch, UploadCloud, CheckCircle2, Loader2 } from "lucide-react";
+import React, { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft, Check, UploadCloud, CheckCircle2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   createTradeInRequest,
   uploadTradeInTempImage,
-  estimateTradeInPrice
 } from "../../../services/client/tradeins/tradeinsService";
-import { getBrandsList } from "../../../services/admin/brands/brandsService";
-import { getCategories } from "../../../services/admin/products-category/productCategoryService";
-import { getProducts } from "../../../services/client/products/productsService";
+
+type Step = 'brand' | 'model' | 'storage' | 'functional' | 'appearance' | 'upload' | 'success';
 
 export default function TradeInsPage() {
-  const [submitted, setSubmitted] = useState(false);
+  const navigate = useNavigate();
+  const [step, setStep] = useState<Step>('brand');
   const [loading, setLoading] = useState(false);
-  const [estimating, setEstimating] = useState(false);
-  const [estimatedPrice, setEstimatedPrice] = useState<number | null>(null);
 
-  const [brands, setBrands] = useState<{ id: number; name: string }[]>([]);
-  const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
-  const [products, setProducts] = useState<any[]>([]);
+  // Form State
+  const [form, setForm] = useState({
+    brand: "",
+    model: "",
+    storage: "",
+    functional: null as boolean | null,
+    appearance: "",
+    images: [] as File[],
+  });
 
   const sessionKey = useMemo(() => {
     if (typeof crypto !== "undefined" && crypto.randomUUID) {
@@ -27,69 +31,29 @@ export default function TradeInsPage() {
     return Array.from({ length: 32 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
   }, []);
 
-  const [form, setForm] = useState({
-    tradein_type: "SELL" as "SELL" | "EXCHANGE",
-    target_product: "",
-    brand_id: "",
-    category_id: "",
-    model_name: "",
-    storage: "",
-    is_power_on: true,
-    screen_ok: true,
-    body_ok: true,
-    battery_percentage: 100,
-    description: "",
-    images: [] as File[],
-  });
+  // Dummy Data
+  const sampleBrands = ["Apple", "Samsung", "Oppo", "Xiaomi", "Vivo", "Google"];
+  const sampleModels = [
+    "iPhone 15 Pro Max", "iPhone 15 Pro", "iPhone 15 Plus", "iPhone 15",
+    "iPhone 14 Pro Max", "iPhone 14 Pro", "iPhone 14 Plus", "iPhone 14",
+    "iPhone 13 Pro Max", "iPhone 13 Pro", "iPhone 13",
+    "Samsung Galaxy S24 Ultra", "Samsung Galaxy S23 Ultra", "Samsung Galaxy Z Fold 5"
+  ];
 
-  useEffect(() => {
-    getBrandsList({}).then((res: any) => setBrands(res.items || res.results || res || []));
-    getCategories().then((res: any) => setCategories(res.items || res.results || res || []));
-    getProducts({}).then((res: any) => setProducts(res || []));
-  }, []);
-
-  const handleEstimate = async () => {
-    if (!form.brand_id || !form.category_id || !form.model_name) {
-      toast.warning("Vui lòng chọn Hãng, Danh mục và nhập Tên dòng máy để ước tính.");
-      return;
-    }
-    if (form.tradein_type === "EXCHANGE" && !form.target_product) {
-      toast.warning("Vui lòng chọn sản phẩm muốn đổi lên.");
-      return;
-    }
-    setEstimating(true);
-    try {
-      const res: any = await estimateTradeInPrice({
-        tradein_type: form.tradein_type,
-        brand_id: Number(form.brand_id),
-        category_id: Number(form.category_id),
-        model_name: form.model_name,
-        storage: form.storage,
-        is_power_on: form.is_power_on,
-        screen_ok: form.screen_ok,
-        body_ok: form.body_ok,
-        battery_percentage: form.battery_percentage,
-        target_product_id: form.tradein_type === "EXCHANGE" ? Number(form.target_product) : undefined
-      });
-      setEstimatedPrice(res.estimated_price || res.price || 0);
-      toast.success("Đã lấy được giá ước tính!");
-    } catch (err: any) {
-      toast.error(err.message || "Lỗi khi ước tính giá");
-    } finally {
-      setEstimating(false);
-    }
+  const goNext = (nextStep: Step) => {
+    setStep(nextStep);
   };
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!form.brand_id || !form.category_id || !form.model_name) {
-      toast.error("Vui lòng điền đầy đủ thiết bị, phân loại và hãng.");
-      return;
-    }
-    if (form.tradein_type === "EXCHANGE" && !form.target_product) {
-      toast.error("Vui lòng chọn sản phẩm muốn đổi lên.");
-      return;
-    }
+  const goBack = () => {
+    if (step === 'model') setStep('brand');
+    else if (step === 'storage') setStep('model');
+    else if (step === 'functional') setStep('storage');
+    else if (step === 'appearance') setStep('functional');
+    else if (step === 'upload') setStep('appearance');
+    else if (step === 'brand') navigate(-1); // Go back to previous page
+  };
+
+  const submit = async () => {
     if (form.images.length === 0) {
       toast.warning("Vui lòng cung cấp ít nhất 1 ảnh thiết bị.");
       return;
@@ -97,27 +61,24 @@ export default function TradeInsPage() {
 
     setLoading(true);
     try {
-      // 1. Upload images
       const uploadPromises = form.images.map(file => uploadTradeInTempImage(sessionKey, file));
       await Promise.all(uploadPromises);
 
-      // 2. Submit request
       await createTradeInRequest({
-        tradein_type: form.tradein_type,
-        brand: Number(form.brand_id),
-        category: Number(form.category_id),
-        model_name: form.model_name,
+        tradein_type: "SELL",
+        brand: 1, 
+        category: 1, 
+        model_name: form.model,
         storage: form.storage,
-        is_power_on: form.is_power_on,
-        screen_ok: form.screen_ok,
-        body_ok: form.body_ok,
-        battery_percentage: form.battery_percentage,
-        description: form.description,
-        target_product: form.tradein_type === "EXCHANGE" ? Number(form.target_product) : undefined,
+        is_power_on: form.functional === true,
+        screen_ok: form.functional === true,
+        body_ok: form.functional === true,
+        battery_percentage: 100,
+        description: `Thương hiệu: ${form.brand}. Máy chức năng tốt: ${form.functional ? 'Có' : 'Không'}. Ngoại hình: ${form.appearance}.`,
         session_key: sessionKey
       } as any);
 
-      setSubmitted(true);
+      setStep('success');
       toast.success("Gửi yêu cầu thành công!");
     } catch (err: any) {
       toast.error(err.message || "Có lỗi xảy ra khi gửi yêu cầu.");
@@ -126,285 +87,326 @@ export default function TradeInsPage() {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
-      <div className="mx-auto max-w-5xl px-4 md:px-6 lg:px-8 py-10">
-        <div className="space-y-2 mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold">Trade-In (Thu Cũ Đổi Mới)</h1>
-          <p className="text-muted-foreground">
-            Gửi thông tin thiết bị cũ để nhận báo giá nhanh. Chúng tôi sẽ liên hệ trong thời gian sớm nhất.
-          </p>
+  const renderBrandStep = () => (
+    <div key="brand" className="animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col items-start w-full max-w-[480px]">
+      <div className="inline-block bg-[#d4ff00] text-black px-2 py-0.5 text-sm font-semibold rounded mb-6">
+        Thương hiệu
+      </div>
+      <h1 className="text-2xl md:text-3xl font-bold text-slate-800 mb-6 text-left">
+        Điện thoại của bạn thuộc thương hiệu nào?
+      </h1>
+      <div className="relative w-full">
+        <select
+          className="w-full appearance-none rounded-lg border border-slate-200 bg-white px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+          value={form.brand}
+          onChange={(e) => {
+            const val = e.target.value;
+            setForm(p => ({ ...p, brand: val }));
+            setTimeout(() => goNext('model'), 150);
+          }}
+        >
+          <option value="" disabled>Thương hiệu</option>
+          {sampleBrands.map(b => (
+            <option key={b} value={b}>{b}</option>
+          ))}
+        </select>
+        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+          </svg>
         </div>
+      </div>
+    </div>
+  );
 
-        <div className="grid lg:grid-cols-5 gap-6">
-          <div className="lg:col-span-2 space-y-4">
-            <div className="rounded-2xl border border-border bg-card p-5">
-              <div className="text-sm font-semibold mb-3">Quy trình</div>
-              <ol className="space-y-3 text-sm text-foreground/80">
-                <li className="flex gap-3">
-                  <span className="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs">1</span>
-                  <span>Điền form & gửi hình ảnh thiết bị</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="w-7 h-7 rounded-full bg-secondary/20 text-secondary-foreground flex items-center justify-center text-xs">2</span>
-                  <span>Nhận báo giá dự kiến ngay lập tức</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs">3</span>
-                  <span>Kiểm tra máy & chốt giá tại cửa hàng / thu tận nơi</span>
-                </li>
-              </ol>
+  const renderModelStep = () => (
+    <div key="model" className="animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col items-start w-full max-w-[480px]">
+      <div className="inline-block bg-[#d4ff00] text-black px-2 py-0.5 text-sm font-semibold rounded mb-6">
+        Dòng máy
+      </div>
+      <h1 className="text-2xl md:text-3xl font-bold text-slate-800 mb-6 text-left">
+        Tên chính xác của dòng máy là gì?
+      </h1>
+      <div className="relative mb-4 w-full">
+        <select
+          className="w-full appearance-none rounded-lg border border-slate-200 bg-white px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+          value={form.model}
+          onChange={(e) => {
+            const val = e.target.value;
+            setForm(p => ({ ...p, model: val }));
+            setTimeout(() => goNext('storage'), 150);
+          }}
+        >
+          <option value="" disabled>Dòng máy</option>
+          {sampleModels.filter(m => form.brand === "" || m.includes(form.brand) || (form.brand === "Apple" && m.includes("iPhone"))).map(m => (
+            <option key={m} value={m}>{m}</option>
+          ))}
+        </select>
+        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
+      </div>
+      <p className="text-sm text-slate-500 w-full leading-relaxed text-left">
+        Không chắc chắn? Hãy vào "Cài đặt" &gt; "Cài đặt chung" &gt; "Giới thiệu". Nếu dòng máy của bạn không có trong danh sách, hiện tại chúng tôi chưa hỗ trợ thu cũ.
+      </p>
+    </div>
+  );
+
+  const renderStorageStep = () => (
+    <div key="storage" className="animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col items-start w-full max-w-[480px]">
+      <div className="inline-block bg-[#d4ff00] text-black px-2 py-0.5 text-sm font-semibold rounded mb-6">
+        Dung lượng
+      </div>
+      <h1 className="text-2xl md:text-3xl font-bold text-slate-800 mb-6 text-left">
+        Dung lượng bộ nhớ là bao nhiêu?
+      </h1>
+      <div className="grid grid-cols-2 gap-4 w-full mb-4">
+        {["256 GB", "512 GB", "1000 GB"].map(cap => (
+          <button
+            key={cap}
+            onClick={() => {
+              setForm(p => ({ ...p, storage: cap }));
+              setTimeout(() => goNext('functional'), 150);
+            }}
+            className={`rounded-xl border py-4 text-center font-medium transition-all focus:outline-none ${form.storage === cap ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50'}`}
+          >
+            {cap}
+          </button>
+        ))}
+      </div>
+      <p className="text-sm text-slate-500 w-full text-left">
+        Không chắc chắn? Hãy vào "Cài đặt" &gt; "Cài đặt chung" &gt; "Giới thiệu".
+      </p>
+    </div>
+  );
+
+  const renderFunctionalStep = () => (
+    <div key="functional" className="animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col items-start w-full max-w-[480px]">
+      <h1 className="text-2xl md:text-3xl font-bold text-slate-800 mb-8 text-left">
+        Máy có hoạt động bình thường không?
+      </h1>
+      
+      <div className="space-y-5 text-[15px] text-slate-700 w-full mb-10 text-left">
+        <div className="flex gap-3 items-start">
+          <Check className="w-5 h-5 mt-0.5 text-slate-700 shrink-0" strokeWidth={2.5} />
+          <p>Thiết bị có thể bật, tắt và sạc bình thường. Đầy đủ pin, vỏ và khay SIM.</p>
+        </div>
+        <div className="flex gap-3 items-start">
+          <Check className="w-5 h-5 mt-0.5 text-slate-700 shrink-0" strokeWidth={2.5} />
+          <p>Camera trước và sau hoạt động hoàn hảo.</p>
+        </div>
+        <div className="flex gap-3 items-start">
+          <Check className="w-5 h-5 mt-0.5 text-slate-700 shrink-0" strokeWidth={2.5} />
+          <p>Loa và micro hoạt động hoàn hảo.</p>
+        </div>
+        <div className="flex gap-3 items-start">
+          <Check className="w-5 h-5 mt-0.5 text-slate-700 shrink-0" strokeWidth={2.5} />
+          <p>Touch ID và Face ID (nếu có) hoạt động tốt.</p>
+        </div>
+        <div className="flex gap-3 items-start">
+          <Check className="w-5 h-5 mt-0.5 text-slate-700 shrink-0" strokeWidth={2.5} />
+          <p>Tất cả các tính năng khác bao gồm Wi-Fi, Bluetooth, các nút bấm... đều hoạt động tốt.</p>
+        </div>
+        <div className="flex gap-3 items-start">
+          <Check className="w-5 h-5 mt-0.5 text-slate-700 shrink-0" strokeWidth={2.5} />
+          <p>Quan trọng: Tài khoản iCloud, Google hoặc bất kỳ tài khoản nào khác phải được đăng xuất (dù máy hoạt động hay không). Chúng tôi không nhận máy bị cong vênh hoặc rỉ sét.</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 w-full">
+        <button
+          onClick={() => {
+            setForm(p => ({ ...p, functional: true }));
+            goNext('appearance');
+          }}
+          className="rounded-xl border border-slate-200 bg-white py-3.5 text-center font-medium text-slate-700 hover:border-slate-400 hover:bg-slate-50 transition-all focus:ring-2 focus:ring-slate-200 outline-none"
+        >
+          Có
+        </button>
+        <button
+          onClick={() => {
+            setForm(p => ({ ...p, functional: false }));
+            goNext('appearance');
+          }}
+          className="rounded-xl border border-slate-200 bg-white py-3.5 text-center font-medium text-slate-700 hover:border-slate-400 hover:bg-slate-50 transition-all focus:ring-2 focus:ring-slate-200 outline-none"
+        >
+          Không
+        </button>
+      </div>
+    </div>
+  );
+
+  const appearanceOptions = [
+    {
+      id: "cracked",
+      title: "Nứt vỡ",
+      desc: "Có dấu hiệu hao mòn rõ rệt, bao gồm các vết xước sâu, nứt và/hoặc móp méo ở bên ngoài thiết bị.",
+      img: "/landing-assets/Cracked.png"
+    },
+    {
+      id: "used",
+      title: "Đã qua sử dụng",
+      desc: "Có dấu hiệu hao mòn, bao gồm các vết xước sâu và/hoặc móp méo ở bên ngoài, nhưng không ảnh hưởng đến chức năng. Không bị nứt vỡ.",
+      img: "/landing-assets/Used.png"
+    },
+    {
+      id: "good",
+      title: "Tốt",
+      desc: "Có vài dấu hiệu hao mòn nhẹ, khó thấy từ khoảng cách 20cm. Không bị nứt hay móp méo.",
+      img: "/landing-assets/Good.png"
+    },
+    {
+      id: "flawless",
+      title: "Hoàn hảo",
+      desc: "Trông như mới. Không có vết xước, vết nứt hoặc móp méo nào.",
+      img: "/landing-assets/Flawless.png"
+    }
+  ];
+
+  const renderAppearanceStep = () => (
+    <div key="appearance" className="animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col items-start w-full max-w-[600px]">
+      <h1 className="text-2xl md:text-3xl font-bold text-slate-800 mb-8 text-left">
+        Tình trạng mặt lưng và viền máy như thế nào?
+      </h1>
+      
+      <div className="flex flex-col gap-6 w-full pb-8">
+        {appearanceOptions.map(opt => (
+          <button
+            key={opt.id}
+            onClick={() => {
+              setForm(p => ({ ...p, appearance: opt.title }));
+              goNext('upload');
+            }}
+            className="flex flex-col rounded-2xl border border-slate-200 bg-white text-left transition-all hover:border-slate-400 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-slate-200 p-4 md:p-5"
+          >
+            <div className="w-full h-56 md:h-72 bg-[#f8f9fa] rounded-xl flex items-center justify-center mb-5 overflow-hidden">
+              <img src={opt.img} alt={opt.title} className="w-full h-full object-cover mix-blend-multiply" />
             </div>
-
-            <div className="rounded-2xl border border-border bg-card p-5">
-              <div className="text-sm font-semibold mb-2">Lưu ý</div>
-              <ul className="text-sm text-foreground/80 space-y-2">
-                <li>• Giá cuối cùng phụ thuộc tình trạng thực tế.</li>
-                <li>• Nên cung cấp ảnh rõ mặt trước/sau, cạnh viền, màn hình.</li>
-                <li>• Nếu có hoá đơn/hộp/phụ kiện, hãy ghi chú thêm.</li>
-              </ul>
+            <div className="px-1">
+              <h3 className="font-bold text-slate-800 text-[17px] mb-2">{opt.title}</h3>
+              <p className="text-[14px] text-slate-500 leading-relaxed">{opt.desc}</p>
             </div>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
 
-            {estimatedPrice !== null && (
-              <div className="rounded-2xl border border-status-success bg-status-success/10 p-5 shadow-[0_0_15px_rgba(16,185,129,0.1)]">
-                <div className="text-status-success text-sm font-medium mb-1">Giá thu dự kiến:</div>
-                <div className="text-3xl font-bold text-status-success">${estimatedPrice.toLocaleString()}</div>
+  const renderUploadStep = () => (
+    <div key="upload" className="animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col items-start w-full max-w-[480px]">
+      <div className="inline-block bg-[#d4ff00] text-black px-2 py-0.5 text-sm font-semibold rounded mb-6">
+        Tải ảnh
+      </div>
+      <h1 className="text-2xl md:text-3xl font-bold text-slate-800 mb-4 text-left">
+        Tải lên hình ảnh mặt trước của thiết bị
+      </h1>
+      <p className="text-slate-500 mb-8 w-full text-left">
+        Vui lòng cung cấp hình ảnh rõ nét mặt trước của máy thật rõ ràng để chúng tôi có thể định giá chính xác.
+      </p>
+
+      <div className="w-full">
+        <label className="block rounded-2xl border-2 border-dashed border-slate-300 bg-white p-8 hover:bg-slate-50 hover:border-slate-400 cursor-pointer transition-colors text-center">
+          <input
+            type="file"
+            multiple
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const files = Array.from(e.target.files || []);
+              setForm((p) => ({ ...p, images: [...p.images, ...files] }));
+            }}
+          />
+          <div className="flex flex-col items-center justify-center gap-3 text-slate-600">
+            <span className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 mb-2">
+              <UploadCloud className="w-6 h-6" />
+            </span>
+            <div className="text-[15px]">
+              <span className="font-semibold text-blue-600">Nhấn để tải lên</span> hoặc kéo thả vào đây
+            </div>
+            <div className="text-sm text-slate-400">PNG, JPG tối đa 10MB. Tối đa 5 ảnh.</div>
+          </div>
+        </label>
+
+        {form.images.length > 0 && (
+          <div className="flex gap-3 mt-6 overflow-x-auto pb-2 justify-center">
+            {form.images.map((img, i) => (
+              <div key={i} className="relative w-20 h-20 rounded-xl overflow-hidden border border-slate-200 shrink-0 shadow-sm">
+                <img src={URL.createObjectURL(img)} className="w-full h-full object-cover" alt="Preview" />
+                <button
+                  type="button"
+                  onClick={() => setForm(p => ({ ...p, images: p.images.filter((_, idx) => idx !== i) }))}
+                  className="absolute top-1 right-1 bg-white/90 text-slate-700 hover:text-red-600 rounded-full w-5 h-5 flex items-center justify-center text-sm shadow-sm"
+                >
+                  &times;
+                </button>
               </div>
-            )}
+            ))}
           </div>
+        )}
 
-          <div className="lg:col-span-3">
-            <div className="rounded-2xl border border-border bg-card p-5 md:p-6 shadow-sm">
-              {!submitted ? (
-                <form onSubmit={submit} className="space-y-6">
-                  {/* Trade-in Type */}
-                  <div className="space-y-3 pb-4 border-b border-border">
-                    <div className="text-sm font-medium text-foreground/80">Nhu cầu của bạn</div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <label
-                        className={`flex items-center justify-center p-3 rounded-xl border cursor-pointer transition-colors ${form.tradein_type === 'SELL' ? 'border-blue-500 bg-blue-500/10 text-blue-400' : 'border-slate-800 bg-slate-900/60 text-slate-400'}`}
-                        onClick={() => setForm(p => ({ ...p, tradein_type: "SELL" }))}
-                      >
-                        <span className="font-medium text-sm">Bán máy cũ (SELL)</span>
-                      </label>
-                      <label
-                        className={`flex items-center justify-center p-3 rounded-xl border cursor-pointer transition-colors ${form.tradein_type === 'EXCHANGE' ? 'border-blue-500 bg-blue-500/10 text-blue-400' : 'border-slate-800 bg-slate-900/60 text-slate-400'}`}
-                        onClick={() => setForm(p => ({ ...p, tradein_type: "EXCHANGE" }))}
-                      >
-                        <span className="font-medium text-sm">Thu cũ đổi mới (EXCHANGE)</span>
-                      </label>
-                    </div>
-                  </div>
+        <button
+          onClick={submit}
+          disabled={loading || form.images.length === 0}
+          className="mt-8 w-full inline-flex items-center justify-center rounded-xl bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 disabled:text-slate-500 text-white px-5 py-4 font-semibold transition-colors"
+        >
+          {loading && <Loader2 className="w-5 h-5 animate-spin mr-2" />}
+          Ước tính giá ngay
+        </button>
+      </div>
+    </div>
+  );
 
-                  {form.tradein_type === 'EXCHANGE' && (
-                    <div className="pb-4 border-b border-border">
-                      <div className="text-sm font-medium text-foreground/80 mb-2">Sản phẩm muốn đổi lên *</div>
-                      <select
-                        required={form.tradein_type === 'EXCHANGE'}
-                        className="w-full rounded-xl border border-input bg-input-background px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-                        value={form.target_product}
-                        onChange={(e) => setForm(p => ({ ...p, target_product: e.target.value }))}
-                      >
-                        <option value="">-- Chọn sản phẩm --</option>
-                        {products.map((p: any) => <option key={p.id} value={p.id}>{p.title} - ${p.priceNew.toLocaleString()}</option>)}
-                      </select>
-                    </div>
-                  )}
+  const renderSuccessStep = () => (
+    <div key="success" className="py-16 text-center animate-in zoom-in-95 duration-500 flex flex-col items-center w-full">
+      <div className="mx-auto w-20 h-20 rounded-full bg-green-100 flex items-center justify-center text-green-600 mb-6">
+        <CheckCircle2 className="w-10 h-10" />
+      </div>
+      <h1 className="text-3xl font-bold text-slate-800 mb-4">Đã gửi yêu cầu thành công!</h1>
+      <p className="text-slate-500 mb-10 max-w-md mx-auto">
+        Yêu cầu thu cũ đổi mới của bạn đã được gửi thành công. Chúng tôi sẽ xem xét thông tin và liên hệ lại với bạn sớm nhất kèm theo báo giá cuối cùng.
+      </p>
+      <button
+        onClick={() => {
+          setForm({ brand: "", model: "", storage: "", functional: null, appearance: "", images: [] });
+          setStep('brand');
+        }}
+        className="rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 px-6 py-3 font-medium transition-colors shadow-sm"
+      >
+        Gửi yêu cầu cho máy khác
+      </button>
+    </div>
+  );
 
-                  {/* Category & Brand */}
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <div className="text-sm font-medium text-foreground/80 mb-2">Danh mục thiết bị *</div>
-                      <select
-                        required
-                        className="w-full rounded-xl border border-input bg-input-background px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-                        value={form.category_id}
-                        onChange={(e) => setForm(p => ({ ...p, category_id: e.target.value }))}
-                      >
-                        <option value="">-- Chọn danh mục --</option>
-                        {categories.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
-                      </select>
-                    </div>
-                    <div>
-                      <div className="text-sm font-medium text-foreground/80 mb-2">Thương hiệu *</div>
-                      <select
-                        required
-                        className="w-full rounded-xl border border-input bg-input-background px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-                        value={form.brand_id}
-                        onChange={(e) => setForm(p => ({ ...p, brand_id: e.target.value }))}
-                      >
-                        <option value="">-- Chọn thương hiệu --</option>
-                        {brands.map((b: any) => <option key={b.id} value={b.id}>{b.name}</option>)}
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* Model & Storage */}
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <div className="text-sm font-medium text-foreground/80 mb-2">Tên dòng máy *</div>
-                      <input
-                        className="w-full rounded-xl border border-input bg-input-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-                        placeholder="VD: iPhone 13 Pro Max"
-                        value={form.model_name}
-                        onChange={(e) => setForm((p) => ({ ...p, model_name: e.target.value }))}
-                        required
-                      />
-                    </div>
-                    <div>
-                      <div className="text-sm font-medium text-slate-300 mb-2">Dung lượng / Cấu hình</div>
-                      <input
-                        className="w-full rounded-xl border border-slate-800 bg-slate-900/60 px-4 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/60"
-                        placeholder="VD: 256GB"
-                        value={form.storage}
-                        onChange={(e) => setForm((p) => ({ ...p, storage: e.target.value }))}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Condition Checkboxes */}
-                  <div className="space-y-4">
-                    <div className="text-sm font-medium text-slate-300 border-b border-slate-800 pb-2">Tình trạng máy</div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <label className="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          className="rounded border-slate-700 bg-slate-900 w-4 h-4 text-blue-600 focus:ring-blue-500 focus:ring-offset-slate-900"
-                          checked={form.is_power_on}
-                          onChange={(e) => setForm(p => ({ ...p, is_power_on: e.target.checked }))}
-                        />
-                        Máy lên nguồn bình thường
-                      </label>
-                      <label className="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          className="rounded border-slate-700 bg-slate-900 w-4 h-4 text-blue-600 focus:ring-blue-500 focus:ring-offset-slate-900"
-                          checked={form.screen_ok}
-                          onChange={(e) => setForm(p => ({ ...p, screen_ok: e.target.checked }))}
-                        />
-                        Màn hình không ám/ố/sọc
-                      </label>
-                      <label className="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          className="rounded border-slate-700 bg-slate-900 w-4 h-4 text-blue-600 focus:ring-blue-500 focus:ring-offset-slate-900"
-                          checked={form.body_ok}
-                          onChange={(e) => setForm(p => ({ ...p, body_ok: e.target.checked }))}
-                        />
-                        Thân vỏ không cấn móp nặng
-                      </label>
-                    </div>
-                    <div>
-                      <div className="text-sm text-slate-300 mb-1">Tình trạng pin (%)</div>
-                      <input
-                        type="number"
-                        min="0" max="100"
-                        className="w-32 rounded-lg border border-slate-800 bg-slate-900/60 px-3 py-1.5 text-sm text-slate-100"
-                        value={form.battery_percentage}
-                        onChange={(e) => setForm(p => ({ ...p, battery_percentage: Number(e.target.value) }))}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Description */}
-                  <div>
-                    <div className="text-sm font-medium text-slate-300 mb-2">Mô tả thêm / Phụ kiện đi kèm</div>
-                    <textarea
-                      className="w-full min-h-[84px] rounded-xl border border-slate-800 bg-slate-900/60 px-4 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/60"
-                      placeholder="Ghi chú thêm về lỗi (nếu có) hoặc phụ kiện cáp, sạc, hộp..."
-                      value={form.description}
-                      onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
-                    />
-                  </div>
-
-                  {/* Images */}
-                  <div>
-                    <div className="text-sm font-medium text-slate-300 mb-2">Ảnh thiết bị *</div>
-                    <label className="block rounded-2xl border border-dashed border-slate-700 bg-slate-900/40 p-5 hover:bg-slate-900/70 cursor-pointer transition-colors">
-                      <input
-                        type="file"
-                        multiple
-                        accept="image/*"
-                        className="hidden"
-                        onChange={(e) => {
-                          const files = Array.from(e.target.files || []);
-                          setForm((p) => ({ ...p, images: [...p.images, ...files] }));
-                        }}
-                      />
-                      <div className="flex items-center justify-center gap-3 text-slate-200">
-                        <span className="w-10 h-10 rounded-xl bg-slate-800/40 flex items-center justify-center">
-                          <UploadCloud className="w-5 h-5" />
-                        </span>
-                        <div className="text-sm">
-                          <div className="font-medium text-blue-400">Bấm để tải ảnh lên</div>
-                          <div className="text-slate-400">PNG/JPG. Tối đa 5 ảnh</div>
-                        </div>
-                      </div>
-                    </label>
-                    {form.images.length > 0 && (
-                      <div className="flex gap-3 mt-4 overflow-x-auto pb-2">
-                        {form.images.map((img, i) => (
-                          <div key={i} className="relative w-16 h-16 rounded-md overflow-hidden border border-slate-700 shrink-0">
-                            <img src={URL.createObjectURL(img)} className="w-full h-full object-cover" alt="Preview" />
-                            <button
-                              type="button"
-                              onClick={() => setForm(p => ({ ...p, images: p.images.filter((_, idx) => idx !== i) }))}
-                              className="absolute top-0 right-0 bg-red-600 text-white w-4 h-4 flex items-center justify-center text-xs"
-                            >
-                              &times;
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex justify-between items-center pt-4 border-t border-slate-800">
-                    <button
-                      type="button"
-                      onClick={handleEstimate}
-                      disabled={estimating}
-                      className="inline-flex items-center justify-center rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 px-5 py-2.5 text-sm font-medium transition-colors"
-                    >
-                      {estimating && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-                      Ước tính giá
-                    </button>
-
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="inline-flex items-center justify-center rounded-xl bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 text-sm font-medium transition-colors"
-                    >
-                      {loading && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-                      Gửi yêu cầu ngay
-                    </button>
-                  </div>
-                </form>
-              ) : (
-                <div className="py-10 text-center">
-                  <div className="mx-auto w-14 h-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 mb-4">
-                    <CheckCircle2 className="w-7 h-7" />
-                  </div>
-                  <div className="text-xl font-semibold mb-2">Đã gửi yêu cầu Trade-In</div>
-                  <div className="text-slate-400 mb-6">
-                    Chúng tôi sẽ kiểm duyệt hệ thống và cập nhật thông tin trong tài khoản của bạn.
-                  </div>
-                  <button
-                    className="rounded-xl border border-slate-800 bg-slate-900/40 hover:bg-slate-900/70 text-slate-100 px-5 py-2.5 text-sm font-medium transition-colors"
-                    onClick={() => {
-                      setSubmitted(false);
-                      setForm({ ...form, images: [], model_name: "", description: "" });
-                      setEstimatedPrice(null);
-                    }}
-                  >
-                    Gửi thiết bị khác
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
+  return (
+    <div className="min-h-[80vh] bg-[#fafafa] text-slate-900 font-sans pt-12 pb-24">
+      <div className="mx-auto max-w-4xl px-6 md:px-8 flex flex-col items-center">
+        
+        {/* Header Navigation */}
+        <div className={`mb-8 w-full flex justify-start ${step === 'appearance' ? 'max-w-[600px]' : 'max-w-[480px]'}`}>
+          {step !== 'success' && (
+            <button
+              onClick={goBack}
+              className={`flex items-center text-sm font-semibold transition-colors text-slate-800 hover:text-slate-600 underline underline-offset-4 decoration-2 cursor-pointer`}
+            >
+              <ArrowLeft className="w-4 h-4 mr-1.5" strokeWidth={3} />
+              Quay lại
+            </button>
+          )}
         </div>
+
+        {/* Content Area */}
+        <div className="w-full flex justify-center">
+          {step === 'brand' && renderBrandStep()}
+          {step === 'model' && renderModelStep()}
+          {step === 'storage' && renderStorageStep()}
+          {step === 'functional' && renderFunctionalStep()}
+          {step === 'appearance' && renderAppearanceStep()}
+          {step === 'upload' && renderUploadStep()}
+          {step === 'success' && renderSuccessStep()}
+        </div>
+        
       </div>
     </div>
   );
