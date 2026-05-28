@@ -164,7 +164,7 @@ function handleSessionExpired() {
   });
 
   if (!window.location.pathname.includes("/user/login")) {
-    window.location.href = "/login";
+    window.location.href = "/user/login";
   }
 }
 

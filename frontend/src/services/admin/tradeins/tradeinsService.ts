@@ -62,7 +62,7 @@ function normalizeTradeIn(x: any): AdminTradeIn {
 }
 
 export async function getTradeIns(params: GetTradeInsParams = {}) {
-  const res: any = await get("/api/tradein/tradein/", { params });
+  const res: any = await get("/api/tradein/", { params });
 
   const rawList =
     (Array.isArray(res) && res) ||
@@ -78,9 +78,9 @@ export async function getTradeIns(params: GetTradeInsParams = {}) {
 }
 
 export async function approveTradeIn(id: number | string, final_price: number, staff_note: string = "") {
-  return post(`/api/tradein/tradein/${id}/approve/`, { final_price, staff_note });
+  return post(`/api/tradein/${id}/approve/`, { final_price, staff_note });
 }
 
 export async function rejectTradeIn(id: number | string, reject_reason: string) {
-  return post(`/api/tradein/tradein/${id}/reject/`, { reject_reason });
+  return post(`/api/tradein/${id}/reject/`, { reject_reason });
 }
