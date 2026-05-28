@@ -1,18 +1,22 @@
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Check, UploadCloud, CheckCircle2, Loader2 } from "lucide-react";
+import { ArrowLeft, Check, UploadCloud, CheckCircle2, Loader2, ChevronDown, Copy, Box, Info } from "lucide-react";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { toast } from "sonner";
 import {
   createTradeInRequest,
   uploadTradeInTempImage,
 } from "../../../services/client/tradeins/tradeinsService";
 
-type Step = 'brand' | 'model' | 'storage' | 'functional' | 'appearance' | 'upload' | 'success';
+type Step = 'brand' | 'model' | 'storage' | 'functional' | 'appearance' | 'upload' | 'quote' | 'success';
 
 export default function TradeInsPage() {
   const navigate = useNavigate();
   const [step, setStep] = useState<Step>('brand');
   const [loading, setLoading] = useState(false);
+  const [quotePrice, setQuotePrice] = useState(0);
+  const [faqOpen, setFaqOpen] = useState<number | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
 
   // Form State
   const [form, setForm] = useState({
@@ -50,10 +54,11 @@ export default function TradeInsPage() {
     else if (step === 'functional') setStep('storage');
     else if (step === 'appearance') setStep('functional');
     else if (step === 'upload') setStep('appearance');
+    else if (step === 'quote') setStep('upload');
     else if (step === 'brand') navigate(-1); // Go back to previous page
   };
 
-  const submit = async () => {
+  const generateQuote = async () => {
     if (form.images.length === 0) {
       toast.warning("Vui lòng cung cấp ít nhất 1 ảnh thiết bị.");
       return;
@@ -64,7 +69,22 @@ export default function TradeInsPage() {
       const uploadPromises = form.images.map(file => uploadTradeInTempImage(sessionKey, file));
       await Promise.all(uploadPromises);
 
-      await createTradeInRequest({
+      const basePrice = form.brand === "Apple" ? 12000000 : 8000000;
+      const penalty = form.functional ? 0 : 3000000;
+      setQuotePrice(basePrice - penalty + Math.floor(Math.random() * 2000000));
+
+      setStep('quote');
+    } catch (err: any) {
+      toast.error(err.message || "Có lỗi xảy ra khi xử lý.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const submitOrder = async () => {
+    setLoading(true);
+    try {
+      const payload = {
         tradein_type: "SELL",
         brand: 1, 
         category: 1, 
@@ -73,13 +93,13 @@ export default function TradeInsPage() {
         is_power_on: form.functional === true,
         screen_ok: form.functional === true,
         body_ok: form.functional === true,
-        battery_percentage: 100,
         description: `Thương hiệu: ${form.brand}. Máy chức năng tốt: ${form.functional ? 'Có' : 'Không'}. Ngoại hình: ${form.appearance}.`,
         session_key: sessionKey
-      } as any);
-
-      setStep('success');
+      } as any;
+      await createTradeInRequest(payload);
+      
       toast.success("Gửi yêu cầu thành công!");
+      navigate('/user/tradeins');
     } catch (err: any) {
       toast.error(err.message || "Có lỗi xảy ra khi gửi yêu cầu.");
     } finally {
@@ -347,7 +367,7 @@ export default function TradeInsPage() {
         )}
 
         <button
-          onClick={submit}
+          onClick={generateQuote}
           disabled={loading || form.images.length === 0}
           className="mt-8 w-full inline-flex items-center justify-center rounded-xl bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 disabled:text-slate-500 text-white px-5 py-4 font-semibold transition-colors"
         >
@@ -358,26 +378,126 @@ export default function TradeInsPage() {
     </div>
   );
 
-  const renderSuccessStep = () => (
-    <div key="success" className="py-16 text-center animate-in zoom-in-95 duration-500 flex flex-col items-center w-full">
-      <div className="mx-auto w-20 h-20 rounded-full bg-green-100 flex items-center justify-center text-green-600 mb-6">
-        <CheckCircle2 className="w-10 h-10" />
+  const renderQuoteStep = () => {
+    const formattedPrice = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(quotePrice);
+    
+    const chartData = [
+      { name: 'Hiện tại', price: quotePrice },
+      { name: '1 tháng', price: quotePrice * 0.9 },
+      { name: '3 tháng', price: quotePrice * 0.75 },
+      { name: '6 tháng', price: quotePrice * 0.6 },
+    ];
+
+    return (
+      <div key="quote" className="animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col items-center w-full max-w-[700px] pb-24">
+        <div className="text-center mb-8 mt-2">
+          <h2 className="text-[22px] font-medium text-slate-800 mb-2">Chúc mừng! Đây là báo giá của bạn</h2>
+          <div className="text-[40px] font-bold text-[#8b5cf6] mb-3 leading-none">{formattedPrice}</div>
+          <p className="text-slate-600 text-[14px]">Chúng tôi đã tìm được mức giá tốt nhất cho thiết bị của bạn.</p>
+        </div>
+
+        <div className="w-full text-left mb-10">
+          <h3 className="font-semibold text-[15px] mb-3 text-slate-700">Tóm tắt thiết bị</h3>
+          
+          <div className="w-full bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+            <div className="bg-[#fbf9ff] p-5 border-b border-slate-100">
+              <div className="flex items-center gap-2 mb-2 text-[14px] font-semibold text-slate-800">
+                <CheckCircle2 className="w-[18px] h-[18px] text-slate-600" strokeWidth={2.5} />
+                <span>Kiểm tra cuối cùng</span>
+              </div>
+              <p className="text-[13px] text-slate-600 leading-relaxed">
+                Tuyệt vời! Bạn đã trả lời tất cả các câu hỏi. Vui lòng xem lại các câu trả lời để đảm bảo bạn nhận được mức giá chính xác nhất.
+              </p>
+            </div>
+
+            <div className="px-5 divide-y divide-slate-100 text-[14px]">
+              <div className="py-4 flex justify-between">
+                <span className="text-slate-800 font-medium">Model</span>
+                <span className="text-slate-500">{form.brand} {form.model}</span>
+              </div>
+              <div className="py-4 flex justify-between">
+                <span className="text-slate-800 font-medium">Dung lượng</span>
+                <span className="text-slate-500">{form.storage}</span>
+              </div>
+              <div className="py-4 flex justify-between">
+                <span className="text-slate-800 font-medium">Hoạt động</span>
+                <span className="text-slate-500">{form.functional ? "Bình thường" : "Có lỗi"}</span>
+              </div>
+              <div className="py-4 flex justify-between">
+                <span className="text-slate-800 font-medium">Ngoại hình</span>
+                <span className="text-slate-500">{form.appearance}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="w-full mb-10 text-left">
+          <h3 className="font-semibold text-[15px] mb-3 text-slate-700">Thời điểm bán tốt nhất</h3>
+          <div className="w-full bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+            <div className="h-60 w-full -ml-4">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} tickFormatter={(val) => `${val / 1000000}Tr`} />
+                  <Tooltip formatter={(value) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value as number)} />
+                  <Line type="monotone" dataKey="price" stroke="#8b5cf6" strokeWidth={3} dot={{ r: 4, fill: '#8b5cf6', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 6 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+
+        <div className="w-full mb-8 text-left">
+          <h3 className="font-semibold text-[15px] mb-3 text-slate-700">Câu hỏi thường gặp</h3>
+          <div className="divide-y divide-slate-100 bg-white rounded-xl border border-slate-200 px-5 shadow-sm">
+            {[
+              { q: "Làm sao để tôi nhận được tiền?", a: "Bạn có thể chọn nhận tiền qua chuyển khoản ngân hàng hoặc tiền mặt sau khi cửa hàng kiểm tra máy." },
+              { q: "Những thiết bị nào được hỗ trợ Thu cũ?", a: "Chúng tôi hỗ trợ hầu hết các dòng máy phổ biến từ Apple, Samsung, Xiaomi, Oppo..." },
+              { q: "Tôi cần chuẩn bị gì trước khi gửi máy?", a: "Vui lòng sao lưu toàn bộ dữ liệu quan trọng, đăng xuất các tài khoản iCloud/Google và tháo sim, thẻ nhớ ra khỏi máy." },
+              { q: "Thời gian xử lý là bao lâu?", a: "Ngay khi bạn mang máy đến cửa hàng, nhân viên sẽ kiểm tra và xác nhận thanh toán chỉ trong vòng 15-30 phút." }
+            ].map((faq, idx) => (
+              <div key={idx} className="py-4">
+                <button 
+                  onClick={() => setFaqOpen(faqOpen === idx ? null : idx)}
+                  className="flex w-full items-center justify-between text-left font-medium text-slate-800 text-[14px] focus:outline-none"
+                >
+                  {faq.q}
+                  <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${faqOpen === idx ? 'rotate-180' : ''}`} />
+                </button>
+                {faqOpen === idx && (
+                  <p className="mt-3 text-[13px] text-slate-600 pr-8 leading-relaxed">
+                    {faq.a}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 py-3 px-6 flex justify-center z-50">
+          <div className="w-full max-w-[700px] flex justify-center md:justify-end gap-3">
+            <button 
+              onClick={() => navigate('/user/tradeins')}
+              className="px-6 py-2.5 rounded-lg border border-slate-300 text-slate-800 text-[14px] font-semibold hover:bg-slate-50 transition-colors bg-white w-full md:w-auto"
+            >
+              Không, cảm ơn
+            </button>
+            <button 
+              onClick={submitOrder}
+              disabled={loading}
+              className="px-8 py-2.5 rounded-lg bg-[#0f172a] text-white text-[14px] font-semibold hover:bg-black transition-colors flex items-center justify-center w-full md:w-auto disabled:opacity-70"
+            >
+              {loading && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+              Chấp nhận
+            </button>
+          </div>
+        </div>
       </div>
-      <h1 className="text-3xl font-bold text-slate-800 mb-4">Đã gửi yêu cầu thành công!</h1>
-      <p className="text-slate-500 mb-10 max-w-md mx-auto">
-        Yêu cầu thu cũ đổi mới của bạn đã được gửi thành công. Chúng tôi sẽ xem xét thông tin và liên hệ lại với bạn sớm nhất kèm theo báo giá cuối cùng.
-      </p>
-      <button
-        onClick={() => {
-          setForm({ brand: "", model: "", storage: "", functional: null, appearance: "", images: [] });
-          setStep('brand');
-        }}
-        className="rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 px-6 py-3 font-medium transition-colors shadow-sm"
-      >
-        Gửi yêu cầu cho máy khác
-      </button>
-    </div>
-  );
+    );
+  };
+
+
 
   return (
     <div className="min-h-[80vh] bg-[#fafafa] text-slate-900 font-sans pt-12 pb-24">
@@ -385,7 +505,7 @@ export default function TradeInsPage() {
         
         {/* Header Navigation */}
         <div className={`mb-8 w-full flex justify-start ${step === 'appearance' ? 'max-w-[600px]' : 'max-w-[480px]'}`}>
-          {step !== 'success' && (
+          {step !== 'success' && step !== 'quote' && (
             <button
               onClick={goBack}
               className={`flex items-center text-sm font-semibold transition-colors text-slate-800 hover:text-slate-600 underline underline-offset-4 decoration-2 cursor-pointer`}
@@ -404,7 +524,7 @@ export default function TradeInsPage() {
           {step === 'functional' && renderFunctionalStep()}
           {step === 'appearance' && renderAppearanceStep()}
           {step === 'upload' && renderUploadStep()}
-          {step === 'success' && renderSuccessStep()}
+          {step === 'quote' && renderQuoteStep()}
         </div>
         
       </div>

@@ -9,8 +9,6 @@ export type TradeInEstimatePayload = {
     is_power_on: boolean;
     screen_ok: boolean;
     body_ok: boolean;
-    battery_percentage: number;
-    target_product_id?: number;
 };
 
 export type TradeInImage = {
@@ -30,7 +28,7 @@ export type TradeInPayment = {
 export type TradeInDetail = {
     id: number;
     user: number;
-    tradein_type: "SELL" | "EXCHANGE";
+    tradein_type: "SELL";
     status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED" | "COMPLETED" | string;
 
     brand: number | string;
@@ -41,13 +39,10 @@ export type TradeInDetail = {
     is_power_on: boolean;
     screen_ok: boolean;
     body_ok: boolean;
-    battery_percentage: number;
 
     description?: string;
     estimated_price?: number | string;
     final_price?: number | string;
-
-    target_product?: number | null;
     expires_at?: string | null;
 
     staff_note?: string;
@@ -79,7 +74,7 @@ export async function deleteTradeInTempImage(temp_id: number | string) {
 }
 
 export type TradeInCreatePayload = {
-    tradein_type: "SELL" | "EXCHANGE";
+    tradein_type: "SELL";
     brand: number;
     category: number;
     model_name: string;
@@ -87,10 +82,8 @@ export type TradeInCreatePayload = {
     is_power_on: boolean;
     screen_ok: boolean;
     body_ok: boolean;
-    battery_percentage: number;
     description: string;
     session_key: string;
-    target_product?: number;
 };
 
 export async function createTradeInRequest(payload: TradeInCreatePayload) {
@@ -107,4 +100,21 @@ export async function getMyTradeInDetail(id: number | string) {
 
 export async function cancelTradeIn(id: number | string) {
     return post(`/api/tradein/${id}/cancel/`);
+}
+
+// --- Trade-in Options (Cấu hình máy cũ) ---
+export async function getTradeInCategories() {
+    return get("/api/tradein/options/categories/");
+}
+
+export async function getTradeInBrands(params?: Record<string, any>) {
+    return get("/api/tradein/options/brands/", { params });
+}
+
+export async function getTradeInModels(params?: Record<string, any>) {
+    return get("/api/tradein/options/models/", { params });
+}
+
+export async function getTradeInStorages(params?: Record<string, any>) {
+    return get("/api/tradein/options/storages/", { params });
 }

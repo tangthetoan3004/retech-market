@@ -64,7 +64,6 @@ type TradeInItem = {
   is_power_on?: boolean;
   screen_ok?: boolean;
   body_ok?: boolean;
-  battery_percentage?: number;
 
   description?: string;
   estimated_price?: number | string;
@@ -108,7 +107,6 @@ const MOCK_TRADE_INS: TradeInItem[] = [
     is_power_on: true,
     screen_ok: true,
     body_ok: false,
-    battery_percentage: 86,
     description: "Máy dùng bình thường, cạnh trái hơi trầy, chưa sửa chữa.",
     estimated_price: 8500000,
     final_price: "",
@@ -146,7 +144,6 @@ const MOCK_TRADE_INS: TradeInItem[] = [
     is_power_on: true,
     screen_ok: true,
     body_ok: true,
-    battery_percentage: 91,
     description: "Máy đẹp, pin còn tốt, muốn bán lại thiết bị.",
     estimated_price: 6200000,
     final_price: 5900000,
@@ -180,7 +177,6 @@ const MOCK_TRADE_INS: TradeInItem[] = [
     is_power_on: false,
     screen_ok: false,
     body_ok: false,
-    battery_percentage: 0,
     description: "Máy rơi nước, hiện không lên nguồn.",
     estimated_price: 2800000,
     final_price: "",
@@ -214,7 +210,6 @@ const MOCK_TRADE_INS: TradeInItem[] = [
     is_power_on: true,
     screen_ok: true,
     body_ok: true,
-    battery_percentage: 88,
     description: "Máy còn đẹp, sạc bình thường, ít trầy.",
     estimated_price: 10500000,
     final_price: 10200000,
@@ -329,11 +324,11 @@ function statusText(status?: string) {
   const s = String(status || "").toUpperCase();
 
   const map: Record<string, string> = {
-    PENDING: "Chờ kiểm tra",
-    APPROVED: "Đã chốt giá",
+    PENDING: "Đang vận chuyển",
+    APPROVED: "Đã nhận máy",
     REJECTED: "Đã từ chối",
     CANCELLED: "Khách đã hủy",
-    COMPLETED: "Hoàn tất",
+    COMPLETED: "Đã thanh toán",
   };
 
   return map[s] || s || "—";
@@ -342,12 +337,12 @@ function statusText(status?: string) {
 function statusClass(status?: string) {
   const s = String(status || "").toUpperCase();
 
-  if (s === "APPROVED") return "bg-purple-500/10 text-purple-700 border-purple-500/30";
+  if (s === "APPROVED") return "bg-blue-500/10 text-blue-700 border-blue-500/30";
   if (s === "COMPLETED") return "bg-emerald-500/10 text-emerald-700 border-emerald-500/30";
   if (s === "REJECTED") return "bg-red-500/10 text-red-700 border-red-500/30";
   if (s === "CANCELLED") return "bg-slate-500/10 text-slate-700 border-slate-500/30";
 
-  return "bg-amber-500/10 text-amber-700 border-amber-500/30";
+  return "bg-[#8b5cf6]/10 text-[#8b5cf6] border-[#8b5cf6]/30";
 }
 
 function canApprove(status?: string) {
@@ -359,22 +354,21 @@ function canReject(status?: string) {
 }
 
 const timelineSteps = [
-  { key: "submitted", label: "Đã gửi" },
-  { key: "ai", label: "AI định giá" },
-  { key: "review", label: "Shop kiểm tra" },
-  { key: "price", label: "Chốt giá" },
-  { key: "done", label: "Hoàn tất" },
+  { key: "created", label: "Tạo đơn" },
+  { key: "shipping", label: "Vận chuyển" },
+  { key: "received", label: "Đã nhận" },
+  { key: "payout", label: "Thanh toán" },
 ];
 
 function currentTimelineIndex(status?: string) {
   const s = String(status || "").toUpperCase();
 
   if (s === "COMPLETED") return 4;
-  if (s === "APPROVED") return 3;
-  if (s === "PENDING") return 2;
+  if (s === "APPROVED") return 2;
+  if (s === "PENDING") return 1;
   if (s === "REJECTED" || s === "CANCELLED") return -1;
 
-  return 2;
+  return 1;
 }
 
 function TradeInTimeline({ status }: { status?: string }) {
@@ -499,19 +493,12 @@ function TradeInDetailModal({
   onApproved: () => void;
   onRejected: () => void;
 }) {
-  const [finalPrice, setFinalPrice] = useState("");
   const [staffNote, setStaffNote] = useState("");
   const [rejectReason, setRejectReason] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (!item || !open) return;
-
-    setFinalPrice(
-      item.final_price !== null && item.final_price !== undefined
-        ? String(item.final_price)
-        : ""
-    );
     setStaffNote(item.staff_note || "");
     setRejectReason(item.reject_reason || "");
   }, [item, open]);
@@ -519,20 +506,12 @@ function TradeInDetailModal({
   if (!open || !item) return null;
 
   const images = item.images || [];
-  const hasFinal =
-    item.final_price !== null &&
-    item.final_price !== undefined &&
-    item.final_price !== "";
+  const localPaymentStr = localStorage.getItem('tradein_payment_' + item.id);
+  const localPayment = localPaymentStr ? JSON.parse(localPaymentStr) : null;
 
   const handleApprove = async () => {
-    const price = Number(finalPrice);
-
-    if (!Number.isFinite(price) || price <= 0) {
-      toast.error("Vui lòng nhập giá thu mua xác nhận hợp lệ");
-      return;
-    }
-
     const isMock = item.id >= 1000;
+    const price = Number(item.estimated_price) || 0;
 
     try {
       setSubmitting(true);
@@ -543,14 +522,14 @@ function TradeInDetailModal({
 
       toast.success(
         isMock
-          ? "Đã chốt giá mẫu giao diện"
-          : "Đã chốt giá thu mua cho khách"
+          ? "Đã nhận máy (mẫu)"
+          : "Đã cập nhật trạng thái nhận máy thành công"
       );
 
       onApproved();
       onClose();
     } catch (err: any) {
-      toast.error(err?.message || "Chốt giá trade-in thất bại");
+      toast.error(err?.message || "Cập nhật thất bại");
     } finally {
       setSubmitting(false);
     }
@@ -643,44 +622,14 @@ function TradeInDetailModal({
                 <TradeInTimeline status={item.status} />
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="rounded-2xl border bg-card p-5">
-                  <p className="text-sm text-muted-foreground">Giá AI ước tính</p>
-                  <p className="mt-1 text-3xl font-bold text-primary">
-                    {money(item.estimated_price)}
-                  </p>
-                  <p className="mt-3 text-xs text-muted-foreground">
-                    Giá AI chỉ là giá tham khảo ban đầu dựa trên thông tin khách cung cấp.
-                  </p>
-                </div>
-
-                <div className="rounded-2xl border bg-card p-5">
-                  <p className="text-sm text-muted-foreground">Giá thu mua xác nhận</p>
-                  <p
-                    className={[
-                      "mt-1 text-3xl font-bold",
-                      hasFinal ? "text-purple-600" : "text-muted-foreground",
-                    ].join(" ")}
-                  >
-                    {hasFinal ? money(item.final_price) : "Chưa có"}
-                  </p>
-                  <p className="mt-3 text-xs text-muted-foreground">
-                    Đây là giá thu mua chính thức sau khi shop kiểm tra thiết bị.
-                  </p>
-                </div>
-              </div>
-
-              <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4">
-                <div className="flex gap-3">
-                  <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
-                  <div>
-                    <p className="font-semibold text-amber-700">Lưu ý khi chốt giá</p>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      Không dùng giá AI như giá cam kết. Admin cần nhập giá thu mua cuối cùng
-                      dựa trên kiểm tra thực tế, ảnh thiết bị và chính sách cửa hàng.
-                    </p>
-                  </div>
-                </div>
+              <div className="rounded-2xl border bg-card p-5">
+                <p className="text-sm text-muted-foreground">Giá thu cũ chốt</p>
+                <p className="mt-1 text-3xl font-bold text-[#8b5cf6]">
+                  {money(item.estimated_price)}
+                </p>
+                <p className="mt-3 text-xs text-muted-foreground">
+                  Đây là giá thu cũ đã được AI ước tính và cố định cho đơn này.
+                </p>
               </div>
 
               <div className="rounded-2xl border bg-card p-5">
@@ -714,7 +663,6 @@ function TradeInDetailModal({
                     <p className="text-muted-foreground">Pin</p>
                     <p className="inline-flex items-center gap-1 font-medium">
                       <Battery className="h-4 w-4" />
-                      {item.battery_percentage ?? "—"}%
                     </p>
                   </div>
 
@@ -775,24 +723,26 @@ function TradeInDetailModal({
                 </div>
               )}
 
-              {item.payment && (
+              {(item.payment || localPayment) && (
                 <div className="rounded-2xl border bg-card p-5">
-                  <h3 className="mb-4 font-semibold">Thanh toán thu mua</h3>
+                  <h3 className="mb-4 font-semibold">Thông tin nhận tiền của khách</h3>
 
-                  <div className="grid gap-4 sm:grid-cols-3 text-sm">
-                    <div>
-                      <p className="text-muted-foreground">Số tiền</p>
-                      <p className="font-medium">{money(item.payment.amount)}</p>
+                  <div className="grid gap-4 sm:grid-cols-2 text-sm">
+                    <div className="sm:col-span-2">
+                      <p className="text-muted-foreground">Ngân hàng</p>
+                      <p className="font-medium text-[16px]">{localPayment ? localPayment.bank : "Chuyển khoản"}</p>
                     </div>
 
                     <div>
-                      <p className="text-muted-foreground">Phương thức</p>
-                      <p className="font-medium">{item.payment.payment_method}</p>
+                      <p className="text-muted-foreground">Tài khoản thụ hưởng</p>
+                      <p className="font-medium text-[16px]">
+                        {localPayment ? `${localPayment.accountNumber} - ${localPayment.accountName}` : "—"}
+                      </p>
                     </div>
 
                     <div>
-                      <p className="text-muted-foreground">Trạng thái</p>
-                      <p className="font-medium">{item.payment.status}</p>
+                      <p className="text-muted-foreground">Số tiền cần chuyển</p>
+                      <p className="font-bold text-xl text-[#8b5cf6]">{money(item.estimated_price)}</p>
                     </div>
                   </div>
                 </div>
@@ -839,49 +789,55 @@ function TradeInDetailModal({
               </div>
 
               <div className="rounded-2xl border bg-card p-5">
-                <h3 className="mb-4 font-semibold">Chốt giá thu mua</h3>
+                <h3 className="mb-4 font-semibold">Xác nhận nhận máy</h3>
 
                 {canApprove(item.status) ? (
                   <div className="space-y-4">
                     <div>
                       <label className="mb-1 block text-sm font-medium">
-                        Giá thu mua xác nhận
-                      </label>
-                      <Input
-                        value={finalPrice}
-                        onChange={(e) => setFinalPrice(e.target.value)}
-                        placeholder="VD: 8200000"
-                        inputMode="numeric"
-                      />
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        Nhập số tiền thu mua cuối cùng gửi cho khách.
-                      </p>
-                    </div>
-
-                    <div>
-                      <label className="mb-1 block text-sm font-medium">
-                        Ghi chú cho khách
+                        Ghi chú cho khách (Tùy chọn)
                       </label>
                       <textarea
                         value={staffNote}
                         onChange={(e) => setStaffNote(e.target.value)}
-                        placeholder="VD: Máy hoạt động tốt, thân vỏ trầy nhẹ nên giá được điều chỉnh..."
+                        placeholder="VD: Đã nhận máy nguyên vẹn..."
                         className="min-h-[96px] w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
                       />
                     </div>
 
                     <Button
-                      className="w-full"
+                      className="w-full bg-[#0f172a] hover:bg-black text-white"
                       onClick={handleApprove}
                       disabled={submitting}
                     >
                       <CheckCircle2 className="mr-2 h-4 w-4" />
-                      {submitting ? "Đang chốt giá..." : "Chốt giá thu mua"}
+                      {submitting ? "Đang xử lý..." : "Xác nhận đã nhận máy"}
+                    </Button>
+                  </div>
+                ) : item.status === 'APPROVED' ? (
+                  <div className="space-y-4">
+                    {!localPayment && (
+                      <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-3 text-sm text-amber-700">
+                        Khách chưa nhập thông tin tài khoản ngân hàng. Hãy nhắc khách cập nhật nhé!
+                      </div>
+                    )}
+                    <Button
+                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+                      disabled={!localPayment}
+                      onClick={() => {
+                        localStorage.setItem('tradein_payment_paid_' + item.id, 'true');
+                        toast.success("Đã xác nhận chuyển khoản thành công!");
+                        onApproved();
+                        onClose();
+                      }}
+                    >
+                      <CheckCircle2 className="mr-2 h-4 w-4" />
+                      Xác nhận đã chuyển tiền cho khách
                     </Button>
                   </div>
                 ) : (
                   <div className="rounded-xl border bg-muted/40 p-4 text-sm text-muted-foreground">
-                    Yêu cầu này không còn ở trạng thái có thể chốt giá.
+                    Yêu cầu này không còn ở trạng thái có thể thao tác.
                   </div>
                 )}
 
@@ -949,10 +905,16 @@ export default function AdminTradeInsPage() {
       }
 
       const data = await getTradeIns();
+      const mapped = data.map(i => {
+         if (localStorage.getItem('tradein_payment_paid_' + i.id) === 'true') {
+             return { ...i, status: 'COMPLETED' as any };
+         }
+         return i;
+      });
 
       // Ưu tiên dữ liệu API thật.
       // Nếu API chưa có dữ liệu thì dùng mẫu để xem giao diện trước.
-      setItems(data.length > 0 ? data : MOCK_TRADE_INS);
+      setItems(mapped.length > 0 ? mapped : MOCK_TRADE_INS);
     } catch (err: any) {
       console.warn("Trade-in API error, using mock data:", err);
 
@@ -1101,11 +1063,11 @@ export default function AdminTradeInsPage() {
                   className="h-10 rounded-md border bg-background pl-10 pr-8 text-sm outline-none focus:ring-2 focus:ring-ring"
                 >
                   <option value="ALL">Tất cả trạng thái</option>
-                  <option value="PENDING">Chờ kiểm tra</option>
-                  <option value="APPROVED">Đã chốt giá</option>
+                  <option value="PENDING">Đang vận chuyển</option>
+                  <option value="APPROVED">Đã nhận máy</option>
                   <option value="REJECTED">Đã từ chối</option>
                   <option value="CANCELLED">Khách đã hủy</option>
-                  <option value="COMPLETED">Hoàn tất</option>
+                  <option value="COMPLETED">Đã thanh toán</option>
                 </select>
               </div>
             </div>
@@ -1130,8 +1092,7 @@ export default function AdminTradeInsPage() {
                   <th className="px-5 py-3 font-medium">Yêu cầu</th>
                   <th className="px-5 py-3 font-medium">Khách hàng</th>
                   <th className="px-5 py-3 font-medium">Thiết bị</th>
-                  <th className="px-5 py-3 font-medium">Giá AI</th>
-                  <th className="px-5 py-3 font-medium">Giá thu mua</th>
+                  <th className="px-5 py-3 font-medium">Giá thu cũ</th>
                   <th className="px-5 py-3 font-medium">Trạng thái</th>
                   <th className="px-5 py-3 font-medium">Ngày gửi</th>
                   <th className="px-5 py-3 text-right font-medium">Thao tác</th>
@@ -1169,27 +1130,14 @@ export default function AdminTradeInsPage() {
                           <div>
                             <div className="font-medium">{deviceName(item)}</div>
                             <div className="text-xs text-muted-foreground">
-                              Pin {item.battery_percentage ?? "—"}%
                             </div>
                           </div>
                         </div>
                       </td>
 
                       <td className="px-5 py-4">
-                        <div className="font-semibold text-primary">
+                        <div className="font-semibold text-[#8b5cf6]">
                           {money(item.estimated_price)}
-                        </div>
-                        <div className="text-xs text-muted-foreground">AI estimate</div>
-                      </td>
-
-                      <td className="px-5 py-4">
-                        <div
-                          className={[
-                            "font-semibold",
-                            hasFinal ? "text-purple-600" : "text-muted-foreground",
-                          ].join(" ")}
-                        >
-                          {hasFinal ? money(item.final_price) : "Chưa có"}
                         </div>
                         <div className="text-xs text-muted-foreground">Giá chốt</div>
                       </td>

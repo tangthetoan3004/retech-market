@@ -29,13 +29,15 @@ export default function ClientLayout() {
 
   if (noLayout) return <Outlet />;
 
+  const hideFooter = pathname.startsWith("/tradeins/form");
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header settingGeneral={settingGeneral} categories={categories} />
       <main className="flex-1">
         <Outlet />
       </main>
-      <Footer settingGeneral={settingGeneral} />
+      {!hideFooter && <Footer settingGeneral={settingGeneral} />}
     </div>
   );
 }

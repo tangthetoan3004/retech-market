@@ -15,7 +15,6 @@ interface ProductCardProps {
   grade: "A" | "B" | "C";
   image: string;
   warranty: string;
-  batteryHealth?: number;
   inStock: boolean;
   onQuickView?: (id: string) => void;
   onAddToCart?: (id: string) => void;
@@ -32,7 +31,6 @@ export function ProductCard({
   grade,
   image,
   warranty,
-  batteryHealth,
   inStock,
   onQuickView,
   onAddToCart,
@@ -118,12 +116,6 @@ export function ProductCard({
 
         {/* Features */}
         <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-          {batteryHealth && (
-            <div className="flex items-center gap-1">
-              <Battery className="h-3 w-3" />
-              <span>{batteryHealth}%</span>
-            </div>
-          )}
           <div className="flex items-center gap-1">
             <Shield className="h-3 w-3" />
             <span>{warranty}</span>

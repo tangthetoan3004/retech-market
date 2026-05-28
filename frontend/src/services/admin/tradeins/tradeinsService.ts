@@ -11,7 +11,6 @@ export type AdminTradeIn = {
   is_power_on: boolean;
   screen_ok: boolean;
   body_ok: boolean;
-  battery_percentage: number;
 
   estimated_price: number | string;
 
@@ -52,7 +51,6 @@ function normalizeTradeIn(x: any): AdminTradeIn {
     is_power_on: toBool(x?.is_power_on ?? x?.isPowerOn, true),
     screen_ok: toBool(x?.screen_ok ?? x?.screenOk, true),
     body_ok: toBool(x?.body_ok ?? x?.bodyOk, true),
-    battery_percentage: toNum(x?.battery_percentage ?? x?.batteryPercentage ?? 0, 0),
 
     estimated_price: x?.estimated_price ?? x?.estimatedPrice ?? 0,
 

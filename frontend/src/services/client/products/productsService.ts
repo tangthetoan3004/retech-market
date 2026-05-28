@@ -48,7 +48,6 @@ function normalizeProduct(p: any) {
     discountPercentage,
     featured: p.featured ?? "0",
     grade: mapConditionToGrade(p.condition),
-    batteryHealth: p.battery_health ?? null,
     warranty: p.warranty_period ?? 0,
     inStock: p.is_sold ? false : true
   };

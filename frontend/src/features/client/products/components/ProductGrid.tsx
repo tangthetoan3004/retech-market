@@ -58,7 +58,6 @@ export default function ProductGrid({ items }: Props) {
             grade={p?.grade || "A"}
             image={p?.thumbnail || p?.main_image || p?.image || ""}
             warranty={p?.warranty || "12 Months"}
-            batteryHealth={p?.batteryHealth}
             inStock={p?.inStock ?? true}
             isInWishlist={isInWishlist}
             onQuickView={() => navigate(`/products/detail/${p?.slug || id}`)}
