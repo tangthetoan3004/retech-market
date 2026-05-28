@@ -8,7 +8,6 @@ class Payment(models.Model):
     class PaymentType(models.TextChoices):
         ORDER                = "ORDER",                "Thanh toán đơn hàng"
         TRADEIN_SELL_PAYOUT  = "TRADEIN_SELL_PAYOUT",  "Chi trả trade-in (bán lại)"
-        TRADEIN_EXCHANGE     = "TRADEIN_EXCHANGE",     "Thanh toán trade-in (đổi máy)"
 
     class PaymentMethod(models.TextChoices):
         CASH            = "CASH",            "Tiền mặt"

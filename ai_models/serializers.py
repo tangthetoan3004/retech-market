@@ -17,7 +17,6 @@ class AIPredictPriceSerializer(serializers.Serializer):
     is_power_on = serializers.BooleanField(default=True)
     screen_ok = serializers.BooleanField(default=True)
     body_ok = serializers.BooleanField(default=True)
-    battery_percentage = serializers.IntegerField(min_value=0, max_value=100)
     
     # CV output (tùy chọn)
     ai_damage_predictions = serializers.ListField(

@@ -15,7 +15,6 @@ class TradeInRequest(models.Model):
 
     class TradeInType(models.TextChoices):
         SELL     = "SELL",     "Bán lại"
-        EXCHANGE = "EXCHANGE", "Thu cũ đổi mới"
 
     ALLOWED_TRANSITIONS = {
         Status.PENDING:   [Status.APPROVED, Status.REJECTED, Status.CANCELLED],
@@ -37,7 +36,6 @@ class TradeInRequest(models.Model):
     is_power_on  = models.BooleanField(default=True)
     screen_ok    = models.BooleanField(default=True)
     body_ok      = models.BooleanField(default=True)
-    battery_percentage = models.PositiveSmallIntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)])
     description  = models.TextField(blank=True)
 
     # Giá — 2 bước riêng biệt
@@ -46,8 +44,7 @@ class TradeInRequest(models.Model):
     final_price     = models.DecimalField(max_digits=12, decimal_places=0, null=True, blank=True)
     # ↑ Admin set sau khi kiểm tra tận tay tại cửa hàng (bước APPROVED)
 
-    # Luồng EXCHANGE: sản phẩm user muốn đổi sang
-    target_product = models.ForeignKey("products.Product", on_delete=models.SET_NULL, null=True, blank=True, related_name="tradein_targets")
+
 
     # Timeout 7 ngày tới cửa hàng
     expires_at = models.DateTimeField(null=True, blank=True)
@@ -93,9 +90,6 @@ class TradeInPriceConfig(models.Model):
     screen_broken_deduction = models.DecimalField(max_digits=12, decimal_places=0, default=0)
     body_damage_deduction = models.DecimalField(max_digits=12, decimal_places=0, default=0)
 
-    battery_below_80_deduction = models.DecimalField(max_digits=12, decimal_places=0, default=0)
-    battery_below_60_deduction = models.DecimalField(max_digits=12, decimal_places=0, default=0)
-
     def __str__(self):
         return f"{self.brand} - {self.model_name} - {self.storage}"
 
@@ -122,11 +116,7 @@ class TradeInTempImage(models.Model):
         ]
 
 
-class ExchangeOrder(models.Model):
-    tradein_request   = models.OneToOneField(TradeInRequest, on_delete=models.PROTECT, related_name="exchange_order")
-    order             = models.OneToOneField("orders.Order", on_delete=models.PROTECT, related_name="exchange_order")
-    difference_amount = models.DecimalField(max_digits=12, decimal_places=0)
-    created_at        = models.DateTimeField(auto_now_add=True)
+
 
 
 

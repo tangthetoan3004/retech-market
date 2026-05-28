@@ -27,7 +27,6 @@ class AIPricingServiceTests(TestCase):
             "is_power_on": True,
             "screen_ok": True,
             "body_ok": True,
-            "battery_percentage": 90,
         }
         damage_preds = [
             {"label": "screen_cracked", "confidence": 0.85}

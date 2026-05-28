@@ -18,40 +18,14 @@ class PaymentService:
         Tự động tạo Payment khi TradeIn được APPROVED.
         Được gọi bởi TradeInService.approve_tradein() — KHÔNG gọi trực tiếp từ View.
         """
-        if tradein.tradein_type == TradeInRequest.TradeInType.SELL:
-            payment = Payment.objects.create(
-                user=tradein.user,
-                payment_type=Payment.PaymentType.TRADEIN_SELL_PAYOUT,
-                payment_method=Payment.PaymentMethod.CASH,
-                direction=Payment.Direction.OUTBOUND,
-                amount=tradein.final_price,
-                tradein_request=tradein,
-            )
-        else:
-            # EXCHANGE
-            exchange_order = tradein.exchange_order
-            difference = exchange_order.difference_amount
-
-            if difference > 0:
-                direction = Payment.Direction.INBOUND
-                amount = difference
-            elif difference < 0:
-                direction = Payment.Direction.OUTBOUND
-                amount = abs(difference)
-            else:
-                direction = Payment.Direction.INBOUND
-                amount = Decimal("0")
-
-            payment = Payment.objects.create(
-                user=tradein.user,
-                payment_type=Payment.PaymentType.TRADEIN_EXCHANGE,
-                payment_method=Payment.PaymentMethod.CASH,
-                direction=direction,
-                amount=amount,
-                tradein_request=tradein,
-                order=exchange_order.order,
-            )
-
+        payment = Payment.objects.create(
+            user=tradein.user,
+            payment_type=Payment.PaymentType.TRADEIN_SELL_PAYOUT,
+            payment_method=Payment.PaymentMethod.CASH,
+            direction=Payment.Direction.OUTBOUND,
+            amount=tradein.final_price,
+            tradein_request=tradein,
+        )
         return payment
 
     @staticmethod

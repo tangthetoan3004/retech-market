@@ -8,7 +8,7 @@ from django.utils import timezone
 from products.models import Product
 from tradein.models import TradeInRequest, TradeInTempImage, TradeInImage
 from tradein.services.pricingService import PricingService
-from tradein.services.exchangeOrderService import ExchangeOrderService
+
 
 
 class TradeInService:
@@ -28,7 +28,6 @@ class TradeInService:
           4. Move ảnh từ TradeInTempImage → TradeInImage.
           5. Status = PENDING.
         """
-        target_product = validated_data.pop("target_product", None)
         tradein_type = validated_data.get("tradein_type")
 
         # Tính estimated_price
@@ -40,31 +39,12 @@ class TradeInService:
             "is_power_on": validated_data.get("is_power_on", True),
             "screen_ok": validated_data.get("screen_ok", True),
             "body_ok": validated_data.get("body_ok", True),
-            "battery_percentage": validated_data.get("battery_percentage", 100),
             "tradein_type": tradein_type,
         }
-        if target_product:
-            estimate_data["target_product_id"] = target_product.id
         pricing_result = PricingService.estimate_price(estimate_data)
-
-        # EXCHANGE: lock product + check is_sold
-        if tradein_type == "EXCHANGE":
-            if not target_product:
-                raise ValidationError("target_product bắt buộc khi chọn EXCHANGE.")
-            locked_product = (
-                Product.objects.select_for_update()
-                .filter(id=target_product.id, is_sold=False, is_deleted=False)
-                .first()
-            )
-            if not locked_product:
-                raise ValidationError("Sản phẩm đã bán hoặc không tồn tại.")
-            locked_product.is_sold = True
-            locked_product.save(update_fields=["is_sold"])
-            target_product = locked_product
 
         tradein = TradeInRequest.objects.create(
             user=user,
-            target_product=target_product,
             estimated_price=pricing_result.get("estimated_price"),
             expires_at=timezone.now() + timedelta(days=TradeInService.EXPIRY_DAYS),
             **validated_data,
@@ -99,8 +79,7 @@ class TradeInService:
 
         tradein.change_status(TradeInRequest.Status.APPROVED)
 
-        if tradein.tradein_type == TradeInRequest.TradeInType.EXCHANGE:
-            ExchangeOrderService.create_exchange_order(tradein)
+
 
         # Import inside to avoid circular import
         from payment.services import PaymentService
@@ -114,7 +93,6 @@ class TradeInService:
         """
         Admin từ chối (từ PENDING).
         Bắt buộc cung cấp lý do từ chối.
-        (EXCHANGE) Revert target_product.is_sold = False — select_for_update().
         """
         if not reject_reason or not reject_reason.strip():
             raise ValidationError("Cần cung cấp lý do từ chối.")
@@ -122,11 +100,6 @@ class TradeInService:
         tradein = TradeInRequest.objects.select_for_update().get(pk=tradein.pk)
         tradein.reject_reason = reject_reason.strip()
         tradein.save(update_fields=["reject_reason", "updated_at"])
-
-        if tradein.tradein_type == TradeInRequest.TradeInType.EXCHANGE and tradein.target_product:
-            product = Product.objects.select_for_update().get(pk=tradein.target_product.pk)
-            product.is_sold = False
-            product.save(update_fields=["is_sold"])
 
         tradein.change_status(TradeInRequest.Status.REJECTED)
         return tradein
@@ -137,7 +110,6 @@ class TradeInService:
         """
         Huỷ TradeInRequest: PENDING → CANCELLED.
         Được gọi bởi User tự huỷ hoặc Celery timeout task.
-        (EXCHANGE) Revert target_product.is_sold = False — select_for_update().
         """
         tradein = TradeInRequest.objects.select_for_update().get(pk=tradein.pk)
 
@@ -147,11 +119,6 @@ class TradeInService:
 
         if tradein.status != TradeInRequest.Status.PENDING:
             raise ValidationError("Chỉ có thể huỷ TradeInRequest đang ở trạng thái PENDING.")
-
-        if tradein.tradein_type == TradeInRequest.TradeInType.EXCHANGE and tradein.target_product:
-            product = Product.objects.select_for_update().get(pk=tradein.target_product.pk)
-            product.is_sold = False
-            product.save(update_fields=["is_sold"])
 
         tradein.change_status(TradeInRequest.Status.CANCELLED)
         return tradein

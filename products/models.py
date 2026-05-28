@@ -143,7 +143,6 @@ class Product(SoftDeleteModel, SlugModel):
     original_price = models.DecimalField(max_digits=12, decimal_places=0, blank=True, null=True)
 
     condition = models.CharField(max_length=20, choices=CONDITION_CHOICES, default="GOOD")
-    battery_health = models.IntegerField(blank=True, null=True)
     warranty_period = models.IntegerField(default=0)
 
     main_image = models.ImageField(upload_to="products/", blank=True, null=True)
@@ -167,10 +166,6 @@ class Product(SoftDeleteModel, SlugModel):
     def clean(self):
         if self.original_price and self.original_price < self.price:
             raise ValidationError("Original price must be >= price.")
-
-        if self.battery_health is not None:
-            if not (0 <= self.battery_health <= 100):
-                raise ValidationError("Battery health must be between 0 and 100.")
 
     def save(self, *args, **kwargs):
         if not self.slug:

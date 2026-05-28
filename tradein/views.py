@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
 from django_filters.rest_framework import DjangoFilterBackend
 
-from .models import TradeInRequest, TradeInTempImage
+from .models import TradeInRequest, TradeInTempImage, TradeInPriceConfig
 from .serializers import (
     TradeInEstimateSerializer,
     TradeInCreateSerializer,
@@ -15,6 +15,8 @@ from .serializers import (
 )
 from .services.tradeinService import TradeInService
 from .services.pricingService import PricingService
+from products.models import Category, Brand
+from products.serializers import CategorySerializer, BrandSerializer
 
 
 class TradeInViewSet(viewsets.ModelViewSet):
@@ -128,3 +130,66 @@ class TradeInViewSet(viewsets.ModelViewSet):
             reject_reason=serializer.validated_data["reject_reason"],
         )
         return Response(TradeInDetailSerializer(tradein).data)
+
+
+class TradeInOptionsViewSet(viewsets.ViewSet):
+    """
+    ViewSet phục vụ việc lấy thông số cấu hình Dropdowns cho Trade-in.
+    Cho phép khách vãng lai gọi không cần đăng nhập.
+    """
+    permission_classes = [permissions.AllowAny]
+
+    @action(detail=False, methods=["get"], url_path="categories")
+    def categories(self, request):
+        # Lấy tất cả category_id đang có cấu hình trong TradeInPriceConfig
+        active_cat_ids = TradeInPriceConfig.objects.values_list("category_id", flat=True).distinct()
+        categories = Category.objects.filter(id__in=active_cat_ids)
+        serializer = CategorySerializer(categories, many=True, context={"request": request})
+        return Response(serializer.data)
+
+    @action(detail=False, methods=["get"], url_path="brands")
+    def brands(self, request):
+        category_id = request.query_params.get("category_id")
+        if not category_id:
+            return Response({"detail": "Thiếu category_id parameter."}, status=status.HTTP_400_BAD_REQUEST)
+            
+        # Lấy tất cả brand_id đang có cấu hình cho category này
+        active_brand_ids = TradeInPriceConfig.objects.filter(
+            category_id=category_id
+        ).values_list("brand_id", flat=True).distinct()
+        
+        brands = Brand.objects.filter(id__in=active_brand_ids)
+        serializer = BrandSerializer(brands, many=True, context={"request": request})
+        return Response(serializer.data)
+
+    @action(detail=False, methods=["get"], url_path="models")
+    def models(self, request):
+        category_id = request.query_params.get("category_id")
+        brand_id = request.query_params.get("brand_id")
+        if not category_id or not brand_id:
+            return Response({"detail": "Thiếu category_id hoặc brand_id parameter."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Lấy danh sách tên model độc bản
+        models_list = TradeInPriceConfig.objects.filter(
+            category_id=category_id,
+            brand_id=brand_id
+        ).values_list("model_name", flat=True).distinct()
+        
+        return Response(list(models_list))
+
+    @action(detail=False, methods=["get"], url_path="storages")
+    def storages(self, request):
+        category_id = request.query_params.get("category_id")
+        brand_id = request.query_params.get("brand_id")
+        model_name = request.query_params.get("model_name")
+        if not all([category_id, brand_id, model_name]):
+            return Response({"detail": "Thiếu các tham số bắt buộc."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Lấy danh sách dung lượng độc bản
+        storages_list = TradeInPriceConfig.objects.filter(
+            category_id=category_id,
+            brand_id=brand_id,
+            model_name=model_name
+        ).values_list("storage", flat=True).distinct()
+        
+        return Response(list(storages_list))

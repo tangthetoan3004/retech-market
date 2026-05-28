@@ -58,7 +58,6 @@ class Command(BaseCommand):
                 description=fake.text(),
                 price=random.randint(100, 2000) * 10000,
                 condition=random.choice(conditions),
-                battery_health=random.randint(80, 100),
                 main_image=None, 
             )
         

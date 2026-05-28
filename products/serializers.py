@@ -21,7 +21,6 @@ class ProductSerializer(serializers.ModelSerializer):
             "category",
             "brand",
             "condition",
-            "battery_health",
             "warranty_period",
             "main_image",
             "main_image_url",
@@ -56,9 +55,6 @@ class ProductSerializer(serializers.ModelSerializer):
         original_price = data.get(
             "original_price", getattr(instance, "original_price", None)
         )
-        battery_health = data.get(
-            "battery_health", getattr(instance, "battery_health", None)
-        )
         warranty_period = data.get(
             "warranty_period", getattr(instance, "warranty_period", 0)
         )
@@ -81,10 +77,6 @@ class ProductSerializer(serializers.ModelSerializer):
                 {"original_price": "Giá gốc phải lớn hơn hoặc bằng giá hiện tại."}
             )
 
-        if battery_health is not None and not (0 <= battery_health <= 100):
-            raise serializers.ValidationError(
-                {"battery_health": "Phần trăm pin phải từ 0 đến 100."}
-            )
         if warranty_period is not None and warranty_period < 0:
             raise serializers.ValidationError(
                 {"warranty_period": "Thời gian bảo hành không được âm."}

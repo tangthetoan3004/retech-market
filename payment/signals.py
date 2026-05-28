@@ -13,15 +13,6 @@ def on_payment_completed(payment: Payment) -> None:
         tradein = payment.tradein_request
         tradein.change_status(TradeInRequest.Status.COMPLETED)
 
-    elif payment.payment_type == Payment.PaymentType.TRADEIN_EXCHANGE:
-        # EXCHANGE: Payment hoàn tất → Order PENDING → DELIVERED → TradeIn → COMPLETED
-        tradein = payment.tradein_request
-        exchange_order = tradein.exchange_order
-        order = exchange_order.order
-
-        order.change_status(Order.Status.DELIVERED)
-        tradein.change_status(TradeInRequest.Status.COMPLETED)
-
     elif payment.payment_type == Payment.PaymentType.ORDER:
         # Order thường: tuỳ payment_method
         order = payment.order

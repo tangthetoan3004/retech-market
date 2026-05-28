@@ -12,13 +12,6 @@ class TradeInEstimateSerializer(serializers.Serializer):
     is_power_on        = serializers.BooleanField(default=True)
     screen_ok          = serializers.BooleanField(default=True)
     body_ok            = serializers.BooleanField(default=True)
-    battery_percentage = serializers.IntegerField(min_value=0, max_value=100)
-    target_product_id  = serializers.IntegerField(required=False)
-
-    def validate(self, attrs):
-        if attrs["tradein_type"] == "EXCHANGE" and not attrs.get("target_product_id"):
-            raise serializers.ValidationError({"target_product_id": "Bắt buộc khi chọn 'Thu cũ đổi mới'."})
-        return attrs
 
 
 class TradeInCreateSerializer(serializers.ModelSerializer):
@@ -29,13 +22,11 @@ class TradeInCreateSerializer(serializers.ModelSerializer):
         model = TradeInRequest
         fields = [
             "tradein_type", "brand", "category", "model_name", "storage",
-            "is_power_on", "screen_ok", "body_ok", "battery_percentage",
-            "description", "target_product", "session_key",
+            "is_power_on", "screen_ok", "body_ok",
+            "description", "session_key",
         ]
 
     def validate(self, attrs):
-        if attrs["tradein_type"] == "EXCHANGE" and not attrs.get("target_product"):
-            raise serializers.ValidationError({"target_product": "Bắt buộc khi chọn 'Thu cũ đổi mới'."})
         session_key = attrs.get("session_key")
         if not TradeInTempImage.objects.filter(session_key=session_key, is_used=False).exists():
             raise serializers.ValidationError({"session_key": "Chưa upload ảnh nào."})
@@ -58,9 +49,9 @@ class TradeInDetailSerializer(serializers.ModelSerializer):
         fields = [
             "id", "user", "tradein_type", "status",
             "brand", "category", "model_name", "storage",
-            "is_power_on", "screen_ok", "body_ok", "battery_percentage",
+            "is_power_on", "screen_ok", "body_ok",
             "description", "estimated_price", "final_price",
-            "target_product", "expires_at",
+            "expires_at",
             "staff_note", "reject_reason",
             "images", "payment",
             "created_at", "updated_at",
