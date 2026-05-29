@@ -21,6 +21,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../components/ui
 import { addToCart } from "../../../features/client/cart/cartSlice";
 import { showAlert } from "../../../features/ui/uiSlice";
 import { getProductDetailBySlug } from "../../../services/client/products/productsService";
+import { GradeBadge, conditionInfo } from "../../../components/retech/GradeBadge";
 
 function num(v: any) {
   const n = Number(v);
@@ -109,7 +110,8 @@ export default function ProductDetailPage() {
 
   const title = product?.title || product?.name || "";
   const brand = product?.brand || "ReTech Market";
-  const grade = upper(product?.grade || product?.conditionGrade || "A", "A");
+  const condition = product?.condition ? String(product.condition).toUpperCase() : "GOOD";
+  const condData = conditionInfo[condition] || conditionInfo.GOOD;
 
   const price = num(product?.priceNew ?? product?.price ?? 0);
   const originalPrice = num(product?.priceOld ?? (product?.priceNew ? product?.price : 0) ?? 0);
@@ -121,7 +123,6 @@ export default function ProductDetailPage() {
   const rating = num(product?.rating ?? 4.5) || 4.5;
   const reviewCount = num(product?.reviewCount ?? 89) || 89;
 
-  const batteryHealth = product?.batteryHealth ?? null;
   const storage = product?.storage ?? null;
   const ram = product?.ram ?? null;
   const screen = product?.screen ?? product?.display ?? null;
@@ -200,9 +201,7 @@ export default function ProductDetailPage() {
               <h1 className="mb-4 text-3xl font-bold">{title}</h1>
 
               <div className="flex items-center gap-3">
-                <span className="inline-flex items-center rounded-full border border-border bg-muted/50 px-3 py-1 text-sm">
-                  Grade {grade}
-                </span>
+                <GradeBadge condition={condition} />
 
                 <div className="flex items-center gap-1">
                   {Array.from({ length: 5 }).map((_, i) => (
@@ -249,16 +248,6 @@ export default function ProductDetailPage() {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              {batteryHealth ? (
-                <div className="flex items-center gap-3 rounded-lg bg-muted/50 p-4">
-                  <Battery className="h-5 w-5 text-[var(--accent-blue)]" />
-                  <div>
-                    <p className="text-xs text-muted-foreground">Battery Health</p>
-                    <p className="font-semibold">{batteryHealth}%</p>
-                  </div>
-                </div>
-              ) : null}
-
               {storage ? (
                 <div className="flex items-center gap-3 rounded-lg bg-muted/50 p-4">
                   <HardDrive className="h-5 w-5 text-[var(--accent-blue)]" />
@@ -423,8 +412,8 @@ export default function ProductDetailPage() {
             <TabsContent value="condition" className="mt-6">
               <div className="space-y-4">
                 <div className="rounded-lg bg-muted/50 p-6">
-                  <h3 className="mb-4 font-semibold">Grade {grade} Condition</h3>
-                  <p className="mb-4">{product?.condition ? String(product.condition) : ""}</p>
+                  <h3 className="mb-4 font-semibold">{condData.label} Condition</h3>
+                  <p className="mb-4">{condData.description}</p>
                   <div className="grid gap-4 md:grid-cols-2">
                     <div>
                       <p className="mb-2 text-sm font-medium">✓ Checked Items:</p>
@@ -440,12 +429,7 @@ export default function ProductDetailPage() {
                       <p className="mb-2 text-sm font-medium">Cosmetic Condition:</p>
                       <ul className="space-y-1 text-sm text-muted-foreground">
                         <li>
-                          •{" "}
-                          {grade === "A"
-                            ? "Minimal to no visible wear"
-                            : grade === "B"
-                              ? "Light scratches or marks"
-                              : "Visible wear, fully functional"}
+                          • {condData.label}: {condData.description}
                         </li>
                         <li>• All original features intact</li>
                         <li>• Professionally cleaned and sanitized</li>

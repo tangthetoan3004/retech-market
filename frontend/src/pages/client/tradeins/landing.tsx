@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
  */
 export default function TradeInsLandingPage() {
     const navigate = useNavigate();
+    const [cssLoaded, setCssLoaded] = React.useState(false);
 
     // Inject CSS chỉ khi đang ở trang landing, xóa khi rời đi
     useEffect(() => {
@@ -20,7 +21,12 @@ export default function TradeInsLandingPage() {
             link.id = cssId;
             link.rel = "stylesheet";
             link.href = "/landing-assets/tradeins-landing.scoped.css";
+            link.onload = () => setCssLoaded(true);
+            link.onerror = () => setCssLoaded(true); // vẫn hiển thị dù CSS lỗi
             document.head.appendChild(link);
+        } else {
+            // CSS đã inject rồi (ví dụ navigate đi rồi quay lại)
+            setCssLoaded(true);
         }
 
         if (!document.getElementById(styleId)) {
@@ -384,7 +390,7 @@ const lazyloadRunObserver = () => {
     }, []);
 
     return (
-        <div id="tradeins-scope-wrapper" style={{ marginTop: "-40px" }} className="tradeins-fade-in">
+        <div id="tradeins-scope-wrapper" style={{ marginTop: "-40px", visibility: cssLoaded ? "visible" : "hidden" }} className={cssLoaded ? "tradeins-fade-in" : ""}>
             <style>{`
                 .tradeins-fade-in {
                     animation: tradeinsFadeIn 0.5s ease-in-out forwards;

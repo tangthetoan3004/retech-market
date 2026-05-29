@@ -24,6 +24,7 @@ import React from "react";
 import CreateProductDialog from "./CreateProductDialog";
 import EditProductDialog from "./EditProductDialog";
 import LoadingSpinner from "../../../../components/ui/LoadingSpinner";
+import { conditionInfo } from "../../../../components/retech/GradeBadge";
 
 import {
   getProducts,
@@ -71,12 +72,15 @@ type Product = {
   category: string;
   category_id?: number | null;
   price: number;
-  original_price?: number | null;
   condition?: string;
-  battery_health?: number | null;
+  ram?: string;
+  storage?: string;
   warranty_period?: number | null;
   is_sold?: boolean;
   main_image?: string;
+  main_image_url?: string;
+  brand_name?: string;
+  category_name?: string;
   created_at?: string;
 };
 
@@ -350,7 +354,7 @@ export default function AdminProductsListPage() {
                   <TableHead>Category</TableHead>
                   <TableHead>Price</TableHead>
                   <TableHead>Condition</TableHead>
-                  <TableHead>Battery / Warranty</TableHead>
+                  <TableHead>Specs</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -377,9 +381,9 @@ export default function AdminProductsListPage() {
                     <TableRow key={product.id} className="border-border">
                       <TableCell>
                         <div className="flex items-center gap-3">
-                          {product.main_image ? (
+                          {product.main_image_url || product.main_image ? (
                             <img
-                              src={product.main_image}
+                              src={product.main_image_url || product.main_image}
                               alt={product.name}
                               className="w-12 h-12 rounded-lg object-cover border border-border"
                             />
@@ -391,6 +395,7 @@ export default function AdminProductsListPage() {
                             <p className="font-medium truncate">{product.name}</p>
                             <p className="text-sm text-muted-foreground truncate">
                               {(() => {
+                                if (product.brand_name) return product.brand_name;
                                 const bval = product.brand || product.brand_id;
                                 if (!bval) return "-";
                                 const sval = String(bval);
@@ -404,6 +409,7 @@ export default function AdminProductsListPage() {
 
                       <TableCell className="text-muted-foreground">
                         {(() => {
+                          if (product.category_name) return product.category_name;
                           const cval = product.category || product.category_id;
                           if (!cval) return "-";
                           const sval = String(cval);
@@ -424,13 +430,23 @@ export default function AdminProductsListPage() {
                       </TableCell>
 
                       <TableCell className="text-muted-foreground">
-                        {product.condition || "-"}
+                        {(() => {
+                          const cond = product.condition ? product.condition.toUpperCase() : "";
+                          const info = conditionInfo[cond];
+                          if (!info) return product.condition || "-";
+                          return (
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${info.colorClass}`}>
+                              {info.label}
+                            </span>
+                          );
+                        })()}
                       </TableCell>
 
                       <TableCell className="text-muted-foreground">
-                        <div className="text-sm">
-                          <div>Battery: {product.battery_health ?? "-"}</div>
-                          <div>Warranty: {product.warranty_period ?? 0}m</div>
+                        <div className="text-xs space-y-1">
+                          {product.ram && <div>RAM: <span className="font-medium text-foreground">{product.ram}</span></div>}
+                          {product.storage && <div>Storage: <span className="font-medium text-foreground">{product.storage}</span></div>}
+                          <div>Warranty: <span className="font-medium text-foreground">{product.warranty_period ?? 0}m</span></div>
                         </div>
                       </TableCell>
 

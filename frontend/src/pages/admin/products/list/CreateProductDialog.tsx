@@ -24,7 +24,8 @@ export type AdminProductFormData = {
   price: number | "";
   original_price: number | "" | null;
   condition: string;
-  battery_health: number | "" | null;
+  ram: string;
+  storage: string;
   warranty_period: number | "" | null;
   main_image: File | null;
   category_id: number | "" | null;
@@ -38,7 +39,8 @@ function emptyForm(): AdminProductFormData {
     price: "",
     original_price: "",
     condition: "GOOD",
-    battery_health: "",
+    ram: "",
+    storage: "",
     warranty_period: "",
     main_image: null,
     category_id: "",
@@ -84,8 +86,8 @@ export default function CreateProductDialog({
     if (formData.original_price !== "" && formData.original_price !== null)
       payload.original_price = formData.original_price;
     if (formData.condition) payload.condition = formData.condition;
-    if (formData.battery_health !== "" && formData.battery_health !== null)
-      payload.battery_health = formData.battery_health;
+    if (formData.ram) payload.ram = formData.ram;
+    if (formData.storage) payload.storage = formData.storage;
     if (formData.warranty_period !== "" && formData.warranty_period !== null)
       payload.warranty_period = formData.warranty_period;
     if (formData.main_image) payload.main_image = formData.main_image;
@@ -221,20 +223,6 @@ export default function CreateProductDialog({
               </div>
 
               <div>
-                <Label>Battery health</Label>
-                <Input
-                  type="number"
-                  value={formData.battery_health ?? ""}
-                  onChange={(e) =>
-                    setFormData((p) => ({
-                      ...p,
-                      battery_health: e.target.value === "" ? "" : Number(e.target.value),
-                    }))
-                  }
-                />
-              </div>
-
-              <div>
                 <Label>Warranty (months)</Label>
                 <Input
                   type="number"
@@ -245,6 +233,25 @@ export default function CreateProductDialog({
                       warranty_period: e.target.value === "" ? "" : Number(e.target.value),
                     }))
                   }
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>RAM</Label>
+                <Input
+                  value={formData.ram}
+                  onChange={(e) => setFormData((p) => ({ ...p, ram: e.target.value }))}
+                  placeholder="Ví dụ: 8GB"
+                />
+              </div>
+              <div>
+                <Label>Storage</Label>
+                <Input
+                  value={formData.storage}
+                  onChange={(e) => setFormData((p) => ({ ...p, storage: e.target.value }))}
+                  placeholder="Ví dụ: 256GB"
                 />
               </div>
             </div>

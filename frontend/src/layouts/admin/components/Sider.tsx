@@ -105,8 +105,9 @@ export default function Sider() {
                 to={it.to}
                 className={[
                   "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors",
-                  "text-foreground hover:bg-muted hover:text-foreground",
-                  active ? "bg-primary text-primary-foreground" : "",
+                  active
+                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                    : "text-foreground hover:bg-muted hover:text-foreground",
                 ].join(" ")}
               >
                 <span

@@ -12,9 +12,11 @@ interface ProductCardProps {
   brand: string;
   price: number;
   originalPrice?: number;
-  grade: "A" | "B" | "C";
+  condition: string;
   image: string;
   warranty: string;
+  ram?: string;
+  storage?: string;
   inStock: boolean;
   onQuickView?: (id: string) => void;
   onAddToCart?: (id: string) => void;
@@ -28,9 +30,11 @@ export function ProductCard({
   brand,
   price,
   originalPrice,
-  grade,
+  condition,
   image,
   warranty,
+  ram,
+  storage,
   inStock,
   onQuickView,
   onAddToCart,
@@ -94,7 +98,7 @@ export function ProductCard({
 
         {/* Grade Badge */}
         <div className="absolute top-3 left-3">
-          <GradeBadge grade={grade} showTooltip={false} />
+          <GradeBadge condition={condition} showTooltip={false} />
         </div>
 
         {/* Out of stock overlay */}
@@ -116,6 +120,16 @@ export function ProductCard({
 
         {/* Features */}
         <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+          {ram && (
+            <div className="flex items-center gap-1 bg-muted/50 px-1.5 py-0.5 rounded">
+              <span className="font-medium text-foreground">{ram}</span>
+            </div>
+          )}
+          {storage && (
+            <div className="flex items-center gap-1 bg-muted/50 px-1.5 py-0.5 rounded">
+              <span className="font-medium text-foreground">{storage}</span>
+            </div>
+          )}
           <div className="flex items-center gap-1">
             <Shield className="h-3 w-3" />
             <span>{warranty}</span>

@@ -28,78 +28,25 @@ import {
     type TradeInDetail,
 } from "../../../../services/client/tradeins/tradeinsService";
 
-const BANKS = [
-    "MB - NH TMCP QUAN DOI",
-    "VIETCOMBANK - NH TMCP NGOAI THUONG VIET NAM (VCB)",
-    "VIETINBANK - NH TMCP CONG THUONG VIET NAM",
-    "ABBANK - NH TMCP AN BINH (ABB)",
-    "AGRIBANK - NH NN VA PTNT (VBA)",
-    "BIDV - NH TMCP DAU TU VA PHAT TRIEN VIET NAM",
-    "TECHCOMBANK - NH TMCP KY THUONG VIET NAM (TCB)",
-    "VPBANK - NH TMCP VIET NAM THINH VUONG"
-];
+const translateScreenStatus = (st?: string) => {
+    switch(st) {
+        case 'good': return "Tốt / Nguyên vẹn";
+        case 'scratch': return "Trầy xước";
+        case 'display_defect': return "Lỗi màn (Sọc/Chấm đen)";
+        case 'cracked': return "Nứt vỡ kính";
+        default: return st || "—";
+    }
+};
 
-function PaymentModal({ open, onClose, onSubmit }: { open: boolean, onClose: () => void, onSubmit: (data: any) => void }) {
-    const [bank, setBank] = useState("");
-    const [accountName, setAccountName] = useState("");
-    const [accountNumber, setAccountNumber] = useState("");
+const translateBodyStatus = (st?: string) => {
+    switch(st) {
+        case 'good': return "Tốt";
+        case 'scratch': return "Đã qua sử dụng";
+        case 'cracked': return "Nứt vỡ";
+        default: return st || "—";
+    }
+};
 
-    if (!open) return null;
-
-    return (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4">
-            <div className="w-full max-w-md rounded-2xl bg-background shadow-2xl p-6">
-                <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-bold">Thêm thông tin thanh toán</h2>
-                    <button onClick={onClose} className="rounded-full p-2 hover:bg-muted">
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
-                
-                <div className="space-y-4">
-                    <div>
-                        <label className="mb-1 block text-sm font-medium">Ngân hàng</label>
-                        <select
-                            value={bank}
-                            onChange={(e) => setBank(e.target.value)}
-                            className="w-full rounded-md border bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-ring"
-                        >
-                            <option value="" disabled>Tìm ngân hàng...</option>
-                            {BANKS.map(b => <option key={b} value={b}>{b}</option>)}
-                        </select>
-                    </div>
-                    <div>
-                        <label className="mb-1 block text-sm font-medium">Tên tài khoản (Viết hoa không dấu)</label>
-                        <Input
-                            value={accountName}
-                            onChange={(e) => setAccountName(e.target.value.toUpperCase())}
-                            placeholder="VD: NGUYEN VAN A"
-                        />
-                    </div>
-                    <div>
-                        <label className="mb-1 block text-sm font-medium">Số tài khoản</label>
-                        <Input
-                            value={accountNumber}
-                            onChange={(e) => setAccountNumber(e.target.value)}
-                            placeholder="VD: 123456789"
-                            inputMode="numeric"
-                        />
-                    </div>
-                </div>
-
-                <Button 
-                    className="w-full mt-6 bg-[#0f172a] hover:bg-black text-white" 
-                    onClick={() => {
-                        if (!bank || !accountName || !accountNumber) return alert("Vui lòng điền đủ thông tin");
-                        onSubmit({ bank, accountName, accountNumber });
-                    }}
-                >
-                    <CheckCircle2 className="w-4 h-4 mr-2" /> Lưu thông tin
-                </Button>
-            </div>
-        </div>
-    );
-}
 
 function money(value: any) {
     const n = Number(value);
@@ -157,7 +104,7 @@ function normalizeList(res: any): TradeInDetail[] {
 }
 
 function deviceName(item: TradeInDetail) {
-    return [item.model_name, item.storage].filter(Boolean).join(" ") || `Trade-in #${item.id}`;
+    return [item.model_name, item.ram, item.storage].filter(Boolean).join(" ") || `Trade-in #${item.id}`;
 }
 
 const steps = [
@@ -258,19 +205,12 @@ function TradeInTimeline({ status, createdAt }: { status?: string; createdAt?: s
 function TradeInItemCard({
     item,
     onCancelSuccess,
-    onPaymentAdded,
 }: {
     item: TradeInDetail;
     onCancelSuccess: () => void;
-    onPaymentAdded: () => void;
 }) {
     const [expanded, setExpanded] = useState(false);
     const [cancelling, setCancelling] = useState(false);
-    const [paymentModalOpen, setPaymentModalOpen] = useState(false);
-    const navigate = useNavigate();
-
-    const localPaymentStr = localStorage.getItem('tradein_payment_' + item.id);
-    const localPayment = localPaymentStr ? JSON.parse(localPaymentStr) : null;
 
     const handleCancel = async () => {
         if (!window.confirm("Bạn có chắc chắn muốn hủy đơn thu cũ này?")) return;
@@ -295,8 +235,12 @@ function TradeInItemCard({
             <div className="p-6">
                 <div className="flex flex-col md:flex-row gap-6">
                     {/* Left: Image */}
-                    <div className="shrink-0 w-24 h-24 rounded-xl border bg-muted flex items-center justify-center overflow-hidden">
-                        <Smartphone className="h-10 w-10 text-muted-foreground" />
+                    <div className="shrink-0 w-24 h-24 rounded-xl border bg-white flex items-center justify-center overflow-hidden p-2">
+                        {item.config_image_url ? (
+                            <img src={item.config_image_url} alt={item.model_name} className="w-full h-full object-contain" />
+                        ) : (
+                            <Smartphone className="h-10 w-10 text-muted-foreground" />
+                        )}
                     </div>
 
                     {/* Middle: Details & Timeline */}
@@ -327,11 +271,6 @@ function TradeInItemCard({
                         {item.status === 'PENDING' && (
                             <Button className="w-full bg-[#0f172a] hover:bg-black text-white shadow-sm">
                                 Tải mã vận đơn
-                            </Button>
-                        )}
-                        {!localPayment && !completed && !cancelled && !rejected && (
-                            <Button variant="outline" className="w-full shadow-sm" onClick={() => setPaymentModalOpen(true)}>
-                                Thêm tài khoản NH
                             </Button>
                         )}
                         <Button variant="outline" className="w-full shadow-sm">
@@ -370,16 +309,20 @@ function TradeInItemCard({
                                 </h3>
                                 <div className="grid gap-4 sm:grid-cols-3 text-sm">
                                     <div>
+                                        <p className="text-muted-foreground">RAM / Dung lượng</p>
+                                        <p className="font-medium">{[item.ram, item.storage].filter(Boolean).join(" - ") || "—"}</p>
+                                    </div>
+                                    <div>
                                         <p className="text-muted-foreground">Nguồn</p>
                                         <p className="font-medium">{item.is_power_on ? "Còn lên nguồn" : "Không lên nguồn"}</p>
                                     </div>
                                     <div>
-                                        <p className="text-muted-foreground">Màn hình</p>
-                                        <p className="font-medium">{item.screen_ok ? "Bình thường" : "Có lỗi / hư hỏng"}</p>
+                                        <p className="text-muted-foreground">Màn hình (AI Check)</p>
+                                        <p className="font-medium">{translateScreenStatus(item.screen)}</p>
                                     </div>
                                     <div>
                                         <p className="text-muted-foreground">Thân vỏ</p>
-                                        <p className="font-medium">{item.body_ok ? "Bình thường" : "Có móp / trầy / hư hỏng"}</p>
+                                        <p className="font-medium">{translateBodyStatus(item.body)}</p>
                                     </div>
                                 </div>
                                 {item.description && (
@@ -391,7 +334,7 @@ function TradeInItemCard({
                             </div>
 
                             {/* Payment details */}
-                            {(item.payment || localPayment) && (
+                            {(item.bank_name || item.payment) && (
                                 <div className="border-t pt-6">
                                     <h3 className="font-semibold mb-4 flex items-center gap-2">
                                         <CreditCard className="h-4 w-4 text-primary" /> Thông tin nhận tiền
@@ -399,12 +342,12 @@ function TradeInItemCard({
                                     <div className="grid gap-4 sm:grid-cols-2 text-sm">
                                         <div className="sm:col-span-2">
                                             <p className="text-muted-foreground">Ngân hàng</p>
-                                            <p className="font-medium">{localPayment ? localPayment.bank : "Chuyển khoản"}</p>
+                                            <p className="font-medium">{item.bank_name || "Chưa có thông tin"}</p>
                                         </div>
                                         <div>
                                             <p className="text-muted-foreground">Tài khoản thụ hưởng</p>
                                             <p className="font-medium">
-                                                {localPayment ? `${localPayment.accountNumber} - ${localPayment.accountName}` : "—"}
+                                                {item.bank_account_number ? `${item.bank_account_number} - ${item.bank_account_name}` : "—"}
                                             </p>
                                         </div>
                                     </div>
@@ -468,15 +411,6 @@ function TradeInItemCard({
                 )}
             </AnimatePresence>
 
-            <PaymentModal 
-                open={paymentModalOpen} 
-                onClose={() => setPaymentModalOpen(false)} 
-                onSubmit={(data) => {
-                    localStorage.setItem('tradein_payment_' + item.id, JSON.stringify(data));
-                    setPaymentModalOpen(false);
-                    onPaymentAdded();
-                }}
-            />
         </div>
     );
 }
@@ -492,13 +426,7 @@ export default function MyTradeInsPage() {
         try {
             setLoading(true);
             const res = await getMyTradeIns();
-            const list = normalizeList(res).map(i => {
-                if (localStorage.getItem('tradein_payment_paid_' + i.id) === 'true') {
-                    return { ...i, status: 'COMPLETED' as any };
-                }
-                return i;
-            });
-            setItems(list);
+            setItems(normalizeList(res));
         } finally {
             setLoading(false);
         }
@@ -582,7 +510,6 @@ export default function MyTradeInsPage() {
                                 key={item.id}
                                 item={item}
                                 onCancelSuccess={fetchData}
-                                onPaymentAdded={fetchData}
                             />
                         ))
                     )}

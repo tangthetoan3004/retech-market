@@ -11,7 +11,7 @@ import { Checkbox } from "../../../components/ui/checkbox";
 import { Label } from "../../../components/ui/label";
 import ProductGrid from "../../../features/client/products/components/ProductGrid";
 import { showAlert } from "../../../features/ui/uiSlice";
-import { getProducts } from "../../../services/client/products/productsService";
+import { getProducts, getProductCategories, getProductBrands } from "../../../services/client/products/productsService";
 import {
   Pagination,
   PaginationContent,
@@ -44,7 +44,7 @@ export default function ProductsPage() {
   const [priceRange, setPriceRange] = useState<number[]>([0, 3000]);
 
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
-  const [selectedGrades, setSelectedGrades] = useState<string[]>([]);
+  const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
     params?.slug ? [String(params.slug)] : []
   );
@@ -93,33 +93,31 @@ export default function ProductsPage() {
     run();
   }, [dispatch, params?.slug, page]);
 
-  const categories = useMemo(
-    () => [
-      { key: "smartphones", label: "smartphones" },
-      { key: "laptops", label: "laptops" },
-      { key: "tablets", label: "tablets" },
-    ],
-    []
-  );
+  const [categories, setCategories] = useState<{key: string, label: string}[]>([]);
+  const [brands, setBrands] = useState<string[]>([]);
 
-  const brands = useMemo(
-    () => [
-      "Apple",
-      "Samsung",
-      "Xiaomi",
-      "Dell",
-      "HP",
-      "Lenovo",
-    ],
-    []
-  );
+  useEffect(() => {
+    const fetchOptions = async () => {
+      try {
+        const [cats, brs] = await Promise.all([
+          getProductCategories(),
+          getProductBrands()
+        ]);
+        setCategories(cats.map((c: any) => ({ key: c.name || c.slug, label: c.name })));
+        setBrands(brs.map((b: any) => b.name));
+      } catch (err) {
+        console.error("Failed to load filter options", err);
+      }
+    };
+    fetchOptions();
+  }, []);
 
   const toggleBrand = (brand: string) => {
     setSelectedBrands((prev) => (prev.includes(brand) ? prev.filter((b) => b !== brand) : [...prev, brand]));
   };
 
-  const toggleGrade = (grade: string) => {
-    setSelectedGrades((prev) => (prev.includes(grade) ? prev.filter((g) => g !== grade) : [...prev, grade]));
+  const toggleCondition = (cond: string) => {
+    setSelectedConditions((prev) => (prev.includes(cond) ? prev.filter((c) => c !== cond) : [...prev, cond]));
   };
 
   const toggleCategory = (category: string) => {
@@ -128,13 +126,13 @@ export default function ProductsPage() {
 
   const clearFilters = () => {
     setSelectedBrands([]);
-    setSelectedGrades([]);
+    setSelectedConditions([]);
     setSelectedCategories(params?.slug ? [String(params.slug)] : []);
     setPriceRange([0, priceMax || 3000]);
     setPage(1);
   };
 
-  const activeFiltersCount = selectedBrands.length + selectedGrades.length + selectedCategories.length;
+  const activeFiltersCount = selectedBrands.length + selectedConditions.length + selectedCategories.length;
 
   const filteredProducts = useMemo(() => {
     let filtered = [...products];
@@ -153,10 +151,10 @@ export default function ProductsPage() {
       });
     }
 
-    if (selectedGrades.length > 0) {
+    if (selectedConditions.length > 0) {
       filtered = filtered.filter((p) => {
-        const g = p?.grade || p?.conditionGrade || p?.condition;
-        return g ? selectedGrades.includes(String(g)) : false;
+        const c = p?.condition;
+        return c ? selectedConditions.includes(String(c).toUpperCase()) : false;
       });
     }
 
@@ -186,7 +184,7 @@ export default function ProductsPage() {
     }
 
     return filtered;
-  }, [products, selectedCategories, selectedBrands, selectedGrades, priceRange, sortBy]);
+  }, [products, selectedCategories, selectedBrands, selectedConditions, priceRange, sortBy]);
 
   const FilterContent = () => (
     <div className="space-y-6">
@@ -223,13 +221,19 @@ export default function ProductsPage() {
       </div>
 
       <div>
-        <h3 className="mb-3 font-semibold">Grade</h3>
+        <h3 className="mb-3 font-semibold">Condition</h3>
         <div className="space-y-2">
-          {["A", "B", "C"].map((g) => (
-            <div key={g} className="flex items-center space-x-2">
-              <Checkbox id={`grade-${g}`} checked={selectedGrades.includes(g)} onCheckedChange={() => toggleGrade(g)} />
-              <Label htmlFor={`grade-${g}`} className="cursor-pointer text-sm">
-                Grade {g}
+          {[
+            { value: "NEW", label: "New" },
+            { value: "LIKE_NEW", label: "Like New" },
+            { value: "GOOD", label: "Good" },
+            { value: "FAIR", label: "Fair" },
+            { value: "POOR", label: "Poor" },
+          ].map((c) => (
+            <div key={c.value} className="flex items-center space-x-2">
+              <Checkbox id={`condition-${c.value}`} checked={selectedConditions.includes(c.value)} onCheckedChange={() => toggleCondition(c.value)} />
+              <Label htmlFor={`condition-${c.value}`} className="cursor-pointer text-sm">
+                {c.label}
               </Label>
             </div>
           ))}

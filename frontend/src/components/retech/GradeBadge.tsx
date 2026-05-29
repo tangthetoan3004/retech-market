@@ -1,30 +1,41 @@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 
 interface GradeBadgeProps {
-  grade: "A" | "B" | "C";
+  condition: string;
   showTooltip?: boolean;
 }
 
-const gradeInfo = {
-  A: {
-    label: "Grade A",
-    description: "Like new - Minimal to no signs of wear. Fully tested and certified.",
+export const conditionInfo: Record<string, { label: string; description: string; colorClass: string }> = {
+  NEW: {
+    label: "New",
+    description: "Sản phẩm mới nguyên hộp, chưa qua sử dụng.",
+    colorClass: "bg-blue-500 text-white",
+  },
+  LIKE_NEW: {
+    label: "Like New",
+    description: "Như mới - Hầu như không có vết xước. Đã qua kiểm định.",
     colorClass: "bg-[var(--grade-a)] text-white",
   },
-  B: {
-    label: "Grade B",
-    description: "Good condition - Light signs of wear. Fully functional and tested.",
+  GOOD: {
+    label: "Good",
+    description: "Tốt - Có vết xước nhẹ. Đầy đủ chức năng.",
     colorClass: "bg-[var(--grade-b)] text-white",
   },
-  C: {
-    label: "Grade C",
-    description: "Fair condition - Visible signs of wear. Fully functional with warranty.",
+  FAIR: {
+    label: "Fair",
+    description: "Khá - Có dấu hiệu hao mòn rõ ràng. Vẫn hoạt động tốt.",
     colorClass: "bg-[var(--grade-c)] text-white",
   },
+  POOR: {
+    label: "Poor",
+    description: "Cũ - Ngoại hình trầy xước nhiều nhưng còn dùng được.",
+    colorClass: "bg-gray-500 text-white",
+  }
 };
 
-export function GradeBadge({ grade, showTooltip = true }: GradeBadgeProps) {
-  const info = gradeInfo[grade];
+export function GradeBadge({ condition, showTooltip = true }: GradeBadgeProps) {
+  const cond = condition ? condition.toUpperCase() : "GOOD";
+  const info = conditionInfo[cond] || conditionInfo.GOOD;
 
   const badge = (
     <span

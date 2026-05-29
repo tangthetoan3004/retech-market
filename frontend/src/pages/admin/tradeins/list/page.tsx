@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { motion } from "motion/react";
 import {
   AlertCircle,
   ArrowRightLeft,
@@ -76,7 +77,11 @@ type TradeInItem = {
   reject_reason?: string | null;
 
   images?: TradeInImage[];
-  payment?: TradeInPayment | null;
+  bank_name?: string;
+  bank_account_name?: string;
+  bank_account_number?: string;
+
+  config_image_url?: string | null;
 
   created_at?: string;
   updated_at?: string;
@@ -412,13 +417,19 @@ function TradeInTimeline({ status }: { status?: string }) {
         return (
           <div key={step.key} className="relative flex-1 text-center">
             {index < timelineSteps.length - 1 && (
-              <div className="absolute left-1/2 top-4 h-0.5 w-full bg-border">
-                <div
-                  className={[
-                    "h-full transition-all",
-                    done || active ? "bg-primary" : "bg-border",
-                  ].join(" ")}
-                />
+              <div className="absolute left-1/2 top-4 h-[2px] w-full bg-border overflow-hidden">
+                {done ? (
+                  <div className="h-full w-full bg-primary" />
+                ) : active ? (
+                  <div className="relative h-full w-full bg-primary/20">
+                    <motion.div
+                      initial={{ x: "-100%" }}
+                      animate={{ x: "200%" }}
+                      transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+                      className="absolute inset-0 w-1/2 bg-gradient-to-r from-transparent via-primary to-transparent"
+                    />
+                  </div>
+                ) : null}
               </div>
             )}
 
@@ -591,9 +602,15 @@ function TradeInDetailModal({
               <div className="rounded-2xl border bg-card p-5">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div className="flex gap-4">
-                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary/10">
-                      <Smartphone className="h-7 w-7 text-primary" />
-                    </div>
+                    {item.config_image_url ? (
+                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border bg-white p-1">
+                        <img src={item.config_image_url} alt={deviceName(item)} className="h-full w-full object-contain" />
+                      </div>
+                    ) : (
+                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary/10">
+                        <Smartphone className="h-7 w-7 text-primary" />
+                      </div>
+                    )}
 
                     <div>
                       <h3 className="text-lg font-bold">{deviceName(item)}</h3>
@@ -723,30 +740,6 @@ function TradeInDetailModal({
                 </div>
               )}
 
-              {(item.payment || localPayment) && (
-                <div className="rounded-2xl border bg-card p-5">
-                  <h3 className="mb-4 font-semibold">Thông tin nhận tiền của khách</h3>
-
-                  <div className="grid gap-4 sm:grid-cols-2 text-sm">
-                    <div className="sm:col-span-2">
-                      <p className="text-muted-foreground">Ngân hàng</p>
-                      <p className="font-medium text-[16px]">{localPayment ? localPayment.bank : "Chuyển khoản"}</p>
-                    </div>
-
-                    <div>
-                      <p className="text-muted-foreground">Tài khoản thụ hưởng</p>
-                      <p className="font-medium text-[16px]">
-                        {localPayment ? `${localPayment.accountNumber} - ${localPayment.accountName}` : "—"}
-                      </p>
-                    </div>
-
-                    <div>
-                      <p className="text-muted-foreground">Số tiền cần chuyển</p>
-                      <p className="font-bold text-xl text-[#8b5cf6]">{money(item.estimated_price)}</p>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
 
             <div className="space-y-5">
@@ -787,6 +780,36 @@ function TradeInDetailModal({
                   )}
                 </div>
               </div>
+
+              {(item.bank_name || item.payment || localPayment) && (
+                <div className="rounded-2xl border bg-card p-5">
+                  <h3 className="mb-4 font-semibold">Thông tin nhận tiền của khách</h3>
+
+                  <div className="grid gap-3 text-sm">
+                    <div>
+                      <p className="text-muted-foreground">Ngân hàng</p>
+                      <p className="font-medium">{item.bank_name || (localPayment ? localPayment.bank : "Chuyển khoản")}</p>
+                    </div>
+
+                    <div>
+                      <p className="text-muted-foreground">Tài khoản thụ hưởng</p>
+                      <p className="font-medium">
+                        {item.bank_account_number 
+                          ? `${item.bank_account_number} - ${item.bank_account_name || ""}`
+                          : localPayment 
+                            ? `${localPayment.accountNumber} - ${localPayment.accountName}` 
+                            : "—"
+                        }
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="text-muted-foreground">Số tiền cần chuyển</p>
+                      <p className="font-bold text-lg text-[#8b5cf6]">{money(item.estimated_price)}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div className="rounded-2xl border bg-card p-5">
                 <h3 className="mb-4 font-semibold">Xác nhận nhận máy</h3>
@@ -1124,9 +1147,15 @@ export default function AdminTradeInsPage() {
 
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
-                            <Smartphone className="h-5 w-5 text-primary" />
-                          </div>
+                          {item.config_image_url ? (
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border bg-white p-0.5">
+                              <img src={item.config_image_url} alt={deviceName(item)} className="h-full w-full object-contain" />
+                            </div>
+                          ) : (
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+                              <Smartphone className="h-5 w-5 text-primary" />
+                            </div>
+                          )}
                           <div>
                             <div className="font-medium">{deviceName(item)}</div>
                             <div className="text-xs text-muted-foreground">

@@ -5,10 +5,11 @@ export type TradeInEstimatePayload = {
     brand_id: number;
     category_id: number;
     model_name: string;
+    ram?: string;
     storage: string;
     is_power_on: boolean;
-    screen_ok: boolean;
-    body_ok: boolean;
+    screen: string;
+    body: string;
 };
 
 export type TradeInImage = {
@@ -34,11 +35,16 @@ export type TradeInDetail = {
     brand: number | string;
     category: number | string;
     model_name: string;
+    ram?: string;
     storage?: string;
 
     is_power_on: boolean;
-    screen_ok: boolean;
-    body_ok: boolean;
+    screen: string;
+    body: string;
+
+    bank_name?: string;
+    bank_account_name?: string;
+    bank_account_number?: string;
 
     description?: string;
     estimated_price?: number | string;
@@ -50,6 +56,7 @@ export type TradeInDetail = {
 
     images?: TradeInImage[];
     payment?: TradeInPayment | null;
+    config_image_url?: string;
 
     created_at: string;
     updated_at: string;
@@ -69,6 +76,12 @@ export async function uploadTradeInTempImage(session_key: string, file: File) {
     return post("/api/tradein/upload_temp/", formData);
 }
 
+export async function predictDamage(file: File) {
+    const formData = new FormData();
+    formData.append("image", file);
+    return post("/api/ai/predict-damage/", formData);
+}
+
 export async function deleteTradeInTempImage(temp_id: number | string) {
     return del(`/api/tradein/delete_temp/${temp_id}/`);
 }
@@ -78,12 +91,16 @@ export type TradeInCreatePayload = {
     brand: number;
     category: number;
     model_name: string;
+    ram?: string;
     storage: string;
     is_power_on: boolean;
-    screen_ok: boolean;
-    body_ok: boolean;
+    screen: string;
+    body: string;
     description: string;
     session_key: string;
+    bank_name: string;
+    bank_account_name: string;
+    bank_account_number: string;
 };
 
 export async function createTradeInRequest(payload: TradeInCreatePayload) {
@@ -113,6 +130,10 @@ export async function getTradeInBrands(params?: Record<string, any>) {
 
 export async function getTradeInModels(params?: Record<string, any>) {
     return get("/api/tradein/options/models/", { params });
+}
+
+export async function getTradeInRams(params?: Record<string, any>) {
+    return get("/api/tradein/options/rams/", { params });
 }
 
 export async function getTradeInStorages(params?: Record<string, any>) {
