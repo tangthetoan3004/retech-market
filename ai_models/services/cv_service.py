@@ -19,10 +19,10 @@ class DamageDetectionService:
             return {
                 "screen_status": "scratch",
                 "predictions": [
-                    {"label": "cracked", "confidence": 0.05},
-                    {"label": "display_defect", "confidence": 0.10},
-                    {"label": "good", "confidence": 0.15},
-                    {"label": "scratch", "confidence": 0.70},
+                    {"label": "cracked", "confidence": 0.5},
+                    {"label": "display_defect", "confidence": 0.5},
+                    {"label": "good", "confidence": 0.5},
+                    {"label": "scratch", "confidence": 0.5},
                 ],
                 "is_mock": True
             }
@@ -31,8 +31,8 @@ class DamageDetectionService:
             # 1. Đọc và chuyển đổi ảnh sang RGB sử dụng PIL
             image = Image.open(image_file).convert("RGB")
             
-            # 2. Resize ảnh về kích thước input của mô hình (224x224), dùng BILINEAR giống training pipeline
-            image = image.resize((224, 224), Image.BILINEAR)
+            # 2. Resize ảnh về kích thước input của mô hình (224x224)
+            image = image.resize((224, 224))
             
             # 3. Chuẩn hóa ảnh (chia cho 255.0 và normalize theo chuẩn ImageNet)
             img_data = np.array(image).astype(np.float32) / 255.0
