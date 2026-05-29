@@ -144,6 +144,8 @@ class Product(SoftDeleteModel, SlugModel):
 
     condition = models.CharField(max_length=20, choices=CONDITION_CHOICES, default="GOOD")
     warranty_period = models.IntegerField(default=0)
+    ram = models.CharField(max_length=50, blank=True, null=True)
+    storage = models.CharField(max_length=50, blank=True, null=True)
 
     main_image = models.ImageField(upload_to="products/", blank=True, null=True)
     main_image_url = models.TextField(blank=True, null=True, help_text="Link ảnh online")

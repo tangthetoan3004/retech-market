@@ -11,10 +11,10 @@ class DamageDetectionServiceTests(TestCase):
         # Đảm bảo model loader trả về mock model nếu chưa có model thật
         result = DamageDetectionService.predict(None)
         self.assertIn("predictions", result)
-        self.assertIn("damage_score", result)
+        self.assertIn("screen_status", result)
         self.assertTrue(result["is_mock"])
         self.assertIsInstance(result["predictions"], list)
-        self.assertIsInstance(result["damage_score"], float)
+        self.assertIsInstance(result["screen_status"], str)
 
 
 class AIPricingServiceTests(TestCase):
@@ -25,11 +25,11 @@ class AIPricingServiceTests(TestCase):
             "model_name": "iPhone 13",
             "storage": "128GB",
             "is_power_on": True,
-            "screen_ok": True,
-            "body_ok": True,
+            "screen": "good",
+            "body": "good",
         }
         damage_preds = [
-            {"label": "screen_cracked", "confidence": 0.85}
+            {"label": "cracked", "confidence": 0.85}
         ]
         
         result = AIPricingService.predict_price(device_data, damage_preds)

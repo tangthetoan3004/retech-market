@@ -680,3 +680,18 @@ class GoogleLoginView(APIView):
         )
         _set_auth_cookies(response, access_token, refresh_token)
         return response
+
+
+from rest_framework import viewsets
+from .models import UserBankAccount
+from .serializers import UserBankAccountSerializer
+
+class UserBankAccountViewSet(viewsets.ModelViewSet):
+    serializer_class = UserBankAccountSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return UserBankAccount.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)

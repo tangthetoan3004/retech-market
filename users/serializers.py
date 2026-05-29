@@ -97,3 +97,13 @@ class UserProfileSerializer(serializers.ModelSerializer):
     def get_is_admin(self, obj) -> bool:
         """True nếu user có thể truy cập trang quản trị."""
         return obj.is_staff or obj.is_superuser
+
+
+from .models import UserBankAccount
+
+class UserBankAccountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserBankAccount
+        fields = ('id', 'bank_name', 'account_name', 'account_number', 'created_at', 'updated_at')
+        read_only_fields = ('id', 'created_at', 'updated_at')
+

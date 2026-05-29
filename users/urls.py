@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 from .views import (
     RegisterView,
     LoginView,
@@ -34,3 +34,14 @@ urlpatterns = [
     # ── Google OAuth ──────────────────────────────────────────────────────────
     path("google/login/",         GoogleLoginView.as_view(),    name="google_login"),
 ]
+
+from rest_framework.routers import DefaultRouter
+from .views import UserBankAccountViewSet
+
+router = DefaultRouter()
+router.register("bank-accounts", UserBankAccountViewSet, basename="bank-account")
+
+urlpatterns += [
+    path("", include(router.urls)),
+]
+

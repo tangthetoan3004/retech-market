@@ -22,6 +22,8 @@ class ProductSerializer(serializers.ModelSerializer):
             "brand",
             "condition",
             "warranty_period",
+            "ram",
+            "storage",
             "main_image",
             "main_image_url",
             "is_sold",

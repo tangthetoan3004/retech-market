@@ -15,12 +15,21 @@ class AIPricingService:
             # Simple mock calculation
             base_mock_price = Decimal("5000000")
             
-            if damage_predictions:
-                for pred in damage_predictions:
-                    if pred["label"] == "screen_cracked":
-                        base_mock_price -= Decimal("1000000")
-                    if pred["label"] == "body_scratched":
-                        base_mock_price -= Decimal("300000")
+            # Tính toán trừ tiền mock dựa trên screen và body
+            screen_status = device_data.get("screen", "good")
+            body_status = device_data.get("body", "good")
+            
+            if screen_status == "cracked":
+                base_mock_price -= Decimal("1500000")
+            elif screen_status == "display_defect":
+                base_mock_price -= Decimal("1000000")
+            elif screen_status == "scratch":
+                base_mock_price -= Decimal("300000")
+                
+            if body_status == "cracked":
+                base_mock_price -= Decimal("800000")
+            elif body_status == "scratch":
+                base_mock_price -= Decimal("300000")
                         
             # Prevent negative
             ai_price = max(base_mock_price, Decimal("500000"))

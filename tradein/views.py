@@ -114,8 +114,7 @@ class TradeInViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         tradein = TradeInService.approve_tradein(
             tradein=tradein,
-            final_price=serializer.validated_data["final_price"],
-            staff_note=serializer.validated_data["staff_note"],
+            staff_note=serializer.validated_data.get("staff_note", ""),
         )
         return Response(TradeInDetailSerializer(tradein).data)
 
@@ -193,3 +192,56 @@ class TradeInOptionsViewSet(viewsets.ViewSet):
         ).values_list("storage", flat=True).distinct()
         
         return Response(list(storages_list))
+
+    @action(detail=False, methods=["get"], url_path="rams")
+    def rams(self, request):
+        category_id = request.query_params.get("category_id")
+        brand_id = request.query_params.get("brand_id")
+        model_name = request.query_params.get("model_name")
+        storage = request.query_params.get("storage")
+        if not all([category_id, brand_id, model_name, storage]):
+            return Response({"detail": "Thiếu các tham số bắt buộc."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Lấy danh sách RAM độc bản
+        rams_list = TradeInPriceConfig.objects.filter(
+            category_id=category_id,
+            brand_id=brand_id,
+            model_name=model_name,
+            storage=storage
+        ).values_list("ram", flat=True).distinct()
+        
+        # Loại bỏ giá trị None/rỗng để tránh lỗi phía Frontend
+        rams_list = [r for r in rams_list if r]
+        return Response(rams_list)
+
+    @action(detail=False, methods=["get"], url_path="image-url")
+    def image_url(self, request):
+        category_id = request.query_params.get("category_id")
+        brand_id = request.query_params.get("brand_id")
+        model_name = request.query_params.get("model_name")
+        storage = request.query_params.get("storage")
+        ram = request.query_params.get("ram")
+        
+        if not all([category_id, brand_id, model_name, storage]):
+            return Response({"detail": "Thiếu các tham số bắt buộc."}, status=status.HTTP_400_BAD_REQUEST)
+
+        filter_kwargs = {
+            "category_id": category_id,
+            "brand_id": brand_id,
+            "model_name": model_name,
+            "storage": storage,
+        }
+        if ram:
+            filter_kwargs["ram"] = ram
+            
+        config = TradeInPriceConfig.objects.filter(**filter_kwargs).first()
+        # Fallback trong trường hợp truyền RAM lên nhưng cấu hình lưu trong DB không có RAM
+        if not config and ram:
+            filter_kwargs.pop("ram")
+            config = TradeInPriceConfig.objects.filter(**filter_kwargs, ram__isnull=True).first() or \
+                     TradeInPriceConfig.objects.filter(**filter_kwargs, ram="").first()
+                     
+        if not config or not config.image_url:
+            return Response({"image_url": ""})
+            
+        return Response({"image_url": config.image_url})

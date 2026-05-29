@@ -16,7 +16,7 @@ class PricingService:
         
         Input: {
             brand_id, category_id, model_name, storage,
-            is_power_on, screen_ok, body_ok,
+            is_power_on, screen, body,
             tradein_type, ai_damage_predictions (optional)
         }
 
@@ -45,12 +45,15 @@ class PricingService:
         # 2. Rule-based Fallback (nếu AI lỗi hoặc trả về None/0)
         if not estimated_price or estimated_price <= 0:
             pricing_method = "RULE_BASED"
-            config = TradeInPriceConfig.objects.filter(
-                brand_id=data["brand_id"],
-                category_id=data["category_id"],
-                model_name=data["model_name"],
-                storage=data.get("storage", ""),
-            ).first()
+            filter_kwargs = {
+                "brand_id": data["brand_id"],
+                "category_id": data["category_id"],
+                "model_name": data["model_name"],
+                "storage": data.get("storage", ""),
+            }
+            if "ram" in data and data["ram"]:
+                filter_kwargs["ram"] = data["ram"]
+            config = TradeInPriceConfig.objects.filter(**filter_kwargs).first()
 
             if not config:
                 result = {"estimated_price": None}
@@ -61,13 +64,27 @@ class PricingService:
             if not data.get("is_power_on", True):
                 price -= config.power_off_deduction
 
-            if not data.get("screen_ok", True):
-                price -= config.screen_broken_deduction
+            # Khấu trừ dựa trên tình trạng màn hình (screen)
+            import json
+            screen_status = data.get("screen", "good")
+            try:
+                screen_deductions = json.loads(config.screen) if config.screen else {}
+            except Exception:
+                screen_deductions = {}
+            screen_deduction = screen_deductions.get(screen_status, 0)
+            price -= Decimal(str(screen_deduction))
 
-            if not data.get("body_ok", True):
-                price -= config.body_damage_deduction
+            # Khấu trừ dựa trên tình trạng thân máy (body)
+            body_status = data.get("body", "good")
+            try:
+                body_deductions = json.loads(config.body) if config.body else {}
+            except Exception:
+                body_deductions = {}
+            body_deduction = body_deductions.get(body_status, 0)
+            price -= Decimal(str(body_deduction))
 
             estimated_price = price
+
 
         result: dict = {
             "estimated_price": estimated_price,

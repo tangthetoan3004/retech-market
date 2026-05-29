@@ -15,8 +15,8 @@ class AIPredictPriceSerializer(serializers.Serializer):
     model_name = serializers.CharField(max_length=255)
     storage = serializers.CharField(max_length=50, required=False, allow_blank=True)
     is_power_on = serializers.BooleanField(default=True)
-    screen_ok = serializers.BooleanField(default=True)
-    body_ok = serializers.BooleanField(default=True)
+    screen = serializers.CharField(max_length=50, default="good")
+    body = serializers.CharField(max_length=50, default="good")
     
     # CV output (tùy chọn)
     ai_damage_predictions = serializers.ListField(

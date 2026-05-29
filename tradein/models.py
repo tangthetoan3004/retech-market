@@ -33,10 +33,17 @@ class TradeInRequest(models.Model):
     category     = models.ForeignKey("products.Category", on_delete=models.SET_NULL, null=True)
     model_name   = models.CharField(max_length=255, null=True, blank=True)
     storage      = models.CharField(max_length=50, blank=True)
+    ram          = models.CharField(max_length=50, blank=True, null=True)
     is_power_on  = models.BooleanField(default=True)
-    screen_ok    = models.BooleanField(default=True)
-    body_ok      = models.BooleanField(default=True)
+    screen       = models.CharField(max_length=50, default="good")
+    body         = models.CharField(max_length=50, default="good")
     description  = models.TextField(blank=True)
+
+    # Thông tin tài khoản ngân hàng nhận tiền (Snapshot)
+    bank_name           = models.CharField(max_length=100, blank=True, null=True)
+    bank_account_name   = models.CharField(max_length=100, blank=True, null=True)
+    bank_account_number = models.CharField(max_length=50, blank=True, null=True)
+
 
     # Giá — 2 bước riêng biệt
     estimated_price = models.DecimalField(max_digits=12, decimal_places=0, null=True, blank=True)
@@ -77,18 +84,21 @@ class TradeInRequest(models.Model):
 
 class TradeInPriceConfig(models.Model):
     class Meta:
-        unique_together = ("brand", "category", "model_name", "storage")
+        unique_together = ("brand", "category", "model_name", "storage", "ram")
 
     brand = models.ForeignKey("products.Brand", on_delete=models.PROTECT)
     category = models.ForeignKey("products.Category", on_delete=models.PROTECT)
     model_name = models.CharField(max_length=255)
     storage = models.CharField(max_length=50, blank=True)
+    ram = models.CharField(max_length=50, blank=True, null=True)
+    image_url = models.TextField(blank=True, null=True)
 
     base_price = models.DecimalField(max_digits=12, decimal_places=0)
 
     power_off_deduction = models.DecimalField(max_digits=12, decimal_places=0, default=0)
-    screen_broken_deduction = models.DecimalField(max_digits=12, decimal_places=0, default=0)
-    body_damage_deduction = models.DecimalField(max_digits=12, decimal_places=0, default=0)
+    screen = models.TextField(default="{}")  # Lưu cấu hình JSON của mức khấu trừ màn hình
+    body = models.TextField(default="{}")    # Lưu cấu hình JSON của mức khấu trừ ngoại hình
+
 
     def __str__(self):
         return f"{self.brand} - {self.model_name} - {self.storage}"

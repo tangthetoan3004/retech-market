@@ -36,16 +36,19 @@ class TradeInService:
             "category_id": validated_data["category"].id if validated_data.get("category") else None,
             "model_name": validated_data.get("model_name", ""),
             "storage": validated_data.get("storage", ""),
+            "ram": validated_data.get("ram", ""),
             "is_power_on": validated_data.get("is_power_on", True),
-            "screen_ok": validated_data.get("screen_ok", True),
-            "body_ok": validated_data.get("body_ok", True),
+            "screen": validated_data.get("screen", "good"),
+            "body": validated_data.get("body", "good"),
             "tradein_type": tradein_type,
         }
         pricing_result = PricingService.estimate_price(estimate_data)
+        est_price = pricing_result.get("estimated_price")
 
         tradein = TradeInRequest.objects.create(
             user=user,
-            estimated_price=pricing_result.get("estimated_price"),
+            estimated_price=est_price,
+            final_price=est_price,  # Chốt cứng giá cuối bằng giá ước tính của AI
             expires_at=timezone.now() + timedelta(days=TradeInService.EXPIRY_DAYS),
             **validated_data,
         )
@@ -63,23 +66,19 @@ class TradeInService:
 
     @staticmethod
     @transaction.atomic
-    def approve_tradein(tradein, final_price: Decimal, staff_note: str) -> TradeInRequest:
+    def approve_tradein(tradein, staff_note: str) -> TradeInRequest:
         """
-        Admin kiểm tra thiết bị tại cửa hàng → set final_price → PENDING → APPROVED.
+        Admin xác nhận nhận máy tại cửa hàng.
           1. select_for_update() trên TradeInRequest.
-          2. Set final_price, staff_note.
+          2. Set staff_note. Giá trị final_price được giữ nguyên như lúc tạo.
           3. Change status: PENDING → APPROVED.
-          4. (EXCHANGE) Gọi ExchangeOrderService.create_exchange_order().
-          5. Gọi PaymentService.create_tradein_payment(tradein) → tạo Payment(PENDING).
+          4. Tạo Payment(PENDING) để giải ngân tự động.
         """
         tradein = TradeInRequest.objects.select_for_update().get(pk=tradein.pk)
-        tradein.final_price = final_price
         tradein.staff_note = staff_note
-        tradein.save(update_fields=["final_price", "staff_note", "updated_at"])
+        tradein.save(update_fields=["staff_note", "updated_at"])
 
         tradein.change_status(TradeInRequest.Status.APPROVED)
-
-
 
         # Import inside to avoid circular import
         from payment.services import PaymentService

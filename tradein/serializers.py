@@ -9,9 +9,10 @@ class TradeInEstimateSerializer(serializers.Serializer):
     category_id        = serializers.IntegerField()
     model_name         = serializers.CharField(max_length=255)
     storage            = serializers.CharField(max_length=50, required=False, allow_blank=True)
+    ram                = serializers.CharField(max_length=50, required=False, allow_blank=True)
     is_power_on        = serializers.BooleanField(default=True)
-    screen_ok          = serializers.BooleanField(default=True)
-    body_ok            = serializers.BooleanField(default=True)
+    screen             = serializers.CharField(max_length=50, default="good")
+    body               = serializers.CharField(max_length=50, default="good")
 
 
 class TradeInCreateSerializer(serializers.ModelSerializer):
@@ -21,9 +22,10 @@ class TradeInCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = TradeInRequest
         fields = [
-            "tradein_type", "brand", "category", "model_name", "storage",
-            "is_power_on", "screen_ok", "body_ok",
+            "tradein_type", "brand", "category", "model_name", "storage", "ram",
+            "is_power_on", "screen", "body",
             "description", "session_key",
+            "bank_name", "bank_account_name", "bank_account_number",
         ]
 
     def validate(self, attrs):
@@ -48,9 +50,10 @@ class TradeInDetailSerializer(serializers.ModelSerializer):
         model = TradeInRequest
         fields = [
             "id", "user", "tradein_type", "status",
-            "brand", "category", "model_name", "storage",
-            "is_power_on", "screen_ok", "body_ok",
-            "description", "estimated_price", "final_price",
+            "brand", "category", "model_name", "storage", "ram",
+            "is_power_on", "screen", "body",
+            "description", "bank_name", "bank_account_name", "bank_account_number",
+            "estimated_price", "final_price",
             "expires_at",
             "staff_note", "reject_reason",
             "images", "payment",
@@ -72,8 +75,7 @@ class TradeInDetailSerializer(serializers.ModelSerializer):
 
 
 class StaffApproveSerializer(serializers.Serializer):
-    """Admin set giá cuối tại cửa hàng."""
-    final_price = serializers.DecimalField(max_digits=12, decimal_places=0, min_value=1)
+    """Admin duyệt máy tại cửa hàng."""
     staff_note  = serializers.CharField(allow_blank=True)
 
 
