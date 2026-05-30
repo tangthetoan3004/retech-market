@@ -1,6 +1,8 @@
 import { get } from "../../../utils/request";
 
-const BACKEND_ORIGIN = "http://127.0.0.1:8000";
+const BACKEND_ORIGIN = import.meta.env.VITE_API_URL
+  ? String(import.meta.env.VITE_API_URL).replace(/\/+$/, "")
+  : "http://127.0.0.1:8000";
 
 function absMediaUrl(url: any) {
   const s = String(url ?? "").trim();
@@ -10,12 +12,7 @@ function absMediaUrl(url: any) {
   return `${BACKEND_ORIGIN}/${s}`;
 }
 
-function mapConditionToGrade(cond: string) {
-  const c = String(cond || "").toUpperCase();
-  if (c === "GOOD") return "A";
-  if (c === "FAIR") return "B";
-  return "C";
-}
+// removed mapConditionToGrade
 
 function normalizeProduct(p: any) {
   if (!p) return p;
@@ -28,7 +25,7 @@ function normalizeProduct(p: any) {
       ? Math.round(((priceOld - priceNew) / priceOld) * 100)
       : 0;
 
-  const thumbnail = absMediaUrl(p.main_image || p.thumbnail || p.image);
+  const thumbnail = p.main_image_url || absMediaUrl(p.main_image || p.thumbnail || p.image);
 
   return {
     ...p,
@@ -36,17 +33,16 @@ function normalizeProduct(p: any) {
     slug: p.slug,
     title: p.title || p.name || "",
     name: p.name || p.title || "",
-    brand: typeof p.brand === "string" ? p.brand : p.brand?.name || "",
-    category: typeof p.category === "string" ? p.category : p.category?.name || "",
+    brand: p.brand_name || (typeof p.brand === "string" ? p.brand : p.brand?.name) || "",
+    category: p.category_name || (typeof p.category === "string" ? p.category : p.category?.name) || "",
     thumbnail,
     image: thumbnail,
-    images: thumbnail ? [thumbnail] : [],
+    images: p.main_image_url ? [p.main_image_url] : (thumbnail ? [thumbnail] : []),
     priceNew,
     price: priceOld || priceNew,
     discountPercentage,
     featured: p.featured ?? "0",
-    grade: mapConditionToGrade(p.condition),
-    batteryHealth: p.battery_health ?? null,
+    condition: p.condition || "GOOD",
     warranty: p.warranty_period ?? 0,
     inStock: p.is_sold ? false : true
   };
@@ -102,4 +98,14 @@ export const searchProducts = async (keyword: string) => {
   const res = await get("/api/products/items/", { params: { search: keyword || "" } });
   const list = extractList(res);
   return normalizeList(list);
+};
+
+export const getProductCategories = async () => {
+  const res = await get("/api/products/categories/");
+  return extractList(res);
+};
+
+export const getProductBrands = async () => {
+  const res = await get("/api/products/brands/");
+  return extractList(res);
 };

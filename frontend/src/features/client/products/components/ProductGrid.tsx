@@ -32,7 +32,7 @@ export default function ProductGrid({ items }: Props) {
         brand: p?.brand || "Unknown",
         price: p?.priceNew ?? p?.price ?? 0,
         originalPrice: p?.original_price ?? p?.price,
-        grade: p?.grade || "A",
+        condition: p?.condition || "GOOD",
         image: p?.thumbnail || p?.main_image || p?.image || "",
         warranty: p?.warranty || "12 Months",
         batteryHealth: p?.batteryHealth,
@@ -55,10 +55,11 @@ export default function ProductGrid({ items }: Props) {
             brand={p?.brand || "Brand"}
             price={p?.priceNew ?? p?.price ?? 0}
             originalPrice={p?.original_price ?? p?.price}
-            grade={p?.grade || "A"}
+            condition={p?.condition || "GOOD"}
             image={p?.thumbnail || p?.main_image || p?.image || ""}
             warranty={p?.warranty || "12 Months"}
-            batteryHealth={p?.batteryHealth}
+            ram={p?.ram}
+            storage={p?.storage}
             inStock={p?.inStock ?? true}
             isInWishlist={isInWishlist}
             onQuickView={() => navigate(`/products/detail/${p?.slug || id}`)}

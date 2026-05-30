@@ -78,7 +78,7 @@ export default function Header({ settingGeneral }: { settingGeneral?: any; categ
       { label: "Home", key: "home", href: "/", icon: Home },
       { label: "Products", key: "products", href: "/products", icon: Grid3X3 },
       { label: "Trade-In", key: "tradein", href: "/tradeins", icon: ArrowRightLeft },
-      { label: "About", key: "about", href: "/about", icon: Info },
+      // { label: "About", key: "about", href: "/about", icon: Info },
     ],
     []
   );
@@ -455,6 +455,10 @@ export default function Header({ settingGeneral }: { settingGeneral?: any; categ
                   <DropdownMenuItem onClick={() => navigate("/user/orders")} className="cursor-pointer">
                     <Package className="mr-2 h-4 w-4" />
                     Đơn hàng của tôi
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/user/tradeins")} className="cursor-pointer">
+                    <ArrowRightLeft className="mr-2 h-4 w-4" />
+                    Yêu cầu trade-in của tôi
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={doLogout} className="cursor-pointer text-red-500">
                     <LogOut className="mr-2 h-4 w-4" />

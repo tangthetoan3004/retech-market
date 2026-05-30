@@ -11,7 +11,6 @@ export type AdminTradeIn = {
   is_power_on: boolean;
   screen_ok: boolean;
   body_ok: boolean;
-  battery_percentage: number;
 
   estimated_price: number | string;
 
@@ -52,7 +51,6 @@ function normalizeTradeIn(x: any): AdminTradeIn {
     is_power_on: toBool(x?.is_power_on ?? x?.isPowerOn, true),
     screen_ok: toBool(x?.screen_ok ?? x?.screenOk, true),
     body_ok: toBool(x?.body_ok ?? x?.bodyOk, true),
-    battery_percentage: toNum(x?.battery_percentage ?? x?.batteryPercentage ?? 0, 0),
 
     estimated_price: x?.estimated_price ?? x?.estimatedPrice ?? 0,
 
@@ -62,7 +60,7 @@ function normalizeTradeIn(x: any): AdminTradeIn {
 }
 
 export async function getTradeIns(params: GetTradeInsParams = {}) {
-  const res: any = await get("/api/tradein/tradein/", { params });
+  const res: any = await get("/api/tradein/", { params });
 
   const rawList =
     (Array.isArray(res) && res) ||
@@ -78,9 +76,9 @@ export async function getTradeIns(params: GetTradeInsParams = {}) {
 }
 
 export async function approveTradeIn(id: number | string, final_price: number, staff_note: string = "") {
-  return post(`/api/tradein/tradein/${id}/approve/`, { final_price, staff_note });
+  return post(`/api/tradein/${id}/approve/`, { final_price, staff_note });
 }
 
 export async function rejectTradeIn(id: number | string, reject_reason: string) {
-  return post(`/api/tradein/tradein/${id}/reject/`, { reject_reason });
+  return post(`/api/tradein/${id}/reject/`, { reject_reason });
 }
