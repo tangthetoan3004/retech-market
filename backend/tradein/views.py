@@ -29,7 +29,13 @@ class TradeInViewSet(viewsets.ModelViewSet):
         staff_actions = ["approve", "reject"]
         if self.action in staff_actions:
             return [permissions.IsAdminUser()]
+            
+        allow_any_actions = ["estimate", "upload_temp", "delete_temp"]
+        if self.action in allow_any_actions:
+            return [permissions.AllowAny()]
+            
         return [permissions.IsAuthenticated()]
+
 
     def get_serializer_class(self):
         mapping = {

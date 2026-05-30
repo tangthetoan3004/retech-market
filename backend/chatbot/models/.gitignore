@@ -1,0 +1,2 @@
+# Bỏ qua file mô hình nhị phân ONNX trong Git
+*.onnx

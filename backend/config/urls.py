@@ -12,6 +12,9 @@ urlpatterns = [
     path('api/orders/', include('orders.urls')),
     path('api/payments/', include('payment.urls')),
     path('api/ai/', include('ai_models.urls')),
+    path('api/chatbot/', include('chatbot.urls')),
+    path('api/dashboard/', include('orders.dashboard_urls')),
+
 
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),

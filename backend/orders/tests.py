@@ -293,3 +293,130 @@ class RefundServiceTests(TestCase):
         refund = RefundService.create_refund(order.id, self.user, {"reason_refund": "Faulty"})
         with self.assertRaises(ValidationError):
             RefundService.reject_refund(refund, "")
+
+
+from rest_framework.test import APITestCase
+from rest_framework import status
+from django.urls import reverse
+from tradein.models import TradeInRequest
+
+class AdminDashboardAPITests(APITestCase):
+    """
+    Test các APIs thống kê của Dashboard Admin.
+    """
+    def setUp(self):
+        self.admin_user = User.objects.create_user(
+            username="admin_user", password="password", is_staff=True
+        )
+        self.normal_user = User.objects.create_user(
+            username="normal_user", password="password", is_staff=False
+        )
+
+        self.brand = Brand.objects.create(name="Apple")
+        self.cat = Category.objects.create(name="Phones")
+        self.product = Product.objects.create(
+            seller=self.admin_user, name="iPhone X", price=10000000,
+            category=self.cat, brand=self.brand
+        )
+
+        # Tạo Order
+        self.order = Order.objects.create(
+            user=self.normal_user, total_amount=10000000, status=Order.Status.DELIVERED
+        )
+        OrderItem.objects.create(
+            order=self.order, product=self.product, price_snapshot=10000000
+        )
+
+        # Tạo Payment (Doanh thu)
+        Payment.objects.create(
+            user=self.normal_user,
+            payment_type=Payment.PaymentType.ORDER,
+            payment_method=Payment.PaymentMethod.COD,
+            direction=Payment.Direction.INBOUND,
+            status=Payment.Status.COMPLETED,
+            amount=10000000,
+            order=self.order
+        )
+
+        # Tạo Trade-In Request
+        self.tradein = TradeInRequest.objects.create(
+            user=self.normal_user,
+            brand=self.brand,
+            category=self.cat,
+            model_name="iPhone 11 Pro",
+            estimated_price=8000000,
+            final_price=7500000,
+            status=TradeInRequest.Status.COMPLETED
+        )
+
+        # Tạo Payment chi trả thu cũ (Payout)
+        Payment.objects.create(
+            user=self.normal_user,
+            payment_type=Payment.PaymentType.TRADEIN_SELL_PAYOUT,
+            payment_method=Payment.PaymentMethod.CASH,
+            direction=Payment.Direction.OUTBOUND,
+            status=Payment.Status.COMPLETED,
+            amount=7500000,
+            tradein_request=self.tradein
+        )
+
+        # Tạo Refund hoàn tiền
+        self.order2 = Order.objects.create(
+            user=self.normal_user, total_amount=5000000, status=Order.Status.RETURNED
+        )
+        self.refund = Refund.objects.create(
+            order=self.order2,
+            reason_refund="Lỗi màn hình",
+            status=Refund.RefundStatus.APPROVED,
+            total_refund_amount=5000000
+        )
+
+    def test_dashboard_stats_permission_admin(self):
+        """Chỉ có admin/staff mới truy cập được API dashboard."""
+        url = reverse("admin-dashboard-stats")
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_dashboard_stats_permission_denied_for_normal_user(self):
+        """Người dùng thường bị từ chối truy cập."""
+        url = reverse("admin-dashboard-stats")
+        self.client.force_authenticate(user=self.normal_user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_dashboard_stats_permission_denied_for_anonymous(self):
+        """Khách vãng lai bị từ chối truy cập."""
+        url = reverse("admin-dashboard-stats")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_dashboard_stats_correct_aggregates(self):
+        """Kiểm tra độ chính xác của các chỉ số tổng hợp."""
+        url = reverse("admin-dashboard-stats")
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        overview = response.data["overview"]
+        self.assertEqual(overview["total_revenue"], 10000000)
+        self.assertEqual(overview["total_payout"], 7500000)
+        self.assertEqual(overview["total_refund"], 5000000)
+        self.assertEqual(overview["net_profit"], -2500000)
+        self.assertEqual(overview["total_orders"], 2)
+        self.assertEqual(overview["total_tradeins"], 1)
+
+        # Kiểm tra sự tồn tại của dữ liệu xu hướng và biểu đồ
+        self.assertIn("charts", response.data)
+        self.assertTrue(len(response.data["charts"]["trend"]) > 0)
+        
+        # Kiểm tra distributions
+        self.assertIn("distributions", response.data)
+        self.assertTrue(len(response.data["distributions"]["orders"]) > 0)
+        self.assertTrue(len(response.data["distributions"]["tradeins"]) > 0)
+
+        # Kiểm tra hoạt động gần đây
+        self.assertIn("recent_activities", response.data)
+        self.assertEqual(len(response.data["recent_activities"]["orders"]), 2)
+        self.assertEqual(len(response.data["recent_activities"]["tradeins"]), 1)
+

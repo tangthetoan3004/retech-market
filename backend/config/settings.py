@@ -32,7 +32,9 @@ INSTALLED_APPS = [
     'tradein',
     'payment',
     'ai_models',
+    'chatbot',
 ]
+
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -181,6 +183,9 @@ ZALOPAY_APP_ID = os.getenv('ZALOPAY_APP_ID', '')
 ZALOPAY_KEY1 = os.getenv('ZALOPAY_KEY1', '')
 ZALOPAY_KEY2 = os.getenv('ZALOPAY_KEY2', '')
 
+# ---------- Gemini API Key ----------
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
+
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
@@ -271,4 +276,8 @@ CELERY_BEAT_SCHEDULE = {
         "task": "payment.tasks.auto_fail_expired_bank_transfer_payments",
         "schedule": crontab(minute='*/5'),  
     },
-}
+    "sync-chatbot-embeddings": {
+        "task": "chatbot.tasks.sync_chatbot_embeddings",
+        "schedule": crontab(hour=2, minute=0),
+    },
+}
