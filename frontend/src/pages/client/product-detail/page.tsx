@@ -202,19 +202,6 @@ export default function ProductDetailPage() {
 
               <div className="flex items-center gap-3">
                 <GradeBadge condition={condition} />
-
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`h-4 w-4 ${i < Math.round(rating) ? "fill-[var(--grade-b)] text-[var(--grade-b)]" : "text-muted"
-                        }`}
-                    />
-                  ))}
-                  <span className="ml-2 text-sm text-muted-foreground">
-                    ({rating.toFixed(1)}) • {reviewCount} reviews
-                  </span>
-                </div>
               </div>
             </div>
 
@@ -356,41 +343,86 @@ export default function ProductDetailPage() {
 
         <div className="mt-16">
           <Tabs defaultValue="description" className="w-full">
-            <TabsList className="h-auto w-full justify-start rounded-none border-b bg-transparent p-0">
+            <TabsList className="inline-flex h-14 items-center justify-start sm:justify-center overflow-x-auto rounded-xl bg-muted/50 p-1 text-muted-foreground w-full sm:w-auto mb-8 border border-border/50">
               <TabsTrigger
                 value="description"
-                className="rounded-none border-b-2 data-[state=active]:border-[var(--accent-blue)]"
+                className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-6 sm:px-8 py-2.5 sm:py-3 text-sm font-semibold transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
               >
                 Description
               </TabsTrigger>
               <TabsTrigger
                 value="specs"
-                className="rounded-none border-b-2 data-[state=active]:border-[var(--accent-blue)]"
+                className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-6 sm:px-8 py-2.5 sm:py-3 text-sm font-semibold transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
               >
                 Specifications
               </TabsTrigger>
               <TabsTrigger
                 value="condition"
-                className="rounded-none border-b-2 data-[state=active]:border-[var(--accent-blue)]"
+                className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-6 sm:px-8 py-2.5 sm:py-3 text-sm font-semibold transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
               >
                 Condition Report
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="description" className="mt-6">
-              <div className="prose max-w-none">
-                {product?.description ? (
-                  <div dangerouslySetInnerHTML={{ __html: String(product.description) }} />
-                ) : (
-                  <p className="text-lg text-muted-foreground">No description available.</p>
-                )}
-                <h3 className="mb-4 mt-6">What's Included</h3>
-                <ul className="space-y-2">
-                  <li>Device in excellent working condition</li>
-                  <li>Original charging cable and adapter</li>
-                  <li>12-month warranty certificate</li>
-                  <li>Quality inspection report</li>
-                </ul>
+            <TabsContent value="description" className="mt-8">
+              <div className="grid gap-8 lg:grid-cols-3">
+                <div className="lg:col-span-2">
+                  <div className="prose prose-blue max-w-none rounded-2xl bg-card p-6 md:p-8 shadow-sm border border-border/50">
+                    {product?.description ? (
+                      <div dangerouslySetInnerHTML={{ __html: String(product.description) }} className="text-base leading-relaxed text-foreground/80 [&>p]:mb-4 [&>h3]:mt-6 [&>h3]:mb-3 [&>h3]:text-lg [&>h3]:font-bold [&>ul]:list-disc [&>ul]:pl-5 [&>ul>li]:mb-2" />
+                    ) : (
+                      <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
+                        <div className="mb-4 rounded-full bg-muted p-4">
+                          <Check className="h-8 w-8 opacity-50" />
+                        </div>
+                        <p className="text-lg font-medium">No description available</p>
+                        <p className="text-sm">Information about this product will be updated soon.</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="space-y-6">
+                  <div className="rounded-2xl bg-gradient-to-b from-muted/50 to-muted/10 p-6 border border-border/50 shadow-sm">
+                    <h3 className="mb-5 text-lg font-bold flex items-center gap-2">
+                      <Shield className="h-5 w-5 text-[var(--accent-blue)]" />
+                      What's Included
+                    </h3>
+                    <ul className="space-y-4">
+                      <li className="flex items-start gap-3">
+                        <div className="rounded-full bg-[var(--status-success)]/10 p-1 mt-0.5">
+                          <Check className="h-4 w-4 text-[var(--status-success)]" />
+                        </div>
+                        <span className="text-sm leading-relaxed text-muted-foreground">Device in excellent working condition</span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <div className="rounded-full bg-[var(--status-success)]/10 p-1 mt-0.5">
+                          <Check className="h-4 w-4 text-[var(--status-success)]" />
+                        </div>
+                        <span className="text-sm leading-relaxed text-muted-foreground">Original charging cable and adapter</span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <div className="rounded-full bg-[var(--status-success)]/10 p-1 mt-0.5">
+                          <Check className="h-4 w-4 text-[var(--status-success)]" />
+                        </div>
+                        <span className="text-sm leading-relaxed text-muted-foreground">12-month warranty certificate</span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <div className="rounded-full bg-[var(--status-success)]/10 p-1 mt-0.5">
+                          <Check className="h-4 w-4 text-[var(--status-success)]" />
+                        </div>
+                        <span className="text-sm leading-relaxed text-muted-foreground">Quality inspection report</span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div className="rounded-2xl bg-[var(--accent-blue)]/5 p-6 border border-[var(--accent-blue)]/10 shadow-sm">
+                    <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-[var(--accent-blue)]">ReTech Promise</h3>
+                    <p className="text-sm text-foreground/80 leading-relaxed">
+                      Every device undergoes a rigorous 45-point inspection process by our certified technicians to ensure top-notch quality and reliability.
+                    </p>
+                  </div>
+                </div>
               </div>
             </TabsContent>
 

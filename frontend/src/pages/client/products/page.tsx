@@ -189,24 +189,6 @@ export default function ProductsPage() {
   const FilterContent = () => (
     <div className="space-y-6">
       <div>
-        <h3 className="mb-3 font-semibold">Category</h3>
-        <div className="space-y-2">
-          {categories.map((c) => (
-            <div key={c.key} className="flex items-center space-x-2">
-              <Checkbox
-                id={`category-${c.key}`}
-                checked={selectedCategories.includes(c.key)}
-                onCheckedChange={() => toggleCategory(c.key)}
-              />
-              <Label htmlFor={`category-${c.key}`} className="cursor-pointer text-sm capitalize">
-                {c.label}
-              </Label>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div>
         <h3 className="mb-3 font-semibold">Brand</h3>
         <div className="space-y-2">
           {brands.slice(0, 6).map((b) => (

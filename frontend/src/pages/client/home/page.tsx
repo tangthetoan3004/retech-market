@@ -50,15 +50,7 @@ export default function HomePage() {
   const hideTimeoutRef = useRef<number | null>(null);
   const switchTimeoutRef = useRef<number | null>(null);
 
-  const categories = useMemo(
-    () => [
-      { name: "Smartphones", icon: Smartphone, count: 156 },
-      { name: "Laptops", icon: Laptop, count: 89 },
-      { name: "Tablets", icon: Tablet, count: 45 },
-      { name: "Headphones", icon: Headphones, count: 112 },
-    ],
-    []
-  );
+
 
   const features = useMemo(
     () => [
@@ -254,35 +246,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="bg-muted/30 py-16">
-        <div className="mx-auto w-full max-w-[1260px] px-5 lg:px-7 xl:px-9">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="grid grid-cols-2 gap-4 md:grid-cols-4"
-          >
-            {categories.map((category, index) => (
-              <motion.button
-                key={category.name}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                whileHover={{ scale: 1.05, y: -4 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => navigate("/products")}
-                className="group rounded-xl border border-border bg-card p-6 text-center transition-all hover:border-[#0066ff] dark:hover:border-[#3b8eff]"
-                type="button"
-              >
-                <category.icon className="mx-auto mb-3 h-12 w-12 text-muted-foreground transition-colors group-hover:text-[#0066ff] dark:group-hover:text-[#3b8eff]" />
-                <h3 className="mb-1 font-medium">{category.name}</h3>
-                <p className="text-sm text-muted-foreground">{category.count} items</p>
-              </motion.button>
-            ))}
-          </motion.div>
-        </div>
-      </section>
+
 
       <section className="py-16">
         <div className="mx-auto w-full max-w-[1260px] px-5 lg:px-7 xl:px-9">
