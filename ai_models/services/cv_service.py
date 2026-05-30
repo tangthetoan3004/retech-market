@@ -70,7 +70,6 @@ class DamageDetectionService:
             }
         except Exception as e:
             logger.error(f"Lỗi khi chạy ONNX CV Model: {e}")
-            # Fallback về kết quả giả định nếu có lỗi xảy ra
             return {
                 "screen_status": "good",
                 "predictions": [
@@ -82,4 +81,71 @@ class DamageDetectionService:
                 "error": str(e),
                 "is_mock": True
             }
+
+    @staticmethod
+    def predict_multiple(image_files) -> dict:
+        """
+        Đầu vào: image_files (danh sách các đối tượng file ảnh từ Django)
+        Đầu ra: kết quả tổng hợp tình trạng màn hình từ nhiều ảnh dựa trên độ ưu tiên lỗi
+        """
+        results = []
+        for img_file in image_files:
+            res = DamageDetectionService.predict(img_file)
+            results.append(res)
+            
+        if not results:
+            return {
+                "screen_status": "good",
+                "predictions": [
+                    {"label": "cracked", "confidence": 0.0},
+                    {"label": "display_defect", "confidence": 0.0},
+                    {"label": "good", "confidence": 1.0},
+                    {"label": "scratch", "confidence": 0.0},
+                ],
+                "is_mock": True
+            }
+            
+        status_list = [r["screen_status"] for r in results]
+        
+        # 1. Tìm các ảnh có lỗi nặng: 'cracked' hoặc 'display_defect'
+        heavy_errors = []
+        for r in results:
+            status = r["screen_status"]
+            if status in ["cracked", "display_defect"]:
+                # Lấy độ tin cậy (confidence) của lớp tương ứng
+                conf = 0.0
+                for p in r.get("predictions", []):
+                    if p["label"] == status:
+                        conf = p["confidence"]
+                        break
+                heavy_errors.append((status, conf, r))
+                
+        if heavy_errors:
+            # Sắp xếp theo confidence giảm dần để lấy lớp có confidence cao nhất
+            heavy_errors.sort(key=lambda x: x[1], reverse=True)
+            final_status = heavy_errors[0][0]
+            final_predictions = heavy_errors[0][2]["predictions"]
+            is_mock = any(r.get("is_mock", False) for r in results)
+        # 2. Nếu không có lỗi nặng nhưng có lỗi nhẹ 'scratch'
+        elif "scratch" in status_list:
+            final_status = "scratch"
+            scratch_preds = None
+            for r in results:
+                if r["screen_status"] == "scratch":
+                    scratch_preds = r["predictions"]
+                    break
+            final_predictions = scratch_preds if scratch_preds else results[0]["predictions"]
+            is_mock = any(r.get("is_mock", False) for r in results)
+        # 3. Mọi ảnh đều 'good' (nguyên vẹn)
+        else:
+            final_status = "good"
+            final_predictions = results[0]["predictions"]
+            is_mock = any(r.get("is_mock", False) for r in results)
+            
+        return {
+            "screen_status": final_status,
+            "predictions": final_predictions,
+            "is_mock": is_mock,
+            "detail_results": results
+        }
 

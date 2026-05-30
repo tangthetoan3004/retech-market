@@ -1,11 +1,18 @@
 from rest_framework import serializers
 
 class ImageUploadSerializer(serializers.Serializer):
-    image = serializers.ImageField()
+    # Danh sách ảnh tải lên
+    images = serializers.ListField(
+        child=serializers.ImageField(),
+        required=True,
+        min_length=1
+    )
 
-    def validate_image(self, value):
-        if value.size > 5 * 1024 * 1024:
-            raise serializers.ValidationError("Ảnh không được vượt quá 5 MB.")
+    def validate_images(self, value):
+        # Kiểm tra kích thước của từng ảnh trong danh sách
+        for img in value:
+            if img.size > 5 * 1024 * 1024:
+                raise serializers.ValidationError("Mỗi ảnh không được vượt quá 5 MB.")
         return value
 
 class AIPredictPriceSerializer(serializers.Serializer):
