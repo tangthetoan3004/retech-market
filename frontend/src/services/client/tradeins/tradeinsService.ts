@@ -76,9 +76,11 @@ export async function uploadTradeInTempImage(session_key: string, file: File) {
     return post("/api/tradein/upload_temp/", formData);
 }
 
-export async function predictDamage(file: File) {
+export async function predictDamage(files: File[]) {
     const formData = new FormData();
-    formData.append("image", file);
+    for (const file of files) {
+        formData.append("images", file);
+    }
     return post("/api/ai/predict-damage/", formData);
 }
 

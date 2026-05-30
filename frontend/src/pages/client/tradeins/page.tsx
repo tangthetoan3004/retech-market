@@ -121,6 +121,7 @@ export default function TradeInsPage() {
   });
 
   const [showNewBankForm, setShowNewBankForm] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
   const sessionKey = useMemo(() => {
     if (typeof crypto !== "undefined" && crypto.randomUUID) {
@@ -218,10 +219,10 @@ export default function TradeInsPage() {
       const uploadPromises = form.images.map(file => uploadTradeInTempImage(sessionKey, file));
       await Promise.all(uploadPromises);
 
-      // 2. Predict Damage qua AI bằng ảnh đầu tiên
+      // 2. Predict Damage qua AI bằng tất cả ảnh
       let screenStatus = "good";
       try {
-        const aiRes: any = await predictDamage(form.images[0]);
+        const aiRes: any = await predictDamage(form.images);
         screenStatus = aiRes?.screen_status || "good";
       } catch (aiErr) {
         console.error("Lỗi AI dự đoán màn hình, fallback về good", aiErr);
@@ -523,13 +524,30 @@ export default function TradeInsPage() {
   const renderUploadStep = () => (
     <div key="upload" className="animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col items-start w-full max-w-[480px]">
       <div className="inline-block bg-[#d4ff00] text-black px-2 py-0.5 text-sm font-semibold rounded mb-6">Tải ảnh</div>
-      <h1 className="text-2xl md:text-3xl font-bold text-slate-800 mb-4 text-left">Tải lên hình ảnh mặt trước của thiết bị</h1>
-      <p className="text-slate-500 mb-8 w-full text-left">
-        Hình ảnh mặt trước sẽ được AI của chúng tôi phân tích để phát hiện vết xước, nứt, sọc màn hình giúp định giá chính xác nhất.
+      <h1 className="text-2xl md:text-3xl font-bold text-slate-800 mb-4 text-left">Tải lên mặt trước của thiết bị</h1>
+      <p className="text-slate-500 w-full text-left">
+        Hình ảnh mặt trước sẽ được hệ thống của chúng tôi phân tích màn hình giúp định giá chính xác nhất.
       </p>
+      
+      <div className="bg-blue-50 text-blue-800 text-sm p-3 rounded-lg w-full mb-8 mt-4 flex items-start gap-2 border border-blue-100">
+         <Info className="w-5 h-5 shrink-0 mt-0.5 text-blue-600" />
+         <span>Để ước tính chính xác nhất, bạn vui lòng tải lên <strong>ít nhất 2 ảnh mặt trước</strong>: 1 ảnh lúc bật sáng màn hình và 1 ảnh lúc tắt màn hình nhé.</span>
+      </div>
 
       <div className="w-full">
-        <label className="block rounded-2xl border-2 border-dashed border-slate-300 bg-white p-8 hover:bg-slate-50 hover:border-slate-400 cursor-pointer transition-colors text-center">
+        <label 
+          className={`block rounded-2xl border-2 border-dashed ${isDragging ? 'border-blue-500 bg-blue-50' : 'border-slate-300 bg-white hover:bg-slate-50 hover:border-slate-400'} p-8 cursor-pointer transition-colors text-center relative`}
+          onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+          onDragLeave={(e) => { e.preventDefault(); setIsDragging(false); }}
+          onDrop={(e) => {
+            e.preventDefault();
+            setIsDragging(false);
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+              const files = Array.from(e.dataTransfer.files);
+              setForm((p) => ({ ...p, images: [...p.images, ...files] }));
+            }
+          }}
+        >
           <input
             type="file"
             multiple
