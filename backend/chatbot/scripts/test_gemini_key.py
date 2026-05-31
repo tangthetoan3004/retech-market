@@ -18,8 +18,8 @@ def test_gemini_api():
     print(f"Đang kết nối tới Gemini API bằng khóa: {api_key[:6]}...{api_key[-6:] if len(api_key) > 12 else ''}")
     headers = {"Content-Type": "application/json"}
     
-    # 1. Kiểm tra mô hình sinh câu trả lời (Gemini 2.5 Flash)
-    url_chat = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
+    # 1. Kiểm tra mô hình sinh câu trả lời (Gemini Flash Latest)
+    url_chat = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={api_key}"
     payload_chat = {
         "contents": [
             {
@@ -31,7 +31,7 @@ def test_gemini_api():
     try:
         res_chat = requests.post(url_chat, headers=headers, json=payload_chat, timeout=10)
         if res_chat.status_code == 200:
-            print("1. Kết nối Gemini Chat (gemini-2.5-flash) THÀNH CÔNG!")
+            print("1. Kết nối Gemini Chat (gemini-flash-latest) THÀNH CÔNG!")
             text = res_chat.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
             print(f"AI phản hồi: '{text}'")
         else:

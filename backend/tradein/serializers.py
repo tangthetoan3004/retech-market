@@ -45,6 +45,7 @@ class TradeInDetailSerializer(serializers.ModelSerializer):
     """Đọc TradeInRequest (thêm payment info)."""
     images  = TradeInImageSerializer(many=True, read_only=True)
     payment = serializers.SerializerMethodField()
+    image_url = serializers.SerializerMethodField()
 
     class Meta:
         model = TradeInRequest
@@ -56,7 +57,7 @@ class TradeInDetailSerializer(serializers.ModelSerializer):
             "estimated_price", "final_price",
             "expires_at",
             "staff_note", "reject_reason",
-            "images", "payment",
+            "images", "payment", "image_url",
             "created_at", "updated_at",
         ]
 
@@ -71,6 +72,19 @@ class TradeInDetailSerializer(serializers.ModelSerializer):
                 "direction": payment.direction,
                 "payment_method": payment.payment_method,
             }
+        return None
+
+    def get_image_url(self, obj):
+        """Tự động trích xuất image_url từ bảng TradeInPriceConfig dựa trên (brand, model_name, storage, ram)."""
+        from .models import TradeInPriceConfig
+        config = TradeInPriceConfig.objects.filter(
+            brand=obj.brand,
+            model_name=obj.model_name,
+            storage=obj.storage,
+            ram=obj.ram
+        ).first()
+        if config:
+            return config.image_url
         return None
 
 

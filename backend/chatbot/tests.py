@@ -1,4 +1,5 @@
 import json
+import requests
 from unittest.mock import patch, MagicMock
 from django.test import TestCase
 from django.urls import reverse
@@ -115,8 +116,8 @@ class ChatbotAPITests(APITestCase):
             "message": "Chính sách bảo hành điện thoại cũ thế nào?"
         }
         
-        # Cần gán GEMINI_API_KEY
-        with self.settings(GEMINI_API_KEY="test_key"):
+        # Cần gán GEMINI_API_KEY và LLM_PROVIDER="gemini"
+        with self.settings(LLM_PROVIDER="gemini", GEMINI_API_KEY="test_key"):
             response = self.client.post(url, data, format="json")
             
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -135,6 +136,96 @@ class ChatbotAPITests(APITestCase):
         self.assertIn("Chào bạn, tất cả điện thoại cũ được bảo hành 6 tháng.", bot_msg.message)
         self.assertEqual(len(bot_msg.citations), 1)
         self.assertEqual(bot_msg.citations[0]["title"], self.doc.title)
+
+
+    @patch("chatbot.views.intent_classifier.predict")
+    @patch("requests.post")
+    def test_chat_local_llm_success(self, mock_post, mock_predict):
+        mock_predict.return_value = "chinh_sach"
+        
+        # Mock 1: embedding
+        mock_response_embed = MagicMock()
+        mock_response_embed.status_code = 200
+        mock_response_embed.json.return_value = {
+            "embedding": {
+                "values": [0.1] * 3072
+            }
+        }
+        
+        # Mock 2: local LLM response
+        mock_response_local = MagicMock()
+        mock_response_local.status_code = 200
+        mock_response_local.json.return_value = {
+            "response": "Mô phỏng phản hồi từ Llama-3 chạy local. [Nguồn 1]"
+        }
+        
+        mock_post.side_effect = [mock_response_embed, mock_response_local]
+
+        url = reverse("chatbot-chat")
+        data = {
+            "session_key": "test_local_123",
+            "message": "Chính sách bảo hành thế nào?"
+        }
+        
+        # Cấu hình sử dụng local LLM
+        with self.settings(LLM_PROVIDER="local", GEMINI_API_KEY="test_key"):
+            response = self.client.post(url, data, format="json")
+            
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("response", response.data)
+        self.assertEqual(response.data["response"], "Mô phỏng phản hồi từ Llama-3 chạy local. [Nguồn 1]")
+        self.assertEqual(len(response.data["citations"]), 1)
+        self.assertEqual(response.data["citations"][0]["title"], self.doc.title)
+
+    @patch("chatbot.views.intent_classifier.predict")
+    @patch("requests.post")
+    def test_chat_local_llm_fallback(self, mock_post, mock_predict):
+        mock_predict.return_value = "chinh_sach"
+        
+        # Mock 1: embedding
+        mock_response_embed = MagicMock()
+        mock_response_embed.status_code = 200
+        mock_response_embed.json.return_value = {
+            "embedding": {
+                "values": [0.1] * 3072
+            }
+        }
+        
+        # Mock 3: Gemini fallback response
+        mock_response_gemini = MagicMock()
+        mock_response_gemini.status_code = 200
+        mock_response_gemini.json.return_value = {
+            "candidates": [
+                {
+                    "content": {
+                        "parts": [{"text": "Phản hồi từ Gemini dự phòng do Local lỗi. [Nguồn 1]"}]
+                    }
+                }
+            ]
+        }
+        
+        # Mock 2 sẽ quăng ConnectionError, 1 & 3 trả về kết quả
+        mock_post.side_effect = [
+            mock_response_embed, 
+            requests.exceptions.ConnectionError("Connection refused"), 
+            mock_response_gemini
+        ]
+
+        url = reverse("chatbot-chat")
+        data = {
+            "session_key": "test_fallback_123",
+            "message": "Chính sách bảo hành thế nào?"
+        }
+        
+        # Cấu hình dùng local nhưng bị lỗi kết nối
+        with self.settings(LLM_PROVIDER="local", GEMINI_API_KEY="test_key"):
+            response = self.client.post(url, data, format="json")
+            
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("response", response.data)
+        self.assertEqual(response.data["response"], "Phản hồi từ Gemini dự phòng do Local lỗi. [Nguồn 1]")
+        self.assertEqual(len(response.data["citations"]), 1)
+        self.assertEqual(response.data["citations"][0]["title"], self.doc.title)
 
 
     def test_chat_api_missing_parameters(self):

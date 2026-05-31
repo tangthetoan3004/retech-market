@@ -15,19 +15,19 @@ import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms, models
 from google.colab import drive
+import numpy as np
 
-# 1. Kết nối Google Drive
+!numount /content/drive
+
 drive.mount('/content/drive')
 
-# 2. Cấu hình đường dẫn lưu trữ trên Drive và Colab cục bộ
-DRIVE_BASE_PATH = '/content/drive/MyDrive/retech_market'
-ZIP_PATH = os.path.join(DRIVE_BASE_PATH, 'cv_cleaned.zip')
+DRIVE_BASE_PATH = '/content/drive/MyDrive/Python/Dataset2'
+ZIP_PATH = os.path.join(DRIVE_BASE_PATH, 'Dataset2.zip')
 LOCAL_DATA_DIR = '/content/dataset'
 CHECKPOINT_DIR = os.path.join(DRIVE_BASE_PATH, 'checkpoints')
 os.makedirs(CHECKPOINT_DIR, exist_ok=True)
 CHECKPOINT_PATH = os.path.join(CHECKPOINT_DIR, 'efficientnet_v2s_checkpoint.pth')
 
-# 3. Cấu hình thiết bị (Ưu tiên GPU T4 trên Colab)
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f"Đang sử dụng thiết bị: {device}")
 ```
@@ -39,7 +39,6 @@ print(f"Đang sử dụng thiết bị: {device}")
 import zipfile
 import shutil
 
-# Giải nén dữ liệu vào thư mục cục bộ /content/dataset
 if os.path.exists(LOCAL_DATA_DIR):
     shutil.rmtree(LOCAL_DATA_DIR)
 os.makedirs(LOCAL_DATA_DIR, exist_ok=True)
@@ -50,7 +49,7 @@ if os.path.exists(ZIP_PATH):
         zip_ref.extractall(LOCAL_DATA_DIR)
     print("Giải nén dữ liệu hoàn tất!")
 else:
-    print(f"⚠️ Cảnh báo: Không tìm thấy file zip tại {ZIP_PATH}. Vui lòng tải dữ liệu lên Drive đúng đường dẫn!")
+    print(f"Cảnh báo: Không tìm thấy file zip tại {ZIP_PATH}. Vui lòng tải dữ liệu lên Drive đúng đường dẫn!")
 ```
 
 ### Bước 3: Chia Dữ liệu Phân tầng (Stratified 70/15/15) & Custom Dataset
@@ -60,10 +59,9 @@ else:
 import glob
 from PIL import Image
 from sklearn.model_selection import train_test_split
+from collections import Counter
 
-# 1. Tự động quét các thư mục con sau giải nén để làm tên lớp (Classes)
 subdirs = [d for d in os.listdir(LOCAL_DATA_DIR) if os.path.isdir(os.path.join(LOCAL_DATA_DIR, d))]
-# Xử lý trường hợp file zip giải nén ra một thư mục cha trung gian
 if len(subdirs) == 1 and subdirs[0] in ['cv_raw', 'cv_cleaned', 'dataset']:
     dataset_root = os.path.join(LOCAL_DATA_DIR, subdirs[0])
     subdirs = [d for d in os.listdir(dataset_root) if os.path.isdir(os.path.join(dataset_root, d))]
@@ -72,12 +70,12 @@ else:
 
 classes = sorted(subdirs)
 class_to_idx = {cls_name: i for i, cls_name in enumerate(classes)}
+idx_to_class = {i: cls_name for cls_name, i in class_to_idx.items()}
 print(f"Các lớp phát hiện được từ dữ liệu: {class_to_idx}")
 
 image_paths = []
 labels = []
 
-# Quét tất cả ảnh (.jpg, .jpeg, .png) trong từng thư mục lớp
 valid_extensions = ('*.jpg', '*.jpeg', '*.png', '*.JPG', '*.JPEG', '*.PNG')
 for cls_name in classes:
     cls_dir = os.path.join(dataset_root, cls_name)
@@ -90,13 +88,10 @@ for cls_name in classes:
 
 print(f"Tổng số ảnh thu thập được: {len(image_paths)}")
 
-# 2. Chia tập dữ liệu phân tầng: 70% Train, 15% Validation, 15% Test
-# Chia thành Train (70%) và Temp (30%)
 train_paths, temp_paths, train_labels, temp_labels = train_test_split(
     image_paths, labels, test_size=0.30, stratify=labels, random_state=42
 )
 
-# Chia Temp thành Val (15%) và Test (15%)
 val_paths, test_paths, val_labels, test_labels = train_test_split(
     temp_paths, temp_labels, test_size=0.50, stratify=temp_labels, random_state=42
 )
@@ -105,7 +100,28 @@ print(f"Tập Train: {len(train_paths)} ảnh")
 print(f"Tập Val: {len(val_paths)} ảnh")
 print(f"Tập Test: {len(test_paths)} ảnh")
 
-# 3. Định nghĩa PyTorch Custom Dataset để load ảnh động
+train_counts = Counter(train_labels)
+val_counts = Counter(val_labels)
+test_counts = Counter(test_labels)
+
+print("CHI TIẾT SỐ LƯỢNG ẢNH MỖI LỚP TRONG TỪNG TẬP:")
+for idx in sorted(idx_to_class.keys()):
+    class_name = idx_to_class[idx]
+    print(f" * Lớp '{class_name}' (ID: {idx}):")
+    print(f"   - Train : {train_counts.get(idx, 0)} ảnh")
+    print(f"   - Val   : {val_counts.get(idx, 0)} ảnh")
+    print(f"   - Test  : {test_counts.get(idx, 0)} ảnh")
+
+def compute_alpha_weights(train_labels, num_classes):
+  counts = Counter(train_labels)
+  total_samples = len(train_labels)
+  class_counts = np.array([counts.get(i,1) for i in range(num_classes)], dtype=np.float32)
+  class_weights = total_samples / (num_classes * class_counts)
+  return class_weights
+
+alpha_weights = compute_alpha_weights(train_labels, len(classes))
+print(f"Alpha weights: {alpha_weights}")
+
 class CustomImageDataset(Dataset):
     def __init__(self, paths, labels, transform=None):
         self.paths = paths
@@ -119,10 +135,10 @@ class CustomImageDataset(Dataset):
         img_path = self.paths[idx]
         image = Image.open(img_path).convert('RGB')
         label = self.labels[idx]
-        
+
         if self.transform:
             image = self.transform(image)
-            
+
         return image, label
 ```
 
@@ -130,7 +146,6 @@ class CustomImageDataset(Dataset):
 *Áp dụng các kỹ thuật biến đổi ảnh ngẫu nhiên giúp mô hình tránh bị Overfitting.*
 
 ```python
-# Định nghĩa các phép chuyển đổi ảnh (transforms)
 train_transforms = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.RandomHorizontalFlip(p=0.5),
@@ -138,7 +153,7 @@ train_transforms = transforms.Compose([
     transforms.RandomRotation(degrees=15),
     transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),
     transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]) # Chuẩn hóa theo ImageNet
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 ])
 
 val_test_transforms = transforms.Compose([
@@ -147,12 +162,10 @@ val_test_transforms = transforms.Compose([
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 ])
 
-# Khởi tạo Datasets
 train_dataset = CustomImageDataset(train_paths, train_labels, transform=train_transforms)
 val_dataset = CustomImageDataset(val_paths, val_labels, transform=val_test_transforms)
 test_dataset = CustomImageDataset(test_paths, test_labels, transform=val_test_transforms)
 
-# Khởi tạo Dataloaders cho PyTorch
 BATCH_SIZE = 32
 train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=2, pin_memory=True)
 val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=False, num_workers=2, pin_memory=True)
@@ -163,15 +176,12 @@ test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=False, num
 *Sử dụng mô hình pretrained chất lượng cao và tùy chỉnh lớp đầu ra cho bài toán đa lớp.*
 
 ```python
-# Tải mô hình EfficientNetV2-S tiền huấn luyện từ torchvision
 weights = models.EfficientNet_V2_S_Weights.DEFAULT
 model = models.efficientnet_v2_s(weights=weights)
 
-# Thay thế lớp classifier cuối cùng cho phù hợp với số lượng lớp thực tế
 num_features = model.classifier[1].in_features
 model.classifier[1] = nn.Linear(num_features, len(classes))
 
-# Chuyển mô hình vào thiết bị tính toán (GPU/CPU)
 model = model.to(device)
 print(f"Mô hình EfficientNetV2-S đã sẵn sàng với {len(classes)} ngõ ra!")
 ```
@@ -183,21 +193,22 @@ print(f"Mô hình EfficientNetV2-S đã sẵn sàng với {len(classes)} ngõ ra
 class FocalLoss(nn.Module):
     def __init__(self, alpha=None, gamma=2.0, reduction='mean'):
         super(FocalLoss, self).__init__()
-        self.alpha = alpha
         self.gamma = gamma
         self.reduction = reduction
+        self.alpha = alpha
 
-        if isinstance(alpha, (float, int)):
-            self.alpha = torch.Tensor([alpha, 1 - alpha])
-        if isinstance(alpha, list):
-            self.alpha = torch.Tensor(alpha)
+        if alpha is not None:
+            if isinstance(alpha, (float, int)):
+                self.alpha = torch.Tensor([alpha, 1 - alpha])
+            elif isinstance(alpha, (list, tuple, np.ndarray)):
+                self.alpha = torch.tensor(alpha, dtype=torch.float32)
+            elif isinstance(alpha, torch.Tensor):
+                self.alpha = alpha.float()
 
     def forward(self, inputs, targets):
-        # Tính Loss Cross Entropy không rút gọn trước
         ce_loss = F.cross_entropy(inputs, targets, reduction='none')
-        pt = torch.exp(-ce_loss) # Xác suất dự đoán đúng lớp thực tế
-        
-        # Áp dụng trọng số lớp alpha nếu được định nghĩa
+        pt = torch.exp(-ce_loss)
+
         if self.alpha is not None:
             self.alpha = self.alpha.to(inputs.device)
             alpha_t = self.alpha[targets]
@@ -205,7 +216,6 @@ class FocalLoss(nn.Module):
         else:
             focal_loss = (1 - pt) ** self.gamma * ce_loss
 
-        # Rút gọn loss theo yêu cầu
         if self.reduction == 'mean':
             return focal_loss.mean()
         elif self.reduction == 'sum':
@@ -220,10 +230,9 @@ class FocalLoss(nn.Module):
 ```python
 import torch.optim as optim
 
-# Định nghĩa hàm Loss, Optimizer và Bộ điều chỉnh tốc độ học (Scheduler)
-criterion = FocalLoss(gamma=2.0)
+criterion = FocalLoss(alpha_weights ,gamma=2.0)
 optimizer = optim.AdamW(model.parameters(), lr=1e-4, weight_decay=1e-2)
-scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=2)
+scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=3)
 
 start_epoch = 0
 best_val_acc = 0.0
@@ -232,7 +241,6 @@ val_losses = []
 train_accs = []
 val_accs = []
 
-# Kiểm tra sự tồn tại của checkpoint trên Google Drive
 if os.path.exists(CHECKPOINT_PATH):
     print(f"Tìm thấy checkpoint! Đang tiến hành nạp từ {CHECKPOINT_PATH}...")
     checkpoint = torch.load(CHECKPOINT_PATH, map_location=device)
@@ -255,70 +263,65 @@ else:
 ```python
 import time
 
-num_epochs = 20
+num_epochs = 30
 print("Bắt đầu huấn luyện...")
 
 for epoch in range(start_epoch, num_epochs):
     epoch_start = time.time()
-    
-    # 1. Giai đoạn Huấn luyện (Training Phase)
+
     model.train()
     running_loss = 0.0
     correct_train = 0
     total_train = 0
-    
+
     for images, labels in train_loader:
         images, labels = images.to(device), labels.to(device)
-        
+
         optimizer.zero_grad()
         outputs = model(images)
         loss = criterion(outputs, labels)
         loss.backward()
         optimizer.step()
-        
+
         running_loss += loss.item() * images.size(0)
         _, preds = torch.max(outputs, 1)
         correct_train += (preds == labels).sum().item()
         total_train += labels.size(0)
-        
+
     epoch_train_loss = running_loss / len(train_dataset)
     epoch_train_acc = correct_train / total_train
-    
-    # 2. Giai đoạn Đánh giá (Validation Phase)
+
     model.eval()
     running_val_loss = 0.0
     correct_val = 0
     total_val = 0
-    
+
     with torch.no_grad():
         for images, labels in val_loader:
             images, labels = images.to(device), labels.to(device)
             outputs = model(images)
             loss = criterion(outputs, labels)
-            
+
             running_val_loss += loss.item() * images.size(0)
             _, preds = torch.max(outputs, 1)
             correct_val += (preds == labels).sum().item()
             total_val += labels.size(0)
-            
+
     epoch_val_loss = running_val_loss / len(val_dataset)
     epoch_val_acc = correct_val / total_val
-    
-    # Cập nhật tốc độ học dựa theo Val Loss
+
     scheduler.step(epoch_val_loss)
-    
-    # Lưu kết quả vào danh sách lịch sử
+
     train_losses.append(epoch_train_loss)
     val_losses.append(epoch_val_loss)
     train_accs.append(epoch_train_acc)
     val_accs.append(epoch_val_acc)
-    
+
     epoch_duration = time.time() - epoch_start
     print(f"Epoch {epoch+1}/{num_epochs} [{epoch_duration:.0f}s] - "
           f"Train Loss: {epoch_train_loss:.4f}, Train Acc: {epoch_train_acc:.4f} | "
           f"Val Loss: {epoch_val_loss:.4f}, Val Acc: {epoch_val_acc:.4f}")
-    
-    # 3. Lưu checkpoint định kỳ lên Drive
+
     checkpoint_data = {
         'epoch': epoch,
         'model_state_dict': model.state_dict(),
@@ -330,14 +333,13 @@ for epoch in range(start_epoch, num_epochs):
         'val_accs': val_accs
     }
     torch.save(checkpoint_data, CHECKPOINT_PATH)
-    print(f"-> Checkpoint phục hồi đã được lưu tại {CHECKPOINT_PATH}")
-    
-    # Lưu trọng số mô hình tốt nhất đạt được
+    print(f"Checkpoint phục hồi đã được lưu tại {CHECKPOINT_PATH}")
+
     if epoch_val_acc > best_val_acc:
         best_val_acc = epoch_val_acc
         best_model_path = os.path.join(CHECKPOINT_DIR, 'efficientnet_v2s_best.pth')
         torch.save(model.state_dict(), best_model_path)
-        print(f"🔥 Phát hiện mô hình tốt nhất mới! Val Acc: {best_val_acc:.4f}. Đã lưu trọng số.")
+        print(f"Phát hiện mô hình tốt nhất mới! Val Acc: {best_val_acc:.4f}. Đã lưu trọng số.")
 
 print("Huấn luyện hoàn tất!")
 ```
@@ -352,7 +354,6 @@ epochs_range = range(1, len(train_losses) + 1)
 
 plt.figure(figsize=(15, 5))
 
-# Đồ thị biểu diễn sự thay đổi của Loss
 plt.subplot(1, 2, 1)
 plt.plot(epochs_range, train_losses, label='Train Loss', color='blue', marker='o')
 plt.plot(epochs_range, val_losses, label='Val Loss', color='red', marker='x')
@@ -362,7 +363,6 @@ plt.ylabel('Loss')
 plt.legend()
 plt.grid(True)
 
-# Đồ thị biểu diễn sự thay đổi của Accuracy
 plt.subplot(1, 2, 2)
 plt.plot(epochs_range, train_accs, label='Train Accuracy', color='blue', marker='o')
 plt.plot(epochs_range, val_accs, label='Val Accuracy', color='red', marker='x')
@@ -384,7 +384,6 @@ import numpy as np
 import seaborn as sns
 from sklearn.metrics import classification_report, confusion_matrix, f1_score
 
-# Nạp trọng số mô hình tốt nhất để bắt đầu đánh giá
 best_model_path = os.path.join(CHECKPOINT_DIR, 'efficientnet_v2s_best.pth')
 if os.path.exists(best_model_path):
     print(f"Đang nạp trọng số tốt nhất từ {best_model_path}...")
@@ -398,28 +397,24 @@ test_images_sample = []
 test_labels_sample = []
 test_preds_sample = []
 
-# Đánh giá tập Test
 with torch.no_grad():
     for images, labels in test_loader:
         images_dev = images.to(device)
         outputs = model(images_dev)
         _, preds = torch.max(outputs, 1)
-        
+
         all_preds.extend(preds.cpu().numpy())
         all_targets.extend(labels.numpy())
-        
-        # Lưu lại một số mẫu ảnh để vẽ minh họa trực quan
+
         if len(test_images_sample) < 5:
             test_images_sample.append(images[0])
             test_labels_sample.append(labels[0].item())
             test_preds_sample.append(preds[0].item())
 
-# 1. In báo cáo phân loại chi tiết (Classification Report)
-print("\n📊 BÁO CÁO PHÂN LOẠI CHI TIẾT (CLASSIFICATION REPORT):")
+print("\nBÁO CÁO PHÂN LOẠI CHI TIẾT (CLASSIFICATION REPORT):")
 report = classification_report(all_targets, all_preds, target_names=classes)
 print(report)
 
-# 2. Vẽ đồ thị F1-Score cho từng lớp
 f1_scores = f1_score(all_targets, all_preds, average=None)
 plt.figure(figsize=(10, 5))
 plt.bar(classes, f1_scores, color='skyblue', edgecolor='black')
@@ -432,7 +427,6 @@ for i, v in enumerate(f1_scores):
 plt.grid(axis='y', linestyle='--', alpha=0.7)
 plt.show()
 
-# 3. Vẽ Ma trận nhầm lẫn (Confusion Matrix)
 cm = confusion_matrix(all_targets, all_preds)
 plt.figure(figsize=(8, 6))
 sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=classes, yticklabels=classes)
@@ -441,16 +435,14 @@ plt.xlabel('Lớp dự đoán (Predicted)')
 plt.ylabel('Lớp thực tế (Actual)')
 plt.show()
 
-# 4. Trực quan hóa 5 ảnh mẫu cùng kết quả dự đoán của mô hình
 def imshow(img, title):
-    # Mean và Std sử dụng để chuẩn hóa ImageNet
     mean = np.array([0.485, 0.456, 0.406])
     std = np.array([0.229, 0.224, 0.225])
-    
+
     npimg = img.numpy().transpose((1, 2, 0))
-    npimg = std * npimg + mean  # Đảo ngược quá trình chuẩn hóa (unnormalize)
+    npimg = std * npimg + mean
     npimg = np.clip(npimg, 0, 1)
-    
+
     plt.imshow(npimg)
     plt.title(title, fontsize=12, color='green' if 'Đúng' in title else 'red')
     plt.axis('off')
@@ -461,7 +453,7 @@ for idx in range(min(len(test_images_sample), 5)):
     actual_class = classes[test_labels_sample[idx]]
     pred_class = classes[test_preds_sample[idx]]
     is_correct = "Đúng" if test_labels_sample[idx] == test_preds_sample[idx] else "Sai"
-    
+
     title = f"Thực tế: {actual_class}\nDự đoán: {pred_class}\n({is_correct})"
     imshow(test_images_sample[idx], title)
 
@@ -473,68 +465,67 @@ plt.show()
 *Tải hình ảnh từ liên kết URL ngẫu nhiên, thực hiện tiền xử lý và sử dụng mô hình tốt nhất để dự đoán lớp tương ứng.*
 
 ```python
+import os
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from torchvision import models, transforms
 import requests
 from io import BytesIO
+from PIL import Image
 import matplotlib.pyplot as plt
+import urllib3
 
-# 1. Định nghĩa hàm dự đoán ảnh từ một URL
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 def predict_image_url(image_url, model_path, classes):
-    # Thiết lập thiết bị tính toán
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    
-    # Khởi tạo lại cấu trúc mô hình (EfficientNetV2-S)
+
     weights = models.EfficientNet_V2_S_Weights.DEFAULT
     model = models.efficientnet_v2_s(weights=weights)
     num_features = model.classifier[1].in_features
     model.classifier[1] = nn.Linear(num_features, len(classes))
-    
-    # Nạp trọng số mô hình đã huấn luyện
+
     if os.path.exists(model_path):
         model.load_state_dict(torch.load(model_path, map_location=device))
         print(f"Đã nạp trọng số mô hình tốt nhất từ {model_path}")
     else:
         raise FileNotFoundError(f"Không tìm thấy file trọng số tại {model_path}")
-        
+
     model = model.to(device)
     model.eval()
-    
-    # 2. Tải ảnh từ URL
+
     print(f"Đang tải ảnh từ URL: {image_url}...")
     headers = {"User-Agent": "Mozilla/5.0"}
-    response = requests.get(image_url, headers=headers)
+    response = requests.get(image_url, headers=headers, verify=False)
     img = Image.open(BytesIO(response.content)).convert('RGB')
-    
-    # 3. Tiền xử lý ảnh (giống val_test_transforms ở Bước 4)
+
     preprocess = transforms.Compose([
         transforms.Resize((224, 224)),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
-    
-    img_tensor = preprocess(img).unsqueeze(0).to(device) # Thêm dimension batch: [1, 3, 224, 224]
-    
-    # 4. Dự đoán
+
+    img_tensor = preprocess(img).unsqueeze(0).to(device)
+
     with torch.no_grad():
         outputs = model(img_tensor)
         probabilities = F.softmax(outputs, dim=1)
         confidence, pred_idx = torch.max(probabilities, 1)
-        
+
     pred_class = classes[pred_idx.item()]
     confidence_val = confidence.item() * 100
-    
-    print(f"\n🎉 Kết quả dự đoán:")
-    print(f"👉 Lớp dự đoán: {pred_class}")
-    print(f"👉 Độ tin cậy (Confidence): {confidence_val:.2f}%")
-    
-    # Hiển thị ảnh kèm kết quả
+
+    print(f"\nKết quả dự đoán:")
+    print(f"Lớp dự đoán: {pred_class}")
+    print(f"Độ tin cậy (Confidence): {confidence_val:.2f}%")
+
     plt.imshow(img)
     plt.title(f"Dự đoán: {pred_class} ({confidence_val:.2f}%)")
     plt.axis('off')
     plt.show()
 
-# 5. Chạy thử nghiệm dự đoán
-# Thay thế URL bên dưới bằng link ảnh sản phẩm bạn muốn kiểm tra
-sample_url = "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500"
+sample_url = "blob:https://www.facebook.com/1b90540c-c520-493d-bc27-dbf8c1e9daae"
 best_model_path = os.path.join(CHECKPOINT_DIR, 'efficientnet_v2s_best.pth')
 
 try:
@@ -550,35 +541,31 @@ except Exception as e:
 import torch
 import torch.nn as nn
 from torchvision import models
+!pip install onnx onnxscript
 
 def export_to_onnx(pytorch_model_path, onnx_model_output_path, num_classes=4):
-    # 1. Khởi tạo cấu trúc mô hình gốc (EfficientNetV2-S)
     weights = models.EfficientNet_V2_S_Weights.DEFAULT
     model = models.efficientnet_v2_s(weights=weights)
     num_features = model.classifier[1].in_features
     model.classifier[1] = nn.Linear(num_features, num_classes)
-    
-    # 2. Nạp trọng số từ checkpoint đã lưu (.pth hoặc .pt)
+
     state_dict = torch.load(pytorch_model_path, map_location='cpu')
-    # Nếu checkpoint lưu kèm các thông tin khác như epoch, optimizer...
     if 'model_state_dict' in state_dict:
         model.load_state_dict(state_dict['model_state_dict'])
     else:
         model.load_state_dict(state_dict)
-        
+
     model.eval()
-    
-    # 3. Tạo dữ liệu giả lập (dummy input) có kích thước 1x3x224x224 (BCHW)
+
     dummy_input = torch.randn(1, 3, 224, 224, requires_grad=False)
-    
-    # 4. Xuất mô hình sang file ONNX
+
     print(f"Đang xuất mô hình từ {pytorch_model_path} sang {onnx_model_output_path}...")
     torch.onnx.export(
         model,
         dummy_input,
         onnx_model_output_path,
         export_params=True,
-        opset_version=15, # Opset version tương thích cao
+        opset_version=15,
         do_constant_folding=True,
         input_names=['input'],
         output_names=['output'],
@@ -586,7 +573,6 @@ def export_to_onnx(pytorch_model_path, onnx_model_output_path, num_classes=4):
     )
     print("Xuất mô hình sang ONNX thành công!")
 
-# Đường dẫn tệp tin
 best_model_path = os.path.join(CHECKPOINT_DIR, 'efficientnet_v2s_best.pth')
 onnx_output_path = os.path.join(DRIVE_BASE_PATH, 'cv_model.onnx')
 

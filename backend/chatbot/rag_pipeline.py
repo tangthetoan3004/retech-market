@@ -266,7 +266,8 @@ def generate_response(session, user_message, intent=None):
         return bot_response, citations_to_save
 
     contexts = []
-    if intent != "chuyen_phiem":
+    rag_enabled = getattr(settings, "CHATBOT_RAG_ENABLED", True)
+    if rag_enabled and intent != "chuyen_phiem":
         contexts = retrieve_context(user_message, top_k=4)
     context_str = ""
     citations_data = []
@@ -280,7 +281,8 @@ def generate_response(session, user_message, intent=None):
             "type": ctx["type"]
         })
 
-    history_messages = ChatMessage.objects.filter(session=session).order_by("-created_at")[:6]
+    max_history = getattr(settings, "LOCAL_LLM_MAX_HISTORY", 4)
+    history_messages = ChatMessage.objects.filter(session=session).order_by("-created_at")[:max_history]
     history_messages = list(reversed(history_messages))
     
     history_str = ""
@@ -320,37 +322,74 @@ def generate_response(session, user_message, intent=None):
         f"Khách hàng: {user_message}\n"
         f"Trợ lý ảo Retech:"
     )
+    llm_provider = getattr(settings, "LLM_PROVIDER", "gemini").lower()
+    local_url = getattr(settings, "LOCAL_LLM_API_URL", "http://localhost:11434/api/generate")
+    local_model = getattr(settings, "LOCAL_LLM_MODEL", "llama3")
+    local_timeout = getattr(settings, "LOCAL_LLM_TIMEOUT", 30)
+    local_num_predict = getattr(settings, "LOCAL_LLM_NUM_PREDICT", 256)
+
     bot_response = "Xin lỗi, hiện tại tôi đang gặp khó khăn khi kết nối hệ thống. Bạn vui lòng thử lại sau."
     citations_to_save = []
+    use_gemini = True
 
-    if api_key:
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
+    if llm_provider == "local":
         headers = {"Content-Type": "application/json"}
         payload = {
-            "contents": [
-                {
-                    "parts": [{"text": prompt}]
-                }
-            ]
+            "model": local_model,
+            "prompt": prompt,
+            "stream": False,
+            "options": {
+                "num_predict": local_num_predict
+            }
         }
         try:
-            res = requests.post(url, headers=headers, json=payload, timeout=15)
+            logger.info(f"Đang gọi Local LLM ({local_model}) tại {local_url} (timeout={local_timeout}s, num_predict={local_num_predict})...")
+            res = requests.post(local_url, headers=headers, json=payload, timeout=local_timeout)
             res.raise_for_status()
             res_data = res.json()
-            candidates = res_data.get("candidates", [])
-            if candidates:
-                bot_response = candidates[0].get("content", {}).get("parts", [{}])[0].get("text", bot_response)
-                bot_response = bot_response.strip()
+            response_text = res_data.get("response", "").strip()
+            if response_text:
+                bot_response = response_text
+                use_gemini = False
                 if intent != "chuyen_phiem":
                     for cit in citations_data:
                         ref_tag = f"[Nguồn {cit['index']}]"
                         if ref_tag in bot_response:
                             citations_to_save.append(cit)
+                logger.info("Gọi Local LLM thành công.")
         except Exception as e:
-            logger.error(f"Lỗi khi gọi Gemini Generate Content API: {e}")
-    else:
-        logger.warning("GEMINI_API_KEY chưa được cấu hình. Chatbot trả về phản hồi mặc định.")
-        bot_response = "Hệ thống AI hiện chưa được cấu hình API Key. Bạn vui lòng liên hệ Admin để thiết lập."
+            logger.warning(f"Lỗi khi kết nối Local LLM: {e}. Tự động chuyển hướng (fallback) sang Gemini API...")
+            use_gemini = True
+
+    if use_gemini:
+        if api_key:
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={api_key}"
+            headers = {"Content-Type": "application/json"}
+            payload = {
+                "contents": [
+                    {
+                        "parts": [{"text": prompt}]
+                    }
+                ]
+            }
+            try:
+                res = requests.post(url, headers=headers, json=payload, timeout=15)
+                res.raise_for_status()
+                res_data = res.json()
+                candidates = res_data.get("candidates", [])
+                if candidates:
+                    bot_response = candidates[0].get("content", {}).get("parts", [{}])[0].get("text", bot_response)
+                    bot_response = bot_response.strip()
+                    if intent != "chuyen_phiem":
+                        for cit in citations_data:
+                            ref_tag = f"[Nguồn {cit['index']}]"
+                            if ref_tag in bot_response:
+                                citations_to_save.append(cit)
+            except Exception as e:
+                logger.error(f"Lỗi khi gọi Gemini Generate Content API: {e}")
+        else:
+            logger.warning("GEMINI_API_KEY chưa được cấu hình. Chatbot trả về phản hồi mặc định.")
+            bot_response = "Hệ thống AI hiện chưa được cấu hình API Key. Bạn vui lòng liên hệ Admin để thiết lập."
 
     ChatMessage.objects.create(
         session=session,

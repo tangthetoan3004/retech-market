@@ -186,6 +186,16 @@ ZALOPAY_KEY2 = os.getenv('ZALOPAY_KEY2', '')
 # ---------- Gemini API Key ----------
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
 
+# ---------- Hybrid LLM Router ----------
+LLM_PROVIDER = os.getenv('LLM_PROVIDER', 'gemini')
+LOCAL_LLM_API_URL = os.getenv('LOCAL_LLM_API_URL', 'http://localhost:11434/api/generate')
+LOCAL_LLM_MODEL = os.getenv('LOCAL_LLM_MODEL', 'llama3')
+LOCAL_LLM_TIMEOUT = int(os.getenv('LOCAL_LLM_TIMEOUT', '30'))
+LOCAL_LLM_MAX_HISTORY = int(os.getenv('LOCAL_LLM_MAX_HISTORY', '4'))
+CHATBOT_RAG_ENABLED = os.getenv('CHATBOT_RAG_ENABLED', 'True') == 'True'
+LOCAL_LLM_NUM_PREDICT = int(os.getenv('LOCAL_LLM_NUM_PREDICT', '256'))
+
+
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
