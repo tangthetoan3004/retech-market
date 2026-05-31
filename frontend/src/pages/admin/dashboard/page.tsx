@@ -51,29 +51,29 @@ export default function DashboardPage() {
 
   const stats = [
     {
-      title: "Total Revenue",
-      value: `$${data?.overview?.total_revenue?.toLocaleString() ?? 0}`,
+      title: "Tổng Doanh Thu",
+      value: `${data?.overview?.total_revenue?.toLocaleString() ?? 0}đ`,
       icon: DollarSign,
       iconBg: "bg-blue-500/10",
       iconColor: "text-blue-500",
     },
     {
-      title: "Total Payout",
-      value: `$${data?.overview?.total_payout?.toLocaleString() ?? 0}`,
+      title: "Tổng Chi Trả",
+      value: `${data?.overview?.total_payout?.toLocaleString() ?? 0}đ`,
       icon: ShoppingBag,
       iconBg: "bg-amber-500/10",
       iconColor: "text-amber-500",
     },
     {
-      title: "Total Refund",
-      value: `$${data?.overview?.total_refund?.toLocaleString() ?? 0}`,
+      title: "Tổng Hoàn Tiền",
+      value: `${data?.overview?.total_refund?.toLocaleString() ?? 0}đ`,
       icon: RefreshCw,
       iconBg: "bg-red-500/10",
       iconColor: "text-red-500",
     },
     {
-      title: "Net Profit",
-      value: `$${data?.overview?.net_profit?.toLocaleString() ?? 0}`,
+      title: "Lợi Nhuận Ròng",
+      value: `${data?.overview?.net_profit?.toLocaleString() ?? 0}đ`,
       icon: TrendingUp,
       iconBg: "bg-emerald-500/10",
       iconColor: "text-emerald-500",
@@ -82,7 +82,7 @@ export default function DashboardPage() {
 
   const COLORS = ["#3b82f6", "#8b5cf6", "#22c55e", "#f59e0b", "#ef4444", "#06b6d4"];
 
-  const formatCurrency = (val: number) => `$${val.toLocaleString()}`;
+  const formatCurrency = (val: number) => `${val.toLocaleString()}đ`;
 
   const renderStatusBadge = (status: string) => {
     const s = status?.toLowerCase() || '';
@@ -103,20 +103,20 @@ export default function DashboardPage() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Dashboard Overview</h1>
+            <h1 className="text-3xl font-bold mb-2">Tổng quan</h1>
             <p className="text-muted-foreground">
-              Welcome back! Here's what's happening with your store today.
+              Chào mừng trở lại! Dưới đây là hoạt động kinh doanh của cửa hàng.
             </p>
           </div>
           <div className="w-[180px]">
             <Select value={range} onValueChange={(val: any) => setRange(val)}>
               <SelectTrigger className="h-10 border-border bg-card">
-                <SelectValue placeholder="Select Range" />
+                <SelectValue placeholder="Chọn thời gian" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="7days">Last 7 Days</SelectItem>
-                <SelectItem value="30days">Last 30 Days</SelectItem>
-                <SelectItem value="6months">Last 6 Months</SelectItem>
+                <SelectItem value="7days">7 Ngày qua</SelectItem>
+                <SelectItem value="30days">30 Ngày qua</SelectItem>
+                <SelectItem value="6months">6 Tháng qua</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -154,7 +154,7 @@ export default function DashboardPage() {
             <div className="grid lg:grid-cols-3 gap-6">
               <Card className="bg-card border-border shadow-sm rounded-2xl lg:col-span-2">
                 <CardHeader>
-                  <CardTitle>Financial Trend</CardTitle>
+                  <CardTitle>Xu Hướng Tài Chính</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={300}>
@@ -175,7 +175,7 @@ export default function DashboardPage() {
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                       <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
-                      <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `$${val}`} />
+                      <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `${val}đ`} />
                       <Tooltip
                         contentStyle={{
                           backgroundColor: "hsl(var(--popover))",
@@ -183,25 +183,25 @@ export default function DashboardPage() {
                           borderRadius: "10px",
                           color: "hsl(var(--popover-foreground))",
                         }}
-                        formatter={(value: number) => [`$${value.toLocaleString()}`, undefined]}
+                        formatter={(value: number) => [`${value.toLocaleString()}đ`, undefined]}
                       />
-                      <Area type="monotone" dataKey="revenue" name="Revenue" stroke="#3b82f6" strokeWidth={2} fillOpacity={1} fill="url(#colorRevenue)" />
-                      <Area type="monotone" dataKey="payout" name="Payout" stroke="#f59e0b" strokeWidth={2} fillOpacity={1} fill="url(#colorPayout)" />
-                      <Area type="monotone" dataKey="refund" name="Refund" stroke="#ef4444" strokeWidth={2} fillOpacity={1} fill="url(#colorRefund)" />
+                      <Area type="monotone" dataKey="revenue" name="Doanh thu" stroke="#3b82f6" strokeWidth={2} fillOpacity={1} fill="url(#colorRevenue)" />
+                      <Area type="monotone" dataKey="payout" name="Chi trả" stroke="#f59e0b" strokeWidth={2} fillOpacity={1} fill="url(#colorPayout)" />
+                      <Area type="monotone" dataKey="refund" name="Hoàn tiền" stroke="#ef4444" strokeWidth={2} fillOpacity={1} fill="url(#colorRefund)" />
                     </AreaChart>
                   </ResponsiveContainer>
                   
                   <div className="mt-3 flex items-center gap-4 text-sm text-muted-foreground justify-center">
-                    <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-blue-500"></div> Revenue</div>
-                    <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-amber-500"></div> Payout</div>
-                    <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-red-500"></div> Refund</div>
+                    <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-blue-500"></div> Doanh thu</div>
+                    <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-amber-500"></div> Chi trả</div>
+                    <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-red-500"></div> Hoàn tiền</div>
                   </div>
                 </CardContent>
               </Card>
 
               <Card className="bg-card border-border shadow-sm rounded-2xl">
                 <CardHeader>
-                  <CardTitle>Order Distribution</CardTitle>
+                  <CardTitle>Phân bổ Đơn Hàng</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={300}>
@@ -238,12 +238,12 @@ export default function DashboardPage() {
             <div className="grid lg:grid-cols-2 gap-6">
               <Card className="bg-card border-border shadow-sm rounded-2xl">
                 <CardHeader>
-                  <CardTitle>Recent Orders</CardTitle>
+                  <CardTitle>Đơn Hàng Gần Đây</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     {!data?.recent_activities?.orders?.length ? (
-                      <div className="text-sm text-muted-foreground">No orders yet.</div>
+                      <div className="text-sm text-muted-foreground">Chưa có đơn hàng nào.</div>
                     ) : (
                       data.recent_activities.orders.map((order: any, idx: number) => (
                         <div
@@ -277,12 +277,12 @@ export default function DashboardPage() {
 
               <Card className="bg-card border-border shadow-sm rounded-2xl">
                 <CardHeader>
-                  <CardTitle>Recent Trade-Ins</CardTitle>
+                  <CardTitle>Thu Cũ Gần Đây</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     {!data?.recent_activities?.tradeins?.length ? (
-                      <div className="text-sm text-muted-foreground">No trade-ins yet.</div>
+                      <div className="text-sm text-muted-foreground">Chưa có thu cũ nào.</div>
                     ) : (
                       data.recent_activities.tradeins.map((tradein: any, idx: number) => (
                         <div

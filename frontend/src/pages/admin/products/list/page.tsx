@@ -233,14 +233,14 @@ export default function AdminProductsListPage() {
     <div className="p-6 space-y-4 bg-background text-foreground">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold mb-2">Products Management</h1>
-          <p className="text-muted-foreground">Manage your product catalog</p>
+          <h1 className="text-3xl font-bold mb-2">Quản lý Sản Phẩm</h1>
+          <p className="text-muted-foreground">Quản lý danh mục sản phẩm của bạn</p>
         </div>
       </div>
 
       <Card className="bg-card border-border">
         <CardHeader className="flex flex-row items-center justify-between gap-3">
-          <CardTitle>Products</CardTitle>
+          <CardTitle>Sản phẩm</CardTitle>
 
           <div className="flex items-center gap-2">
             <div className="w-[320px]">
@@ -253,12 +253,12 @@ export default function AdminProductsListPage() {
                      fetchProducts(search);
                   }
                 }}
-                placeholder="Search name/brand/category..."
+                placeholder="Tìm kiếm tên/thương hiệu/danh mục..."
               />
             </div>
 
             <Button variant="outline" onClick={() => { setPage(1); fetchProducts(search); }} disabled={loading}>
-              Search
+              Tìm kiếm
             </Button>
 
             <Button
@@ -267,7 +267,7 @@ export default function AdminProductsListPage() {
               className={showFilters ? "bg-blue-600 hover:bg-blue-600/90 text-white" : ""}
             >
               <Filter className="h-4 w-4 mr-2" />
-              Filters
+              Bộ lọc
               {activeFiltersCount > 0 && (
                 <Badge className="ml-2 bg-primary-foreground text-primary hover:bg-primary-foreground">
                   {activeFiltersCount}
@@ -279,7 +279,7 @@ export default function AdminProductsListPage() {
               className="bg-blue-600 hover:bg-blue-600/90 text-white"
               onClick={openCreateDialog}
             >
-              Create product
+              Tạo sản phẩm mới
             </Button>
           </div>
         </CardHeader>
@@ -288,7 +288,7 @@ export default function AdminProductsListPage() {
           <CardContent className="pt-0">
             <div className="bg-muted/30 border border-border rounded-xl p-4">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold">Filter Products</h3>
+                <h3 className="font-semibold">Lọc Sản Phẩm</h3>
                 {activeFiltersCount > 0 && (
                   <Button
                     variant="ghost"
@@ -297,14 +297,14 @@ export default function AdminProductsListPage() {
                     className="hover:bg-muted"
                   >
                     <X className="h-4 w-4 mr-1" />
-                    Clear All
+                    Xóa lọc
                   </Button>
                 )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
-                  <Label className="text-xs text-muted-foreground mb-2 block">Condition</Label>
+                  <Label className="text-xs text-muted-foreground mb-2 block">Tình trạng</Label>
                   <Select
                     value={filters.condition}
                     onValueChange={(value: any) => setFilters((p) => ({ ...p, condition: value }))}
@@ -313,7 +313,7 @@ export default function AdminProductsListPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="all">Tất cả</SelectItem>
                       <SelectItem value="NEW">NEW</SelectItem>
                       <SelectItem value="LIKE_NEW">LIKE_NEW</SelectItem>
                       <SelectItem value="GOOD">GOOD</SelectItem>
@@ -324,7 +324,7 @@ export default function AdminProductsListPage() {
                 </div>
 
                 <div>
-                  <Label className="text-xs text-muted-foreground mb-2 block">Ordering</Label>
+                  <Label className="text-xs text-muted-foreground mb-2 block">Sắp xếp</Label>
                   <Select
                     value={filters.ordering}
                     onValueChange={(value: any) => setFilters((p) => ({ ...p, ordering: value }))}
@@ -333,10 +333,10 @@ export default function AdminProductsListPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="-created_at">Newest</SelectItem>
-                      <SelectItem value="created_at">Oldest</SelectItem>
-                      <SelectItem value="price">Price: Low → High</SelectItem>
-                      <SelectItem value="-price">Price: High → Low</SelectItem>
+                      <SelectItem value="-created_at">Mới nhất</SelectItem>
+                      <SelectItem value="created_at">Cũ nhất</SelectItem>
+                      <SelectItem value="price">Giá: Thấp → Cao</SelectItem>
+                      <SelectItem value="-price">Giá: Cao → Thấp</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -350,13 +350,13 @@ export default function AdminProductsListPage() {
             <Table>
               <TableHeader>
                 <TableRow className="border-border">
-                  <TableHead>Product</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Price</TableHead>
-                  <TableHead>Condition</TableHead>
-                  <TableHead>Specs</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>Sản phẩm</TableHead>
+                  <TableHead>Danh mục</TableHead>
+                  <TableHead>Giá</TableHead>
+                  <TableHead>Tình trạng</TableHead>
+                  <TableHead>Thông số</TableHead>
+                  <TableHead>Trạng thái</TableHead>
+                  <TableHead className="text-right">Thao tác</TableHead>
                 </TableRow>
               </TableHeader>
 
@@ -373,7 +373,7 @@ export default function AdminProductsListPage() {
                 ) : filteredProducts.length === 0 ? (
                   <TableRow className="border-border">
                     <TableCell colSpan={7} className="text-muted-foreground py-10 text-center">
-                      No products
+                      Không có sản phẩm nào
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -420,10 +420,10 @@ export default function AdminProductsListPage() {
 
                       <TableCell>
                         <div>
-                          <p className="font-medium">${product.price}</p>
+                          <p className="font-medium">{product.price?.toLocaleString()}đ</p>
                           {product.original_price ? (
                             <p className="text-sm text-muted-foreground line-through">
-                              ${product.original_price}
+                              {product.original_price?.toLocaleString()}đ
                             </p>
                           ) : null}
                         </div>
@@ -445,8 +445,8 @@ export default function AdminProductsListPage() {
                       <TableCell className="text-muted-foreground">
                         <div className="text-xs space-y-1">
                           {product.ram && <div>RAM: <span className="font-medium text-foreground">{product.ram}</span></div>}
-                          {product.storage && <div>Storage: <span className="font-medium text-foreground">{product.storage}</span></div>}
-                          <div>Warranty: <span className="font-medium text-foreground">{product.warranty_period ?? 0}m</span></div>
+                          {product.storage && <div>Bộ nhớ: <span className="font-medium text-foreground">{product.storage}</span></div>}
+                          <div>Bảo hành: <span className="font-medium text-foreground">{product.warranty_period ?? 0} tháng</span></div>
                         </div>
                       </TableCell>
 
@@ -478,14 +478,14 @@ export default function AdminProductsListPage() {
                               onClick={() => openEditDialog(product)}
                               className="cursor-pointer"
                             >
-                              Edit
+                              Sửa
                             </DropdownMenuItem>
 
                             <DropdownMenuItem
                               onClick={() => handleDeleteClick(product)}
                               className="cursor-pointer text-red-500 focus:text-red-500"
                             >
-                              Delete
+                              Xóa
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -510,7 +510,7 @@ export default function AdminProductsListPage() {
 
                 <PaginationItem>
                   <span className="text-sm px-4">
-                    Page {page} of {Math.ceil(totalCount / PAGE_SIZE)}
+                    Trang {page} / {Math.ceil(totalCount / PAGE_SIZE)}
                   </span>
                 </PaginationItem>
 
@@ -549,18 +549,18 @@ export default function AdminProductsListPage() {
       <AlertDialog open={!!deleteConfirm} onOpenChange={() => setDeleteConfirm(null)}>
         <AlertDialogContent className="bg-popover border-border text-popover-foreground">
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogTitle>Bạn có chắc chắn không?</AlertDialogTitle>
             <AlertDialogDescription className="text-muted-foreground">
-              This action cannot be undone. This will permanently delete the product.
+              Hành động này không thể hoàn tác. Sản phẩm sẽ bị xóa vĩnh viễn khỏi hệ thống.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Hủy</AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
               className="bg-red-600 hover:bg-red-600/90 text-white"
             >
-              Delete
+              Xóa
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

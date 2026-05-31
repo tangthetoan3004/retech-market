@@ -80,7 +80,7 @@ export default function AdminBrandsListPage() {
             const res = await getBrandsList(params);
             setBrands((res?.items ?? []) as Brand[]);
         } catch (err: any) {
-            toast.error(err?.message || "Fetch brands failed");
+            toast.error(err?.message || "Lỗi tải danh sách thương hiệu");
         } finally {
             setLoading(false);
         }
@@ -102,23 +102,23 @@ export default function AdminBrandsListPage() {
     const handleCreate = async (payload: any) => {
         try {
             await createBrand(payload);
-            toast.success("Brand created");
+            toast.success("Đã tạo thương hiệu");
             setOpenCreate(false);
             fetchBrands(search);
         } catch (err: any) {
-            toast.error(err?.message || "Create failed");
+            toast.error(err?.message || "Lỗi tạo mới");
         }
     };
 
     const handleEdit = async (id: number | string, payload: any) => {
         try {
             await updateBrand(id, payload);
-            toast.success("Brand updated");
+            toast.success("Đã cập nhật thương hiệu");
             setOpenEdit(false);
             setEditingBrand(null);
             fetchBrands(search);
         } catch (err: any) {
-            toast.error(err?.message || "Update failed");
+            toast.error(err?.message || "Lỗi cập nhật");
         }
     };
 
@@ -128,11 +128,11 @@ export default function AdminBrandsListPage() {
         if (!deleteConfirm) return;
         try {
             await deleteBrand(deleteConfirm.id);
-            toast.success("Brand deleted");
+            toast.success("Đã xóa thương hiệu");
             setDeleteConfirm(null);
             fetchBrands(search);
         } catch (err: any) {
-            toast.error(err?.message || "Delete failed");
+            toast.error(err?.message || "Lỗi xóa");
         }
     };
 
@@ -140,33 +140,33 @@ export default function AdminBrandsListPage() {
         <div className="p-6 space-y-4 bg-background text-foreground">
             <div className="flex items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold mb-2">Brands Management</h1>
-                    <p className="text-muted-foreground">Manage product brands</p>
+                    <h1 className="text-3xl font-bold mb-2">Quản lý Thương hiệu</h1>
+                    <p className="text-muted-foreground">Quản lý các thương hiệu sản phẩm</p>
                 </div>
             </div>
 
             <Card className="bg-card border-border">
                 <CardHeader className="flex flex-row items-center justify-between gap-3">
-                    <CardTitle>Brands</CardTitle>
+                    <CardTitle>Thương hiệu</CardTitle>
 
                     <div className="flex items-center gap-2">
                         <div className="w-[320px]">
                             <Input
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                placeholder="Search name/description..."
+                                placeholder="Tìm kiếm tên/mô tả..."
                             />
                         </div>
 
                         <Button variant="outline" onClick={() => fetchBrands(search)} disabled={loading}>
-                            Search
+                            Tìm kiếm
                         </Button>
 
                         <Button
                             className="bg-blue-600 hover:bg-blue-600/90 text-white"
                             onClick={openCreateDialog}
                         >
-                            Create brand
+                            Tạo thương hiệu
                         </Button>
                     </div>
                 </CardHeader>
@@ -176,9 +176,9 @@ export default function AdminBrandsListPage() {
                         <Table>
                             <TableHeader>
                                 <TableRow className="border-border">
-                                    <TableHead>Brand</TableHead>
-                                    <TableHead>Description</TableHead>
-                                    <TableHead className="text-right">Actions</TableHead>
+                                    <TableHead>Thương hiệu</TableHead>
+                                    <TableHead>Mô tả</TableHead>
+                                    <TableHead className="text-right">Thao tác</TableHead>
                                 </TableRow>
                             </TableHeader>
 
@@ -186,13 +186,13 @@ export default function AdminBrandsListPage() {
                                 {loading ? (
                                     <TableRow className="border-border">
                                         <TableCell colSpan={3} className="text-muted-foreground py-10 text-center">
-                                            Loading...
+                                            Đang tải...
                                         </TableCell>
                                     </TableRow>
                                 ) : filteredBrands.length === 0 ? (
                                     <TableRow className="border-border">
                                         <TableCell colSpan={3} className="text-muted-foreground py-10 text-center">
-                                            No brands
+                                            Không có thương hiệu nào
                                         </TableCell>
                                     </TableRow>
                                 ) : (
@@ -236,14 +236,14 @@ export default function AdminBrandsListPage() {
                                                             onClick={() => openEditDialog(brand)}
                                                             className="cursor-pointer"
                                                         >
-                                                            Edit
+                                                            Sửa
                                                         </DropdownMenuItem>
 
                                                         <DropdownMenuItem
                                                             onClick={() => handleDeleteClick(brand)}
                                                             className="cursor-pointer text-red-500 focus:text-red-500"
                                                         >
-                                                            Delete
+                                                            Xóa
                                                         </DropdownMenuItem>
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
@@ -276,18 +276,18 @@ export default function AdminBrandsListPage() {
             <AlertDialog open={!!deleteConfirm} onOpenChange={() => setDeleteConfirm(null)}>
                 <AlertDialogContent className="bg-popover border-border text-popover-foreground">
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogTitle>Bạn có chắc chắn không?</AlertDialogTitle>
                         <AlertDialogDescription className="text-muted-foreground">
-                            This action cannot be undone. This will permanently delete the brand.
+                            Hành động này không thể hoàn tác. Thương hiệu sẽ bị xóa vĩnh viễn khỏi hệ thống.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel>Hủy</AlertDialogCancel>
                         <AlertDialogAction
                             onClick={confirmDelete}
                             className="bg-red-600 hover:bg-red-600/90 text-white"
                         >
-                            Delete
+                            Xóa
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
