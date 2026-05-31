@@ -1,0 +1,18 @@
+# Large model files
+backend/chatbot/models/llama-3-8b-instruct.Q4_K_M.gguf
+*.gguf
+
+# Environment variables
+backend/backend/.env
+backend/backend/.env.*
+.env
+.env.*
+
+# Python bytecode
+**/__pycache__/
+*.py[cod]
+*$py.class
+
+# Pytest cache
+.pytest_cache/
+**/test_*.pyc

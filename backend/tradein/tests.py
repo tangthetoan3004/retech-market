@@ -397,6 +397,30 @@ class TradeInPricingAndRequestTests(APITestCase):
         self.assertEqual(tradein.final_price, 14500000) # Đảm bảo giá trị giữ nguyên không đổi
         self.assertEqual(tradein.staff_note, "Kiểm tra máy trực tiếp tốt, phê duyệt thanh toán.")
 
+    def test_tradein_detail_serializer_image_url(self):
+        """Kiểm tra xem khi lấy thông tin chi tiết đơn thu cũ, image_url được map chính xác từ bảng TradeInPriceConfig."""
+        # Tạo tradein request khớp với cấu hình config ở setUp
+        tradein = TradeInRequest.objects.create(
+            user=self.user,
+            tradein_type="SELL",
+            brand=self.brand,
+            category=self.category,
+            model_name="iPhone 14 Pro",
+            storage="128GB",
+            ram="6GB",
+            is_power_on=True,
+            screen="good",
+            body="good",
+            estimated_price=15000000,
+            final_price=15000000
+        )
+        url = reverse("tradein-detail", kwargs={"pk": tradein.id})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # Config ở setUp có image_url là "http://example.com/iphone14.jpg"
+        self.assertEqual(response.data["image_url"], "http://example.com/iphone14.jpg")
+
+
 
 
 

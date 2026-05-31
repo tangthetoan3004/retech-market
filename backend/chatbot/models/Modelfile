@@ -1,0 +1,25 @@
+# 1. Trỏ đến đúng tên file .gguf bạn tải về (nằm cùng thư mục với Modelfile)
+FROM ./llama-3-8b-instruct.Q4_K_M.gguf
+
+# 2. Giữ nguyên Template chuẩn Llama-3 từ Unsloth để tránh lỗi định dạng
+TEMPLATE """{{ if .System }}<|start_header_id|>system<|end_header_id|>
+
+{{ .System }}<|eot_id|>{{ end }}{{ if .Prompt }}<|start_header_id|>user<|end_header_id|>
+
+{{ .Prompt }}<|eot_id|>{{ end }}<|start_header_id|>assistant<|end_header_id|>
+
+{{ .Response }}<|eot_id|>"""
+
+# 3. Đặt các tham số tối ưu cho Chatbot RAG (nhiệt độ thấp giúp trả lời chính xác bối cảnh)
+PARAMETER temperature 0.2
+PARAMETER min_p 0.1
+PARAMETER num_ctx 2048
+PARAMETER num_keep 24
+PARAMETER stop "<|start_header_id|>"
+PARAMETER stop "<|end_header_id|>"
+PARAMETER stop "<|eot_id|>"
+
+# 4. Định hình vai trò và tính cách trợ lý ảo bằng tiếng Việt
+SYSTEM """
+Bạn là trợ lý ảo tư vấn mua sắm và chính sách thông minh của website Retech Market. Hãy trả lời bằng tiếng Việt một cách lễ phép, lịch sự và trung thực dựa trên tài liệu được cung cấp.
+"""
