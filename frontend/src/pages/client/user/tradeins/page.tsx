@@ -273,7 +273,16 @@ function TradeInItemCard({
                                 Tải mã vận đơn
                             </Button>
                         )}
-                        <Button variant="outline" className="w-full shadow-sm">
+                        <Button 
+                            variant="outline" 
+                            className="w-full shadow-sm"
+                            onClick={() => {
+                                const chatbotWindow = document.getElementById("chatbot-window");
+                                if (!chatbotWindow) {
+                                    document.getElementById("chatbot-toggle-btn")?.click();
+                                }
+                            }}
+                        >
                             Trợ giúp
                         </Button>
                     </div>
