@@ -2,7 +2,7 @@ import { motion } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useParams } from "react-router-dom";
-import { Filter, SortAsc, Grid3x3, List, X } from "lucide-react";
+import { Filter, SortAsc, Grid3x3, List, X, ShoppingCart, Heart, Shield } from "lucide-react";
 import { Button } from "../../../components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "../../../components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui/select";
@@ -186,15 +186,20 @@ export default function ProductsPage() {
     return filtered;
   }, [products, selectedCategories, selectedBrands, selectedConditions, priceRange, sortBy]);
 
-  const FilterContent = () => (
-    <div className="space-y-6">
+  const filterContentNode = (
+    <div className="space-y-8">
       <div>
-        <h3 className="mb-3 font-semibold">Brand</h3>
-        <div className="space-y-2">
+        <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-muted-foreground">Brand</h3>
+        <div className="space-y-3">
           {brands.slice(0, 6).map((b) => (
-            <div key={b} className="flex items-center space-x-2">
-              <Checkbox id={`brand-${b}`} checked={selectedBrands.includes(b)} onCheckedChange={() => toggleBrand(b)} />
-              <Label htmlFor={`brand-${b}`} className="cursor-pointer text-sm">
+            <div key={b} className="group flex items-center space-x-3 transition-all hover:translate-x-1">
+              <Checkbox 
+                id={`brand-${b}`} 
+                checked={selectedBrands.includes(b)} 
+                onCheckedChange={() => toggleBrand(b)} 
+                className="transition-colors data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+              />
+              <Label htmlFor={`brand-${b}`} className="cursor-pointer text-sm font-medium transition-colors group-hover:text-blue-600">
                 {b}
               </Label>
             </div>
@@ -203,18 +208,23 @@ export default function ProductsPage() {
       </div>
 
       <div>
-        <h3 className="mb-3 font-semibold">Condition</h3>
-        <div className="space-y-2">
+        <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-muted-foreground">Condition</h3>
+        <div className="space-y-3">
           {[
-            { value: "NEW", label: "New" },
-            { value: "LIKE_NEW", label: "Like New" },
-            { value: "GOOD", label: "Good" },
-            { value: "FAIR", label: "Fair" },
-            { value: "POOR", label: "Poor" },
+            { value: "NEW", label: "New (100%)" },
+            { value: "LIKE_NEW", label: "Like New (99%)" },
+            { value: "GOOD", label: "Good (95%)" },
+            { value: "FAIR", label: "Fair (90%)" },
+            { value: "POOR", label: "Poor (<90%)" },
           ].map((c) => (
-            <div key={c.value} className="flex items-center space-x-2">
-              <Checkbox id={`condition-${c.value}`} checked={selectedConditions.includes(c.value)} onCheckedChange={() => toggleCondition(c.value)} />
-              <Label htmlFor={`condition-${c.value}`} className="cursor-pointer text-sm">
+            <div key={c.value} className="group flex items-center space-x-3 transition-all hover:translate-x-1">
+              <Checkbox 
+                id={`condition-${c.value}`} 
+                checked={selectedConditions.includes(c.value)} 
+                onCheckedChange={() => toggleCondition(c.value)}
+                className="transition-colors data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+              />
+              <Label htmlFor={`condition-${c.value}`} className="cursor-pointer text-sm font-medium transition-colors group-hover:text-blue-600">
                 {c.label}
               </Label>
             </div>
@@ -223,61 +233,65 @@ export default function ProductsPage() {
       </div>
 
       <div>
-        <h3 className="mb-3 font-semibold">
-          Price Range: {priceRange[0]} - {priceRange[1]}
-        </h3>
-        <Slider
-          min={0}
-          max={priceMax || 3000}
-          step={priceStep}
-          value={priceRange}
-          onValueChange={setPriceRange}
-          className="mt-4"
-        />
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Price</h3>
+          <span className="text-xs font-semibold text-blue-600 bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded-full">
+            {priceRange[0].toLocaleString("vi-VN")}₫ - {priceRange[1].toLocaleString("vi-VN")}₫
+          </span>
+        </div>
+        <div className="px-2">
+          <Slider
+            min={0}
+            max={priceMax || 3000}
+            step={priceStep}
+            value={priceRange}
+            onValueChange={setPriceRange}
+            className="mt-6"
+          />
+        </div>
       </div>
 
       {activeFiltersCount > 0 && (
-        <Button variant="outline" className="w-full" onClick={clearFilters} type="button">
-          <X className="mr-2 h-4 w-4" />
-          Clear All Filters
-        </Button>
+        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}>
+          <Button variant="outline" className="w-full border-dashed hover:bg-destructive/10 hover:text-destructive transition-colors" onClick={clearFilters} type="button">
+            <X className="mr-2 h-4 w-4" />
+            Clear Filters
+          </Button>
+        </motion.div>
       )}
     </div>
   );
 
   return (
-    <div className="min-h-screen py-8">
-      <div className="mx-auto w-full max-w-[1260px] px-5 lg:px-7 xl:px-9">
-        {/* <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Browse Products</h1>
-          <p className="text-muted-foreground">
-            Showing {filteredProducts.length} of {products.length} products
-          </p>
-        </div> */}
-
+    <div className="min-h-screen py-8 bg-muted/30">
+      <div className="mx-auto w-full max-w-[1320px] px-5 lg:px-7 xl:px-9">
+        
         <div className="flex gap-8">
           <aside className="hidden w-64 flex-shrink-0 lg:block">
             {/* sticky + max-height = vừa khít viewport, cuộn nội dung bên trong */}
             <div
-              className="sticky top-20 flex flex-col overflow-hidden rounded-xl border border-border bg-card"
-              style={{ maxHeight: "calc(100vh - 6rem)" }}
+              className="sticky top-24 flex flex-col overflow-hidden rounded-2xl border border-border/50 bg-card/80 backdrop-blur-xl shadow-sm transition-shadow hover:shadow-md"
+              style={{ maxHeight: "calc(100vh - 7rem)" }}
             >
-              {/* Header filter — không cuộn */}
-              <div className="flex flex-shrink-0 items-center justify-between border-b border-border px-6 pb-4 pt-6">
-                <h2 className="flex items-center gap-2 font-semibold">
-                  <Filter className="h-5 w-5" />
-                  Filters
+              {/* Header filter */}
+              <div className="flex flex-shrink-0 items-center justify-between border-b border-border/50 bg-muted/30 px-6 pb-4 pt-6">
+                <h2 className="flex items-center gap-2 font-bold text-lg tracking-tight">
+                  <Filter className="h-5 w-5 text-blue-600" />
+                  Filter
                   {activeFiltersCount > 0 && (
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full rt-bg-brand text-xs text-white">
+                    <motion.span 
+                      initial={{ scale: 0 }} animate={{ scale: 1 }}
+                      className="flex h-5 w-5 items-center justify-center rounded-full rt-bg-brand text-xs font-bold text-white shadow-sm"
+                    >
                       {activeFiltersCount}
-                    </span>
+                    </motion.span>
                   )}
                 </h2>
               </div>
 
               {/* Nội dung filter — cuộn bên trong khi quá dài */}
               <div className="scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent flex-1 overflow-y-auto px-6 py-4">
-                <FilterContent />
+                {filterContentNode}
               </div>
             </div>
           </aside>
@@ -302,7 +316,7 @@ export default function ProductsPage() {
                       <SheetTitle>Filters</SheetTitle>
                     </SheetHeader>
                     <div className="mt-6">
-                      <FilterContent />
+                      {filterContentNode}
                     </div>
                   </SheetContent>
                 </Sheet>
@@ -344,57 +358,129 @@ export default function ProductsPage() {
             </div>
 
             {isLoading ? (
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="animate-pulse overflow-hidden rounded-xl border border-border bg-card">
-                    <div className="aspect-[4/3] w-full bg-muted" />
-                    <div className="space-y-3 p-4">
-                      <div className="h-4 w-4/5 rounded bg-muted" />
-                      <div className="h-4 w-2/3 rounded bg-muted" />
-                      <div className="h-6 w-1/3 rounded bg-muted" />
+              <div className={viewMode === "grid" ? "grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3" : "flex flex-col gap-4"}>
+                {Array.from({ length: viewMode === "grid" ? 6 : 4 }).map((_, i) => (
+                  <div key={i} className={`animate-pulse overflow-hidden rounded-2xl border border-border/50 bg-card shadow-sm ${viewMode === "list" ? "flex p-4 gap-6" : ""}`}>
+                    <div className={`${viewMode === "grid" ? "aspect-[4/3] w-full" : "h-32 w-40 rounded-xl"} bg-muted/60`} />
+                    <div className={`space-y-4 ${viewMode === "grid" ? "p-5" : "flex-1 py-2"}`}>
+                      <div className="h-5 w-3/4 rounded-md bg-muted/60" />
+                      <div className="h-4 w-1/2 rounded-md bg-muted/60" />
+                      <div className="pt-2 flex justify-between items-center">
+                        <div className="h-7 w-1/3 rounded-md bg-muted/60" />
+                        {viewMode === "list" && <div className="h-10 w-32 rounded-lg bg-muted/60" />}
+                      </div>
                     </div>
                   </div>
                 ))}
               </div>
             ) : filteredProducts.length === 0 ? (
-              <div className="rounded-xl border border-border bg-card p-10 text-center">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-                  <Filter className="h-6 w-6 text-muted-foreground" />
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="rounded-2xl border border-dashed border-border bg-card/50 p-16 text-center shadow-sm"
+              >
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-900/20 mb-4">
+                  <Filter className="h-8 w-8 text-blue-600" />
                 </div>
-                <div className="mt-4 text-lg font-semibold">No products found</div>
-                <div className="mt-2 text-muted-foreground">Try adjusting your filters or search criteria</div>
-                <div className="mt-6">
-                  <Button variant="outline" onClick={clearFilters} type="button">
-                    Clear Filters
+                <div className="text-xl font-bold">Không tìm thấy sản phẩm</div>
+                <div className="mt-2 text-muted-foreground max-w-md mx-auto">Chúng tôi không tìm thấy sản phẩm nào phù hợp với bộ lọc hiện tại của bạn. Vui lòng thử thay đổi tiêu chí tìm kiếm.</div>
+                <div className="mt-8">
+                  <Button variant="default" className="rt-bg-brand text-white shadow-md hover:opacity-90 transition-opacity" onClick={clearFilters} type="button">
+                    <X className="mr-2 h-4 w-4" /> Xóa Bộ Lọc
                   </Button>
                 </div>
-              </div>
+              </motion.div>
             ) : viewMode === "grid" ? (
               <ProductGrid items={filteredProducts} />
             ) : (
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-5">
                 {filteredProducts.map((p: any, index: number) => {
-                  const fmt = new Intl.NumberFormat("vi-VN");
                   const priceNew = p?.priceNew ?? p?.price ?? 0;
+                  const priceOld = p?.originalPrice ?? p?.original_price ?? null;
+                  
                   return (
                     <motion.div
                       key={p?.id || p?._id || p?.slug || index}
-                      initial={{ opacity: 0, y: 10 }}
+                      initial={{ opacity: 0, y: 15 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.03 }}
-                      className="overflow-hidden rounded-xl border border-border bg-card"
+                      transition={{ delay: Math.min(index * 0.05, 0.3) }}
+                      className="group flex flex-col sm:flex-row overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm hover:shadow-md transition-all duration-300 hover:border-blue-200 dark:hover:border-blue-900/50"
                     >
-                      <div className="flex items-center gap-4 p-4">
-                        <div className="h-24 w-28 flex-shrink-0 overflow-hidden rounded-lg bg-muted">
-                          {p?.thumbnail ? (
-                            <img src={p.thumbnail} alt={p?.title || ""} className="h-full w-full object-cover" />
-                          ) : null}
+                      {/* Image section */}
+                      <div className="relative sm:w-48 h-48 sm:h-auto flex-shrink-0 overflow-hidden bg-muted/30">
+                        {p?.thumbnail ? (
+                          <img 
+                            src={p.thumbnail} 
+                            alt={p?.title || ""} 
+                            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                            onError={(e) => { (e.target as HTMLImageElement).src = `https://placehold.co/400x400/e2e8f0/64748b?text=${encodeURIComponent(p?.title || p?.name || 'No Image')}`; }}
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-muted-foreground">No image</div>
+                        )}
+                        {/* Tags over image */}
+                        <div className="absolute top-3 left-3 flex flex-col gap-2">
+                          {p?.condition && (
+                            <span className="bg-white/90 dark:bg-black/80 backdrop-blur-sm text-xs font-bold px-2.5 py-1 rounded-md shadow-sm">
+                              {p.condition}
+                            </span>
+                          )}
                         </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="line-clamp-2 font-semibold">{p?.title || p?.name}</div>
-                          <div className="mt-2 text-lg font-bold text-foreground">
-                            {fmt.format(Number(priceNew))}₫
+                      </div>
+
+                      {/* Content section */}
+                      <div className="flex flex-1 flex-col justify-between p-5">
+                        <div>
+                          <div className="flex justify-between items-start gap-4">
+                            <div>
+                              <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">
+                                {p?.brand || "Brand"}
+                              </div>
+                              <h3 className="line-clamp-2 text-lg font-bold group-hover:text-blue-600 transition-colors">
+                                {p?.title || p?.name}
+                              </h3>
+                            </div>
+                            {/* Price */}
+                            <div className="text-right flex-shrink-0">
+                              <div className="text-xl font-extrabold text-blue-600 dark:text-blue-400">
+                                {priceNew.toLocaleString("vi-VN")}₫
+                              </div>
+                              {priceOld && priceOld > priceNew && (
+                                <div className="text-sm font-medium text-muted-foreground line-through opacity-70">
+                                  {Number(priceOld).toLocaleString("vi-VN")}₫
+                                </div>
+                              )}
+                            </div>
                           </div>
+                          
+                          {/* Specs */}
+                          <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                            {p?.ram && (
+                              <div className="flex items-center gap-1.5 bg-muted/50 px-2.5 py-1 rounded-lg">
+                                <span className="font-semibold text-foreground">{p.ram}</span>
+                              </div>
+                            )}
+                            {p?.storage && (
+                              <div className="flex items-center gap-1.5 bg-muted/50 px-2.5 py-1 rounded-lg">
+                                <span className="font-semibold text-foreground">{p.storage}</span>
+                              </div>
+                            )}
+                            <div className="flex items-center gap-1.5 bg-muted/50 px-2.5 py-1 rounded-lg">
+                              <Shield className="h-3.5 w-3.5 text-green-500" />
+                              <span className="font-semibold text-foreground">{p?.warranty || 0} Tháng</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="mt-5 flex items-center gap-3">
+                          <Button className="flex-1 rt-bg-brand text-white hover:opacity-90 shadow-sm transition-all hover:-translate-y-0.5">
+                            <ShoppingCart className="mr-2 h-4 w-4" />
+                            Add to Cart
+                          </Button>
+                          <Button variant="outline" size="icon" className="flex-shrink-0 hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-colors">
+                            <Heart className="h-4 w-4" />
+                          </Button>
                         </div>
                       </div>
                     </motion.div>

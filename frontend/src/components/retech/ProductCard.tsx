@@ -65,7 +65,12 @@ export function ProductCard({
     >
       {/* Image Container */}
       <div className="relative aspect-square overflow-hidden bg-muted">
-        <img src={image} alt={name} className="w-full h-full object-cover" />
+        <img 
+          src={image} 
+          alt={name} 
+          className="w-full h-full object-cover" 
+          onError={(e) => { (e.target as HTMLImageElement).src = `https://placehold.co/400x400/e2e8f0/64748b?text=${encodeURIComponent(name || 'No Image')}`; }}
+        />
 
         {/* Overlay actions on hover */}
         <motion.div
@@ -141,17 +146,17 @@ export function ProductCard({
           <div>
             <div className="flex items-baseline gap-1.5">
               <span className="text-base font-semibold text-foreground">
-                ${price.toLocaleString()}
+                {price.toLocaleString("vi-VN")}₫
               </span>
               {originalPrice && (
                 <span className="text-sm text-muted-foreground line-through">
-                  ${originalPrice.toLocaleString()}
+                  {originalPrice.toLocaleString("vi-VN")}₫
                 </span>
               )}
             </div>
             {originalPrice && (
               <span className="text-xs text-[#00d084] font-medium">
-                Save ${(originalPrice - price).toLocaleString()}
+                Tiết kiệm {(originalPrice - price).toLocaleString("vi-VN")}₫
               </span>
             )}
           </div>

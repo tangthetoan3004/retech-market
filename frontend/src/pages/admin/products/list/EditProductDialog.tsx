@@ -142,6 +142,9 @@ export default function EditProductDialog({
     if (formData.warranty_period !== "" && formData.warranty_period !== null)
       payload.warranty_period = formData.warranty_period;
     if (formData.main_image) payload.main_image = formData.main_image;
+    // Gửi main_image_url nếu có dán link (và không upload file đè lên)
+    if (!formData.main_image && formData.main_image_url?.trim())
+      payload.main_image_url = formData.main_image_url.trim();
 
     if (formData.category_id !== "" && formData.category_id !== null)
       payload.category = formData.category_id;
@@ -331,6 +334,27 @@ export default function EditProductDialog({
                   className="mt-3 max-w-[220px] border border-border rounded"
                 />
               ) : null}
+            </div>
+
+            <div>
+              <Label>Hoặc dán link ảnh URL</Label>
+              <Input
+                type="url"
+                placeholder="https://example.com/image.jpg"
+                value={formData.main_image_url}
+                onChange={(e) =>
+                  setFormData((p) => ({ ...p, main_image_url: e.target.value }))
+                }
+                disabled={!!formData.main_image}
+              />
+              {!formData.main_image && formData.main_image_url && (
+                <img
+                  src={formData.main_image_url}
+                  alt="url preview"
+                  className="mt-3 max-w-[220px] border border-border rounded object-cover"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                />
+              )}
             </div>
           </div>
 

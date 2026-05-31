@@ -21,8 +21,13 @@ function absMediaUrl(url: any) {
 function normalizeProduct(p: any) {
   if (!p) return p;
 
-  const image = absMediaUrl(p.main_image || p.image || p.thumbnail);
+  // Ưu tiên: main_image_url (link ngoài) > main_image (file upload)
+  const image = p.main_image_url?.trim()
+    ? p.main_image_url.trim()
+    : absMediaUrl(p.main_image || p.image || p.thumbnail);
+
   const brandName = typeof p.brand === "string" ? p.brand : p.brand?.name ?? "";
+
   const categoryName =
     typeof p.category === "string" ? p.category : p.category?.name ?? p.category ?? "";
 
@@ -63,6 +68,12 @@ function buildFormData(payload: any) {
       return;
     }
 
+    // Gửi main_image_url dưới dạng string
+    if (k === "main_image_url") {
+      fd.append("main_image_url", String(v));
+      return;
+    }
+
     if (typeof v === "boolean") {
       fd.append(k, v ? "true" : "false");
       return;
@@ -82,6 +93,7 @@ export type ProductUpsertPayload = {
   battery_health?: number | string | null;
   warranty_period?: number | string | null;
   main_image?: File | null;
+  main_image_url?: string | null;
   category?: number | string | null;
   brand?: number | string | null;
 };
@@ -95,6 +107,7 @@ const WRITE_KEYS: (keyof ProductUpsertPayload)[] = [
   "battery_health",
   "warranty_period",
   "main_image",
+  "main_image_url",
   "category",
   "brand",
 ];
