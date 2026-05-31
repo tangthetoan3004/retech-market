@@ -48,9 +48,9 @@ export default function Sider() {
     { to: "/admin/products-category", label: "Danh mục sản phẩm", icon: Tags },
     { to: "/admin/products", label: "Sản phẩm", icon: Package },
     { to: "/admin/brands", label: "Thương hiệu", icon: Star },
-    { to: "/admin/orders", label: "Orders", icon: ShoppingBag },
+    { to: "/admin/orders", label: "Đơn hàng", icon: ShoppingBag },
     { to: "/admin/refunds", label: "Hoàn tiền", icon: RefreshCw },
-    { to: "/admin/tradeins", label: "Trade-Ins", icon: RefreshCw },
+    { to: "/admin/tradeins", label: "Thu cũ đổi mới", icon: RefreshCw },
     { to: "/admin/payments", label: "Thanh toán", icon: CreditCard },
     { to: "/admin/accounts", label: "Tài khoản", icon: Users },
     { to: "/admin/my-account", label: "Tài khoản của tôi", icon: UserCircle }
@@ -139,7 +139,7 @@ export default function Sider() {
             <span className="grid place-items-center h-9 w-9 rounded-lg bg-muted">
               <LogOut className="h-4 w-4" />
             </span>
-            <span className="truncate">Logout</span>
+            <span className="truncate">Đăng xuất</span>
           </button>
         </div>
       </div>
