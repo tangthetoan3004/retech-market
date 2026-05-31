@@ -86,12 +86,19 @@ export const getProducts = async (params: any = {}) => {
 };
 
 export const getProductDetailBySlug = async (slug: string) => {
-  const res = await get("/api/products/items/");
+  // Gọi trực tiếp filter theo slug thay vì load toàn bộ list
+  const res = await get("/api/products/items/", { params: { slug } });
   const list = extractList(res);
   const arr = normalizeList(list);
+  // Thử tìm theo slug filter trước
   const found = arr.find((x: any) => String(x?.slug) === String(slug));
-  if (!found) throw new Error("Không tìm thấy sản phẩm");
-  return found;
+  if (found) return found;
+  // Fallback: nếu backend không support filter slug, thử gọi detail theo id (nếu slug là số)
+  if (!isNaN(Number(slug))) {
+    const detail = await get(`/api/products/items/${slug}/`);
+    return normalizeProduct(detail);
+  }
+  throw new Error("Không tìm thấy sản phẩm");
 };
 
 export const searchProducts = async (keyword: string) => {

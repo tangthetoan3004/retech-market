@@ -28,9 +28,10 @@ function num(v: any) {
   return Number.isFinite(n) ? n : 0;
 }
 
-function money(v: any) {
-  const n = num(v);
-  return `$${n.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+function money(val: any) {
+  const n = Number(val);
+  if (!Number.isFinite(n)) return "0₫";
+  return `${n.toLocaleString("vi-VN")}₫`;
 }
 
 function upper(v: any, fallback = "") {
@@ -166,7 +167,7 @@ export default function ProductDetailPage() {
                   alt={title}
                   className="h-full w-full object-cover"
                   onError={(e) => {
-                    (e.currentTarget as HTMLImageElement).style.display = "none";
+                    (e.currentTarget as HTMLImageElement).src = `https://placehold.co/400x400/e2e8f0/64748b?text=${encodeURIComponent(title || 'No Image')}`;
                   }}
                 />
               ) : (
@@ -188,7 +189,12 @@ export default function ProductDetailPage() {
                     whileTap={{ scale: 0.95 }}
                     type="button"
                   >
-                    <img src={image} alt="" className="h-full w-full object-cover" />
+                    <img 
+                      src={image} 
+                      alt="" 
+                      className="h-full w-full object-cover" 
+                      onError={(e) => { (e.currentTarget as HTMLImageElement).src = `https://placehold.co/400x400/e2e8f0/64748b?text=${encodeURIComponent(title || 'No Image')}`; }}
+                    />
                   </motion.button>
                 ))}
               </div>
@@ -214,9 +220,9 @@ export default function ProductDetailPage() {
               </div>
 
               {hasOriginal ? (
-                <p className="font-medium text-[var(--secondary)]">
-                  Save {money(originalPrice - price)} ({Math.round(((originalPrice - price) / originalPrice) * 100)}% off)
-                </p>
+                <div className="mt-1 text-sm font-medium text-green-600 dark:text-green-400">
+                  Tiết kiệm {money(originalPrice - price)} ({Math.round(((originalPrice - price) / originalPrice) * 100)}% off)
+                </div>
               ) : null}
             </div>
 
