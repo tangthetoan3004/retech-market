@@ -110,6 +110,7 @@ export default function ProductsPage() {
 
   const [categories, setCategories] = useState<{key: string, label: string}[]>([]);
   const [brands, setBrands] = useState<{slug: string, name: string}[]>([]);
+  const [showAllBrands, setShowAllBrands] = useState(false);
 
   useEffect(() => {
     const fetchOptions = async () => {
@@ -185,7 +186,7 @@ export default function ProductsPage() {
       <div>
         <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-muted-foreground">Brand</h3>
         <div className="space-y-3">
-          {brands.slice(0, 6).map((b) => (
+          {brands.slice(0, showAllBrands ? brands.length : 6).map((b) => (
             <div key={b.slug} className="group flex items-center space-x-3 transition-all hover:translate-x-1">
               <Checkbox 
                 id={`brand-${b.slug}`} 
@@ -198,6 +199,15 @@ export default function ProductsPage() {
               </Label>
             </div>
           ))}
+          {brands.length > 6 && (
+            <button
+              type="button"
+              onClick={() => setShowAllBrands(!showAllBrands)}
+              className="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors mt-2"
+            >
+              {showAllBrands ? "Rút gọn" : `+ Xem thêm ${brands.length - 6} thương hiệu`}
+            </button>
+          )}
         </div>
       </div>
 
