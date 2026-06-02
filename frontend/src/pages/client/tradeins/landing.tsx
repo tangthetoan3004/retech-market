@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 
 /**
  * TradeIns Landing Page
@@ -48,6 +49,15 @@ export default function TradeInsLandingPage() {
                 }
                 #tradeins-scope-wrapper .elementor-tab-content { display: none; }
                 #tradeins-scope-wrapper .elementor-tab-content.elementor-active { display: block; }
+
+                /* ── Fix elementor-invisible ─────────────────────────────
+                   Tránh lỗi mất giao diện lúc mới vào chưa kịp scroll (JS run late) */
+                #tradeins-scope-wrapper .elementor-invisible {
+                    visibility: visible !important;
+                    animation: none !important;
+                    opacity: 1 !important;
+                    transform: none !important;
+                }
 
                 /* ── Force Light Theme ────────────────────────────────── */
                 #tradeins-scope-wrapper {
@@ -145,6 +155,18 @@ export default function TradeInsLandingPage() {
             document.getElementById(styleId)?.remove();
         };
     }, []);
+
+    // Force Elementor JS to recalculate layout after CSS loads
+    useEffect(() => {
+        if (cssLoaded) {
+            // Đợi 1 chút để trình duyệt thực sự render CSS
+            const timer = setTimeout(() => {
+                window.dispatchEvent(new Event("resize"));
+                window.dispatchEvent(new Event("scroll"));
+            }, 100);
+            return () => clearTimeout(timer);
+        }
+    }, [cssLoaded]);
 
     // Init Elementor / Swiper / Animation scripts
     useEffect(() => {
@@ -390,7 +412,13 @@ const lazyloadRunObserver = () => {
     }, []);
 
     return (
-        <div id="tradeins-scope-wrapper" style={{ marginTop: "-40px", visibility: cssLoaded ? "visible" : "hidden" }} className={cssLoaded ? "tradeins-fade-in" : ""}>
+        <>
+            {!cssLoaded && (
+                <div style={{ position: "fixed", inset: 0, zIndex: 49, backgroundColor: "#ffffff", display: "flex", justifyContent: "center", alignItems: "center" }}>
+                    <LoadingSpinner />
+                </div>
+            )}
+            <div id="tradeins-scope-wrapper" style={{ marginTop: "-40px", visibility: cssLoaded ? "visible" : "hidden" }} className={cssLoaded ? "tradeins-fade-in" : ""}>
             <style>{`
                 .tradeins-fade-in {
                     animation: tradeinsFadeIn 0.5s ease-in-out forwards;
@@ -1488,7 +1516,7 @@ const lazyloadRunObserver = () => {
       </div>
     <div className="" id="button-contact-vr">
     </div>
-
-        </div>
-    );
+</div>
+</>
+);
 }
