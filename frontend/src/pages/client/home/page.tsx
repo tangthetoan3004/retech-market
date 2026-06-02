@@ -73,7 +73,7 @@ export default function HomePage() {
       {
         name: "Michael Chen",
         rating: 5,
-        text: "Best place to buy refurbished tech. Saved $500 on a MacBook Pro that works perfectly!",
+        text: "Best place to buy refurbished tech. Saved 10.000.000đ on a MacBook Pro that works perfectly!",
         date: "1 week ago",
       },
       {

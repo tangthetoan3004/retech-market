@@ -12,7 +12,7 @@ function n(v: any) {
 
 function money(v: any) {
   const x = n(v);
-  return `$${x.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+  return `${x.toLocaleString(undefined, { maximumFractionDigits: 2 })}đ`;
 }
 
 export default function CartPage() {

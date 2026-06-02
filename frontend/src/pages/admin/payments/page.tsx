@@ -29,7 +29,7 @@ import {
 
 function fmtMoney(v: any) {
   const n = Number(v);
-  return Number.isFinite(n) ? `$${n}` : "-";
+  return Number.isFinite(n) ? `${n}đ` : "-";
 }
 
 function fmtDate(iso: string) {

@@ -22,8 +22,8 @@ export default function ProductItem({ item }) {
         </h3>
 
         <div className="flex items-center gap-2">
-          <div className="font-semibold">{item.priceNew}$</div>
-          {item.price ? <div className="text-sm line-through text-slate-500">{item.price}$</div> : null}
+          <div className="font-semibold">{item.priceNew}đ</div>
+          {item.price ? <div className="text-sm line-through text-slate-500">{item.price}đ</div> : null}
         </div>
 
         {item.discountPercentage ? (
