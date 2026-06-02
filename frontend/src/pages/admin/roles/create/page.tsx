@@ -27,7 +27,7 @@ export default function RolesCreatePage() {
   return (
     <div className="space-y-3">
       <h1 className="text-xl font-semibold">Thêm mới nhóm quyền</h1>
-      <RoleForm onSubmit={onSubmit} submitting={submitting} />
+      <RoleForm initialValues={{}} onSubmit={onSubmit} submitting={submitting} />
     </div>
   );
 }

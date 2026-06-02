@@ -47,8 +47,9 @@ export type CategoryUpsertPayload = {
 };
 
 export const getCategories = async () => {
-  const list: any = await get("/api/products/categories/");
-  const items = Array.isArray(list) ? list.map(normalizeCategory) : [];
+  const res: any = await get("/api/products/categories/");
+  const list = Array.isArray(res) ? res : (res?.results || []);
+  const items = list.map(normalizeCategory);
   return { items };
 };
 

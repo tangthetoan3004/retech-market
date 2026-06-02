@@ -14,6 +14,7 @@ import {
   getTradeInStorages
 } from "../../../services/client/tradeins/tradeinsService";
 import { getUserBankAccounts, createUserBankAccount, BankAccount } from "../../../services/client/user/bankAccountsService";
+import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 
 const CustomSelect = ({ value, options, onChange, placeholder }: any) => {
   const [open, setOpen] = useState(false);
@@ -22,6 +23,7 @@ const CustomSelect = ({ value, options, onChange, placeholder }: any) => {
 
   useEffect(() => {
     if (open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSearch("");
       setTimeout(() => inputRef.current?.focus(), 50);
     }
@@ -91,7 +93,6 @@ export default function TradeInsPage() {
   const [step, setStep] = useState<Step>('brand');
   const [loading, setLoading] = useState(false);
   const [quotePrice, setQuotePrice] = useState(0);
-  const [faqOpen, setFaqOpen] = useState<number | null>(null);
 
   // Dynamic Options State
   const [brands, setBrands] = useState<any[]>([]);
@@ -160,7 +161,7 @@ export default function TradeInsPage() {
       const res: any = await getTradeInModels({ category_id: DEFAULT_CATEGORY_ID, brand_id: brandId });
       setModels(Array.isArray(res) ? res : []);
       goNext('model');
-    } catch (err) {
+    } catch (_err) {
       toast.error("Không thể tải dòng máy");
     } finally {
       setLoading(false);
@@ -174,7 +175,7 @@ export default function TradeInsPage() {
       const res: any = await getTradeInStorages({ category_id: DEFAULT_CATEGORY_ID, brand_id: form.brandId, model_name: model });
       setStorages(Array.isArray(res) ? res : []);
       goNext('storage');
-    } catch (err) {
+    } catch (_err) {
       toast.error("Không thể tải dung lượng");
     } finally {
       setLoading(false);
@@ -199,7 +200,7 @@ export default function TradeInsPage() {
       } else {
           goNext('ram');
       }
-    } catch (err) {
+    } catch (_err) {
       toast.error("Không thể tải cấu hình RAM");
       goNext('functional');
     } finally {
@@ -252,6 +253,9 @@ export default function TradeInsPage() {
           setQuotePrice(basePrice);
       }
 
+      // Add a 1.5-second delay as requested by the user
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
       goNext('quote');
     } catch (err: any) {
       toast.error(err.message || "Có lỗi xảy ra khi xử lý và định giá tự động.");
@@ -617,13 +621,6 @@ export default function TradeInsPage() {
 
   const renderQuoteStep = () => {
     const formattedPrice = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(quotePrice);
-    
-    const chartData = [
-      { name: 'Hiện tại', price: quotePrice },
-      { name: '1 tháng', price: quotePrice * 0.9 },
-      { name: '3 tháng', price: quotePrice * 0.75 },
-      { name: '6 tháng', price: quotePrice * 0.6 },
-    ];
 
     return (
       <div key="quote" className="animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col items-center w-full max-w-[700px] pb-24">
@@ -877,6 +874,14 @@ export default function TradeInsPage() {
         </div>
         
       </div>
+
+      {/* Full-screen Loading Overlay for AI Analysis */}
+      {loading && step === 'upload' && (
+        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm">
+          <LoadingSpinner />
+          <p className="mt-8 text-lg font-medium text-slate-700 animate-pulse">Hệ thống đang phân tích...</p>
+        </div>
+      )}
     </div>
   );
 }

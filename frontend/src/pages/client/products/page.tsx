@@ -42,6 +42,7 @@ export default function ProductsPage() {
   // --- FIX: price filter auto-fit theo dữ liệu ---
   const [priceMax, setPriceMax] = useState<number>(3000);
   const [priceRange, setPriceRange] = useState<number[]>([0, 3000]);
+  const [appliedPriceRange, setAppliedPriceRange] = useState<number[]>([0, 3000]);
 
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
@@ -60,6 +61,7 @@ export default function ProductsPage() {
 
   useEffect(() => {
     setSelectedCategories(params?.slug ? [String(params.slug)] : []);
+    setPage(1);
   }, [params?.slug]);
 
   useEffect(() => {
@@ -68,6 +70,12 @@ export default function ProductsPage() {
       try {
         const payload: any = { page };
         if (params?.slug) payload.category = String(params.slug);
+        else if (selectedCategories.length > 0) payload.category = selectedCategories.join(",");
+        
+        if (selectedBrands.length > 0) payload.brand = selectedBrands.join(",");
+        if (selectedConditions.length > 0) payload.condition = selectedConditions.join(",");
+        if (appliedPriceRange[0] > 0) payload.min_price = appliedPriceRange[0];
+        if (appliedPriceRange[1] < (priceMax || 3000)) payload.max_price = appliedPriceRange[1];
 
         const data = await getProducts(payload);
         const list = Array.isArray(data?.items) ? data.items : [];
@@ -83,7 +91,10 @@ export default function ProductsPage() {
 
         const newMax = maxPrice > 0 ? maxPrice : 3000;
         setPriceMax(newMax);
-        setPriceRange([0, newMax]);
+        if (priceRange[1] === 3000 && newMax !== 3000) {
+          setPriceRange([0, newMax]);
+          setAppliedPriceRange([0, newMax]);
+        }
       } catch (e: any) {
         dispatch(showAlert({ type: "error", message: e?.message || "Không tải được sản phẩm", timeout: 1000 }));
       } finally {
@@ -91,10 +102,10 @@ export default function ProductsPage() {
       }
     };
     run();
-  }, [dispatch, params?.slug, page]);
+  }, [dispatch, params?.slug, page, selectedBrands, selectedConditions, appliedPriceRange, selectedCategories]);
 
   const [categories, setCategories] = useState<{key: string, label: string}[]>([]);
-  const [brands, setBrands] = useState<string[]>([]);
+  const [brands, setBrands] = useState<{slug: string, name: string}[]>([]);
 
   useEffect(() => {
     const fetchOptions = async () => {
@@ -103,8 +114,8 @@ export default function ProductsPage() {
           getProductCategories(),
           getProductBrands()
         ]);
-        setCategories(cats.map((c: any) => ({ key: c.name || c.slug, label: c.name })));
-        setBrands(brs.map((b: any) => b.name));
+        setCategories(cats.map((c: any) => ({ key: c.slug || c.name, label: c.name })));
+        setBrands(brs.map((b: any) => ({ slug: b.slug, name: b.name })));
       } catch (err) {
         console.error("Failed to load filter options", err);
       }
@@ -114,21 +125,26 @@ export default function ProductsPage() {
 
   const toggleBrand = (brand: string) => {
     setSelectedBrands((prev) => (prev.includes(brand) ? prev.filter((b) => b !== brand) : [...prev, brand]));
+    setPage(1);
   };
 
   const toggleCondition = (cond: string) => {
     setSelectedConditions((prev) => (prev.includes(cond) ? prev.filter((c) => c !== cond) : [...prev, cond]));
+    setPage(1);
   };
 
   const toggleCategory = (category: string) => {
     setSelectedCategories((prev) => (prev.includes(category) ? prev.filter((c) => c !== category) : [...prev, category]));
+    setPage(1);
   };
 
   const clearFilters = () => {
     setSelectedBrands([]);
     setSelectedConditions([]);
     setSelectedCategories(params?.slug ? [String(params.slug)] : []);
-    setPriceRange([0, priceMax || 3000]);
+    const mx = priceMax || 3000;
+    setPriceRange([0, mx]);
+    setAppliedPriceRange([0, mx]);
     setPage(1);
   };
 
@@ -136,32 +152,6 @@ export default function ProductsPage() {
 
   const filteredProducts = useMemo(() => {
     let filtered = [...products];
-
-    if (selectedCategories.length > 0) {
-      filtered = filtered.filter((p) => {
-        const c = p?.categorySlug || p?.category?.slug || p?.category || p?.category_id || p?.categoryId;
-        return c ? selectedCategories.includes(String(c)) : false;
-      });
-    }
-
-    if (selectedBrands.length > 0) {
-      filtered = filtered.filter((p) => {
-        const b = p?.brand || p?.manufacturer || p?.vendor;
-        return b ? selectedBrands.includes(String(b)) : false;
-      });
-    }
-
-    if (selectedConditions.length > 0) {
-      filtered = filtered.filter((p) => {
-        const c = p?.condition;
-        return c ? selectedConditions.includes(String(c).toUpperCase()) : false;
-      });
-    }
-
-    filtered = filtered.filter((p) => {
-      const price = toNumber(p?.priceNew ?? p?.price ?? p?.salePrice);
-      return price >= priceRange[0] && price <= priceRange[1];
-    });
 
     switch (sortBy) {
       case "price-asc":
@@ -192,15 +182,15 @@ export default function ProductsPage() {
         <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-muted-foreground">Brand</h3>
         <div className="space-y-3">
           {brands.slice(0, 6).map((b) => (
-            <div key={b} className="group flex items-center space-x-3 transition-all hover:translate-x-1">
+            <div key={b.slug} className="group flex items-center space-x-3 transition-all hover:translate-x-1">
               <Checkbox 
-                id={`brand-${b}`} 
-                checked={selectedBrands.includes(b)} 
-                onCheckedChange={() => toggleBrand(b)} 
+                id={`brand-${b.slug}`} 
+                checked={selectedBrands.includes(b.slug)} 
+                onCheckedChange={() => toggleBrand(b.slug)} 
                 className="transition-colors data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
               />
-              <Label htmlFor={`brand-${b}`} className="cursor-pointer text-sm font-medium transition-colors group-hover:text-blue-600">
-                {b}
+              <Label htmlFor={`brand-${b.slug}`} className="cursor-pointer text-sm font-medium transition-colors group-hover:text-blue-600">
+                {b.name}
               </Label>
             </div>
           ))}
@@ -236,7 +226,7 @@ export default function ProductsPage() {
         <div className="mb-4 flex items-center justify-between">
           <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Price</h3>
           <span className="text-xs font-semibold text-blue-600 bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded-full">
-            {priceRange[0].toLocaleString("vi-VN")}₫ - {priceRange[1].toLocaleString("vi-VN")}₫
+            {appliedPriceRange[0].toLocaleString("vi-VN")}₫ - {appliedPriceRange[1].toLocaleString("vi-VN")}₫
           </span>
         </div>
         <div className="px-2">
@@ -245,7 +235,11 @@ export default function ProductsPage() {
             max={priceMax || 3000}
             step={priceStep}
             value={priceRange}
-            onValueChange={setPriceRange}
+            onValueChange={(val) => setPriceRange(val)}
+            onValueCommit={(val) => {
+              setAppliedPriceRange(val);
+              setPage(1);
+            }}
             className="mt-6"
           />
         </div>

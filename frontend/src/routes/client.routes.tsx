@@ -25,6 +25,7 @@ import RequireClientAuth from "./client/_guards/RequireClientAuth";
 import UserOrdersPage from "../pages/client/user/orders/page";
 import OrderDetailPage from "../pages/client/user/orders/detail/page";
 import MyTradeInsPage from "../pages/client/user/tradeins/page";
+import MyRefundsPage from "../pages/client/user/refunds/page";
 
 export const clientRoutes: RouteObject[] = [
   {
@@ -57,7 +58,8 @@ export const clientRoutes: RouteObject[] = [
           { path: "user/info", element: <UserInfoPage /> },
           { path: "user/orders", element: <UserOrdersPage /> },
           { path: "user/orders/:id", element: <OrderDetailPage /> },
-          { path: "user/tradeins", element: <MyTradeInsPage /> }
+          { path: "user/tradeins", element: <MyTradeInsPage /> },
+          { path: "user/refunds", element: <MyRefundsPage /> }
         ]
       }
     ]

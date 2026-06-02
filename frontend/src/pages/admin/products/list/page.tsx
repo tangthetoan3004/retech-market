@@ -72,6 +72,7 @@ type Product = {
   category: string;
   category_id?: number | null;
   price: number;
+  original_price?: number;
   condition?: string;
   ram?: string;
   storage?: string;

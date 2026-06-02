@@ -161,7 +161,7 @@ export default function EditProductDialog({
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>
-          <div className="grid gap-4 py-4">
+          <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto px-1">
             <div>
               <Label>Name</Label>
               <Input

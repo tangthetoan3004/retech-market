@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { CheckCircle2, AlertCircle, TriangleAlert, Info, X } from "lucide-react";
 import { hideAlert } from "../../../features/ui/uiSlice";
@@ -104,6 +104,7 @@ export default function Alert() {
     }
 
     return clearAllTimers;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, message, timeout]);
 
   if (!visible || !message) return null;

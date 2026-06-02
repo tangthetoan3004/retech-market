@@ -6,7 +6,7 @@ export interface WishlistItem {
     brand: string;
     price: number;
     originalPrice?: number;
-    grade: "A" | "B" | "C";
+    condition?: string;
     image: string;
     warranty: string;
     batteryHealth?: number;
