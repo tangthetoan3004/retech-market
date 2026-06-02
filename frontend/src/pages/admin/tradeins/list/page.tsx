@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { motion } from "motion/react";
+import { confirmPayment } from "../../../../services/admin/payments/paymentService";
+import LoadingSpinner from "../../../../components/ui/LoadingSpinner";
 import {
   AlertCircle,
   ArrowRightLeft,
@@ -378,8 +380,7 @@ function TradeInDetailModal({
   if (!open || !item) return null;
 
   const images = item.images || [];
-  const localPaymentStr = null;
-  const localPayment = null;
+  const hasBankInfo = !!(item.bank_name && item.bank_account_number);
 
   const handleApprove = async () => {
     const price = Number(item.final_price || item.estimated_price) || 0;
@@ -411,6 +412,24 @@ function TradeInDetailModal({
       onClose();
     } catch (err: any) {
       toast.error(err?.message || "Từ chối trade-in thất bại");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handlePaymentConfirm = async () => {
+    if (!item.payment?.id) {
+      toast.error("Không tìm thấy thông tin thanh toán cho yêu cầu này!");
+      return;
+    }
+    try {
+      setSubmitting(true);
+      await confirmPayment(item.payment.id, { payment_method: "ZALOPAY" });
+      toast.success("Đã xác nhận chuyển khoản thành công!");
+      onApproved();
+      onClose();
+    } catch (err: any) {
+      toast.error(err?.message || "Xác nhận chuyển khoản thất bại");
     } finally {
       setSubmitting(false);
     }
@@ -682,23 +701,18 @@ function TradeInDetailModal({
                   </div>
                 ) : item.status === 'APPROVED' ? (
                   <div className="space-y-4">
-                    {!localPayment && (
+                    {!hasBankInfo && (
                       <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-3 text-sm text-amber-700">
                         Khách chưa nhập thông tin tài khoản ngân hàng. Hãy nhắc khách cập nhật nhé!
                       </div>
                     )}
                     <Button
                       className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
-                      disabled={!localPayment}
-                      onClick={() => {
-                        localStorage.setItem('tradein_payment_paid_' + item.id, 'true');
-                        toast.success("Đã xác nhận chuyển khoản thành công!");
-                        onApproved();
-                        onClose();
-                      }}
+                      disabled={!hasBankInfo || submitting}
+                      onClick={handlePaymentConfirm}
                     >
                       <CheckCircle2 className="mr-2 h-4 w-4" />
-                      Xác nhận đã chuyển tiền cho khách
+                      {submitting ? "Đang xử lý..." : "Xác nhận đã chuyển tiền cho khách"}
                     </Button>
                   </div>
                 ) : (
@@ -854,9 +868,9 @@ export default function AdminTradeInsPage() {
   if (loading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="text-center">
-          <ArrowRightLeft className="mx-auto h-10 w-10 animate-pulse text-muted-foreground" />
-          <p className="mt-3 text-muted-foreground">Đang tải danh sách định giá...</p>
+        <div className="flex flex-col items-center justify-center gap-4 text-center">
+          <LoadingSpinner />
+          <p className="mt-3 text-muted-foreground animate-pulse font-medium">Đang tải danh sách định giá...</p>
         </div>
       </div>
     );

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "motion/react";
+import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 import {
   TrendingUp,
   ShoppingBag,
@@ -123,8 +124,11 @@ export default function DashboardPage() {
         </div>
 
         {loading ? (
-          <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <div className="flex min-h-[60vh] items-center justify-center">
+            <div className="flex flex-col items-center justify-center gap-4 text-center">
+              <LoadingSpinner />
+              <p className="text-muted-foreground animate-pulse font-medium">Đang tải...</p>
+            </div>
           </div>
         ) : (
           <>

@@ -8,6 +8,7 @@ import { Input } from "../../../../components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../../components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../../components/ui/table";
 import { StatusPill } from "../../../../components/retech/StatusPill";
+import LoadingSpinner from "../../../../components/ui/LoadingSpinner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../../../../components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../../components/ui/select";
 import { Label } from "../../../../components/ui/label";
@@ -309,8 +310,11 @@ export default function AdminOrdersListPage() {
               <TableBody>
                 {loading ? (
                   <TableRow className="border-border">
-                    <TableCell colSpan={7} className="py-20 text-center text-muted-foreground">
-                      Đang tải...
+                    <TableCell colSpan={7} className="py-20 text-center">
+                      <div className="flex flex-col items-center justify-center gap-4">
+                        <LoadingSpinner />
+                        <p className="text-muted-foreground animate-pulse font-medium">Đang tải...</p>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ) : filteredOrders.length === 0 ? (

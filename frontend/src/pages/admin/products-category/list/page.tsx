@@ -35,6 +35,7 @@ import {
   deleteCategory,
   getCategories,
 } from "../../../../services/admin/products-category/productCategoryService";
+import LoadingSpinner from "../../../../components/ui/LoadingSpinner";
 
 type Category = {
   id: number;
@@ -129,8 +130,11 @@ export default function ProductCategoryListPage() {
               <TableBody>
                 {loading ? (
                   <TableRow className="border-border">
-                    <TableCell colSpan={3} className="text-muted-foreground py-10 text-center">
-                      Loading...
+                    <TableCell colSpan={3} className="py-20 text-center">
+                      <div className="flex flex-col items-center justify-center gap-4">
+                        <LoadingSpinner />
+                        <p className="text-muted-foreground animate-pulse font-medium">Đang tải danh mục...</p>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ) : filtered.length === 0 ? (

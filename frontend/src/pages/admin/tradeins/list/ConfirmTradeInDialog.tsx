@@ -63,7 +63,7 @@ export default function ConfirmTradeInDialog({
           {isApprove ? (
             <>
               <div className="space-y-2">
-                <label htmlFor="finalPrice" className="text-sm font-medium">Final Price ($)</label>
+                <label htmlFor="finalPrice" className="text-sm font-medium">Final Price (đ)</label>
                 <Input
                   id="finalPrice"
                   type="number"

@@ -4,6 +4,7 @@ import { showAlert } from "../../../../features/ui/uiSlice";
 import { getRolesPermissions, updateRolesPermissions } from "../../../../services/admin/roles/rolesService";
 import PermissionsMatrix from "../../../../features/admin/roles/components/PermissionsMatrix";
 import { permissionsCatalog } from "../../../../features/admin/roles/permissionsCatalog";
+import LoadingSpinner from "../../../../components/ui/LoadingSpinner";
 
 export default function RolesPermissionsPage() {
   const dispatch = useDispatch();
@@ -53,7 +54,14 @@ export default function RolesPermissionsPage() {
     }
   };
 
-  if (loading) return <div>Đang tải...</div>;
+  if (loading) return (
+    <div className="flex min-h-[60vh] items-center justify-center">
+      <div className="flex flex-col items-center justify-center gap-4 text-center">
+        <LoadingSpinner />
+        <p className="text-muted-foreground animate-pulse font-medium">Đang tải...</p>
+      </div>
+    </div>
+  );
   if (!matrix) return null;
 
   return (

@@ -27,6 +27,7 @@ import {
     getMyTradeIns,
     type TradeInDetail,
 } from "../../../../services/client/tradeins/tradeinsService";
+import LoadingSpinner from "../../../../components/ui/LoadingSpinner";
 
 const translateScreenStatus = (st?: string) => {
     switch(st) {
@@ -462,9 +463,9 @@ export default function MyTradeInsPage() {
     if (loading) {
         return (
             <div className="min-h-[60vh] flex items-center justify-center">
-                <div className="text-center">
-                    <ArrowRightLeft className="mx-auto h-10 w-10 text-muted-foreground animate-pulse" />
-                    <p className="mt-3 text-muted-foreground">Đang tải danh sách đơn...</p>
+                <div className="flex flex-col items-center justify-center gap-4 text-center">
+                    <LoadingSpinner />
+                    <p className="text-muted-foreground animate-pulse font-medium">Đang tải danh sách đơn...</p>
                 </div>
             </div>
         );

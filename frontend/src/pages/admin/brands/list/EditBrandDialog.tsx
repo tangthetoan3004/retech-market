@@ -52,7 +52,7 @@ export default function EditBrandDialog({
 
     const previewUrl = useMemo(() => {
         if (formData.logo) return URL.createObjectURL(formData.logo);
-        return brand?.logo || brand?.image || "";
+        return brand?.logo || brand?.logo_svg || brand?.image || "";
     }, [formData.logo, brand]);
 
     const handleSubmit = async (e: React.FormEvent) => {

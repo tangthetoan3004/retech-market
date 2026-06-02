@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { showAlert } from "../../../../features/ui/uiSlice";
 import { getRoles } from "../../../../services/admin/roles/rolesService";
 import { RootState } from "../../../../app/store";
+import LoadingSpinner from "../../../../components/ui/LoadingSpinner";
 
 function has(perms: string[], key: string) {
   return Array.isArray(perms) && perms.includes(key);
@@ -55,8 +56,11 @@ export default function RolesListPage() {
           <tbody>
             {loading ? (
               <tr>
-                <td className="p-3" colSpan={3}>
-                  Đang tải...
+                <td className="py-20 text-center" colSpan={3}>
+                  <div className="flex flex-col items-center justify-center gap-4">
+                    <LoadingSpinner />
+                    <p className="text-muted-foreground animate-pulse font-medium">Đang tải...</p>
+                  </div>
                 </td>
               </tr>
             ) : roles.length === 0 ? (

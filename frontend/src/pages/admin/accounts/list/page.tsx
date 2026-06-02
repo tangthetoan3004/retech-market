@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { showAlert } from "../../../../features/ui/uiSlice";
 import { getAccounts, toggleAccountActive } from "../../../../services/admin/accounts/accountsService";
+import LoadingSpinner from "../../../../components/ui/LoadingSpinner";
 
 function has(perms: any, key: string) {
   return Array.isArray(perms) && perms.includes(key);
@@ -90,8 +91,11 @@ export default function AccountsListPage() {
             <tbody>
               {loading ? (
                 <tr className="border-b border-border/60">
-                  <td className="p-4 text-muted-foreground" colSpan={4}>
-                    Đang tải...
+                  <td className="py-20 text-center" colSpan={4}>
+                    <div className="flex flex-col items-center justify-center gap-4">
+                      <LoadingSpinner />
+                      <p className="text-muted-foreground animate-pulse font-medium">Đang tải...</p>
+                    </div>
                   </td>
                 </tr>
               ) : accounts.length === 0 ? (

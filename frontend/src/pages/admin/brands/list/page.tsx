@@ -11,6 +11,7 @@ import {
     TableHeader,
     TableRow,
 } from "../../../../components/ui/table";
+import LoadingSpinner from "../../../../components/ui/LoadingSpinner";
 import React from "react";
 
 import CreateBrandDialog from "./CreateBrandDialog";
@@ -47,6 +48,7 @@ type Brand = {
     name: string;
     description: string;
     logo?: string;
+    logo_svg?: string;
     image?: string;
 };
 
@@ -185,8 +187,11 @@ export default function AdminBrandsListPage() {
                             <TableBody>
                                 {loading ? (
                                     <TableRow className="border-border">
-                                        <TableCell colSpan={3} className="text-muted-foreground py-10 text-center">
-                                            Đang tải...
+                                        <TableCell colSpan={3} className="py-20 text-center">
+                                            <div className="flex flex-col items-center justify-center gap-4">
+                                                <LoadingSpinner />
+                                                <p className="text-muted-foreground animate-pulse font-medium">Đang tải thương hiệu...</p>
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 ) : filteredBrands.length === 0 ? (
@@ -200,9 +205,9 @@ export default function AdminBrandsListPage() {
                                         <TableRow key={brand.id} className="border-border">
                                             <TableCell>
                                                 <div className="flex items-center gap-3">
-                                                    {brand.logo || brand.image ? (
+                                                    {brand.logo || brand.logo_svg || brand.image ? (
                                                         <img
-                                                            src={brand.logo || brand.image}
+                                                            src={brand.logo || brand.logo_svg || brand.image}
                                                             alt={brand.name}
                                                             className="w-12 h-12 rounded-lg object-cover border border-border"
                                                         />

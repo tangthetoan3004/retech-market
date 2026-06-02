@@ -215,7 +215,7 @@ export default function CheckoutPage() {
                             </p>
                           </div>
                           <div className="font-semibold text-sm">
-                            ${price.toLocaleString()}
+                            {price.toLocaleString()}đ
                           </div>
                         </div>
                       </div>
@@ -226,7 +226,7 @@ export default function CheckoutPage() {
                 <div className="mt-6 pt-6 border-t border-border space-y-4">
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-muted-foreground">Tạm tính</span>
-                    <span className="font-medium">${subtotal.toLocaleString()}</span>
+                    <span className="font-medium">{subtotal.toLocaleString()}đ</span>
                   </div>
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-muted-foreground">Phí vận chuyển</span>
@@ -236,7 +236,7 @@ export default function CheckoutPage() {
                   <div className="flex justify-between items-end pt-4 border-t border-border">
                     <span className="font-semibold text-base">Tổng cộng</span>
                     <div className="text-right">
-                      <span className="text-2xl font-bold text-blue-600">${total.toLocaleString()}</span>
+                      <span className="text-2xl font-bold text-blue-600">{total.toLocaleString()}đ</span>
                     </div>
                   </div>
                 </div>
@@ -248,7 +248,7 @@ export default function CheckoutPage() {
                     className="w-full h-12 text-base font-semibold bg-blue-600 hover:bg-blue-700 text-white"
                     disabled={loading}
                   >
-                    {loading ? "Đang xử lý..." : `Xác nhận đặt hàng - $${total.toLocaleString()}`}
+                    {loading ? "Đang xử lý..." : `Xác nhận đặt hàng - ${total.toLocaleString()}đ`}
                   </Button>
                   <p className="text-xs text-center text-muted-foreground mt-4 flex items-center justify-center">
                     <Shield className="h-3.5 w-3.5 mr-1" />
