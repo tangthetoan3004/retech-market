@@ -1,4 +1,4 @@
-import { get, patch, post } from "../../../utils/request";
+import { get, patch, post, del } from "../../../utils/request";
 
 export const getMyInfo = async () => {
   const result = await get("/api/users/profile/");
@@ -32,5 +32,20 @@ export const resendOtp = async (options: any) => {
 
 export const changePassword = async (options: { old_password: string; new_password: string; confirm_password: string }) => {
   const result = await patch("/api/users/change-password/", options);
+  return result;
+};
+
+export const getBankAccounts = async () => {
+  const result = await get("/api/users/bank-accounts/");
+  return result;
+};
+
+export const createBankAccount = async (payload: any) => {
+  const result = await post("/api/users/bank-accounts/", payload);
+  return result;
+};
+
+export const deleteBankAccount = async (id: string | number) => {
+  const result = await del(`/api/users/bank-accounts/${id}/`);
   return result;
 };
