@@ -211,6 +211,7 @@ function TradeInItemCard({
 }) {
     const [expanded, setExpanded] = useState(false);
     const [cancelling, setCancelling] = useState(false);
+    const [imgError, setImgError] = useState(false);
 
     const handleCancel = async () => {
         if (!window.confirm("Bạn có chắc chắn muốn hủy đơn thu cũ này?")) return;
@@ -236,8 +237,13 @@ function TradeInItemCard({
                 <div className="flex flex-col md:flex-row gap-6">
                     {/* Left: Image */}
                     <div className="shrink-0 w-24 h-24 rounded-xl border bg-white flex items-center justify-center overflow-hidden p-2">
-                        {item.config_image_url ? (
-                            <img src={item.config_image_url} alt={item.model_name} className="w-full h-full object-contain" />
+                        {item.image_url && !imgError ? (
+                            <img 
+                                src={item.image_url} 
+                                alt={item.model_name} 
+                                className="w-full h-full object-contain" 
+                                onError={() => setImgError(true)}
+                            />
                         ) : (
                             <Smartphone className="h-10 w-10 text-muted-foreground" />
                         )}
@@ -268,11 +274,13 @@ function TradeInItemCard({
 
                     {/* Right: Actions */}
                     <div className="shrink-0 w-full md:w-56 flex flex-col gap-3 justify-start">
+                        {/* TẠM ẨN: Nút Tải mã vận đơn đang chưa có chức năng backend
                         {item.status === 'PENDING' && (
                             <Button className="w-full bg-[#0f172a] hover:bg-black text-white shadow-sm">
                                 Tải mã vận đơn
                             </Button>
                         )}
+                        */}
                         <Button 
                             variant="outline" 
                             className="w-full shadow-sm"

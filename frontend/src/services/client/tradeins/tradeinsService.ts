@@ -56,7 +56,7 @@ export type TradeInDetail = {
 
     images?: TradeInImage[];
     payment?: TradeInPayment | null;
-    config_image_url?: string;
+    image_url?: string;
 
     created_at: string;
     updated_at: string;
