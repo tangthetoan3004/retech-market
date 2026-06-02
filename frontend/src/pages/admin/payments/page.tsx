@@ -7,6 +7,7 @@ import { Button } from "../../../components/ui/button";
 import { Input } from "../../../components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../components/ui/table";
 import { StatusPill } from "../../../components/retech/StatusPill";
+import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../../../components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui/select";
 import { Label } from "../../../components/ui/label";
@@ -193,10 +194,19 @@ export default function AdminPaymentsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredRows.length === 0 ? (
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="py-20 text-center">
+                    <div className="flex flex-col items-center justify-center gap-4">
+                      <LoadingSpinner />
+                      <p className="text-muted-foreground animate-pulse font-medium">Đang tải...</p>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : filteredRows.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={8} className="h-24 text-center">
-                    {loading ? "Đang tải..." : "Không tìm thấy giao dịch nào."}
+                    Không tìm thấy giao dịch nào.
                   </TableCell>
                 </TableRow>
               ) : (

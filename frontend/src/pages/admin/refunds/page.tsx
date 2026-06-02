@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui
 import { Check, X, RefreshCw, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../components/ui/table";
+import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 import {
   Pagination,
   PaginationContent,
@@ -92,8 +93,11 @@ export default function AdminRefundsPage() {
                         <TableBody>
                             {loading ? (
                                 <TableRow>
-                                    <TableCell colSpan={6} className="text-center py-12">
-                                        <RefreshCw className="w-6 h-6 animate-spin mx-auto text-muted-foreground" />
+                                    <TableCell colSpan={6} className="py-20 text-center">
+                                        <div className="flex flex-col items-center justify-center gap-4">
+                                            <LoadingSpinner />
+                                            <p className="text-muted-foreground animate-pulse font-medium">Đang tải...</p>
+                                        </div>
                                     </TableCell>
                                 </TableRow>
                             ) : refunds.length === 0 ? (
