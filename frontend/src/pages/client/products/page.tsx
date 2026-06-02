@@ -90,10 +90,14 @@ export default function ProductsPage() {
         }, 0);
 
         const newMax = maxPrice > 0 ? maxPrice : 3000;
-        setPriceMax(newMax);
-        if (priceRange[1] === 3000 && newMax !== 3000) {
-          setPriceRange([0, newMax]);
-          setAppliedPriceRange([0, newMax]);
+        // Chỉ cập nhật giới hạn tối đa của thanh trượt khi KHÔNG lọc theo giá max (nghĩa là đang lấy full)
+        // Điều này giúp Slider không bị "teo lại" sau khi kéo thả.
+        if (payload.max_price === undefined) {
+          setPriceMax(newMax);
+          if (priceRange[1] === 3000 && newMax !== 3000) {
+            setPriceRange([0, newMax]);
+            setAppliedPriceRange([0, newMax]);
+          }
         }
       } catch (e: any) {
         dispatch(showAlert({ type: "error", message: e?.message || "Không tải được sản phẩm", timeout: 1000 }));
@@ -174,7 +178,7 @@ export default function ProductsPage() {
     }
 
     return filtered;
-  }, [products, selectedCategories, selectedBrands, selectedConditions, priceRange, sortBy]);
+  }, [products, sortBy]); // Đã xóa các biến thừa để tránh giật lag khi kéo slider
 
   const filterContentNode = (
     <div className="space-y-8">
@@ -226,7 +230,7 @@ export default function ProductsPage() {
         <div className="mb-4 flex items-center justify-between">
           <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Price</h3>
           <span className="text-xs font-semibold text-blue-600 bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded-full">
-            {appliedPriceRange[0].toLocaleString("vi-VN")}₫ - {appliedPriceRange[1].toLocaleString("vi-VN")}₫
+            {priceRange[0].toLocaleString("vi-VN")}₫ - {priceRange[1].toLocaleString("vi-VN")}₫
           </span>
         </div>
         <div className="px-2">
