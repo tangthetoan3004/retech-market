@@ -5,6 +5,7 @@ import Footer from "./components/Footer";
 import { getProductCategoriesTree } from "../../services/client/products-category/productsCategoryService";
 import { showAlert } from "../../features/ui/uiSlice";
 import { useDispatch } from "react-redux";
+import ChatbotWidget from "../../components/retech/ChatbotWidget";
 
 export default function ClientLayout() {
   const dispatch = useDispatch();
@@ -38,6 +39,7 @@ export default function ClientLayout() {
         <Outlet />
       </main>
       {!hideFooter && <Footer settingGeneral={settingGeneral} />}
+      <ChatbotWidget />
     </div>
   );
 }

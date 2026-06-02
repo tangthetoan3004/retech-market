@@ -16,3 +16,7 @@ export const getOrderDetails = (id: string) => {
 export const cancelOrder = (id: string) => {
     return post(`/api/orders/orders/${id}/cancel/`);
 };
+
+export const createRefund = (orderId: string | number, reason: string) => {
+    return post(`/api/orders/refunds/`, { order_id: orderId, reason_refund: reason });
+};
