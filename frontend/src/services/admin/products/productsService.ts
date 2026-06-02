@@ -137,13 +137,13 @@ export const getProductDetail = async (id: number | string) => {
 };
 
 export const getCategories = async () => {
-  const res: any = await get("/api/products/categories/");
+  const res: any = await get("/api/products/categories/", { params: { page_size: 100 } });
   const list = unwrap(res);
   return Array.isArray(list) ? list : [];
 };
 
 export const getBrands = async () => {
-  const res: any = await get("/api/products/brands/");
+  const res: any = await get("/api/products/brands/", { params: { page_size: 100 } });
   const list = unwrap(res);
   return Array.isArray(list) ? list : [];
 };
