@@ -77,6 +77,7 @@ type TradeInItem = {
   reject_reason?: string | null;
 
   images?: TradeInImage[];
+  payment?: TradeInPayment | null;
   bank_name?: string;
   bank_account_name?: string;
   bank_account_number?: string;

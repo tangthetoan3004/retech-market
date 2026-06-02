@@ -79,7 +79,7 @@ export function WishlistPage() {
 
                                 {/* Grade Badge */}
                                 <div className="absolute top-3 left-3 z-10">
-                                    <GradeBadge grade={product.grade} showTooltip={false} />
+                                    <GradeBadge condition={product.condition || "GOOD"} showTooltip={false} />
                                 </div>
                             </div>
 

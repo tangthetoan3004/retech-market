@@ -40,6 +40,7 @@ export default function UserOrdersPage() {
 
     useEffect(() => {
         fetchOrders();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [page]);
 
     const handleCancel = async (id: string) => {

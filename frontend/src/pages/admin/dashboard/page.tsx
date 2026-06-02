@@ -215,7 +215,7 @@ export default function DashboardPage() {
                         innerRadius={60}
                         dataKey="count"
                         nameKey="status"
-                        label={({ status, percent }) => `${status} ${(percent * 100).toFixed(0)}%`}
+                        label={({ name, percent }: any) => `${name} ${(percent * 100).toFixed(0)}%`}
                       >
                         {(data?.distributions?.orders || []).map((entry: any, index: number) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />

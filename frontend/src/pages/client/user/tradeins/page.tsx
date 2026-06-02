@@ -54,12 +54,7 @@ function money(value: any) {
     return `${n.toLocaleString("vi-VN")}đ`;
 }
 
-function dateTime(value?: string | null) {
-    if (!value) return "—";
-    const d = new Date(value);
-    if (Number.isNaN(d.getTime())) return value;
-    return d.toLocaleString("vi-VN");
-}
+
 
 function statusText(status?: string) {
     const s = String(status || "").toUpperCase();
@@ -225,11 +220,6 @@ function TradeInItemCard({
     };
 
     const images = item.images || [];
-    const completed = String(item.status).toUpperCase() === "COMPLETED";
-    const rejected = String(item.status).toUpperCase() === "REJECTED";
-    const cancelled = String(item.status).toUpperCase() === "CANCELLED";
-
-    const imageUrl = images[0]?.image || null;
 
     return (
         <div className="rounded-xl border bg-card mb-6 shadow-sm overflow-hidden transition-all hover:shadow-md">
