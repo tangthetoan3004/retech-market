@@ -81,7 +81,7 @@ type TradeInItem = {
   bank_account_name?: string;
   bank_account_number?: string;
 
-  config_image_url?: string | null;
+  image_url?: string | null;
 
   created_at?: string;
   updated_at?: string;
@@ -507,11 +507,13 @@ function TradeInDetailModal({
   const [staffNote, setStaffNote] = useState("");
   const [rejectReason, setRejectReason] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
   useEffect(() => {
     if (!item || !open) return;
     setStaffNote(item.staff_note || "");
     setRejectReason(item.reject_reason || "");
+    setImgError(false);
   }, [item, open]);
 
   if (!open || !item) return null;
@@ -602,9 +604,14 @@ function TradeInDetailModal({
               <div className="rounded-2xl border bg-card p-5">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div className="flex gap-4">
-                    {item.config_image_url ? (
+                    {item.image_url && !imgError ? (
                       <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border bg-white p-1">
-                        <img src={item.config_image_url} alt={deviceName(item)} className="h-full w-full object-contain" />
+                        <img 
+                          src={item.image_url} 
+                          alt={deviceName(item)} 
+                          className="h-full w-full object-contain" 
+                          onError={() => setImgError(true)}
+                        />
                       </div>
                     ) : (
                       <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary/10">
@@ -1147,9 +1154,24 @@ export default function AdminTradeInsPage() {
 
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-3">
-                          {item.config_image_url ? (
+                          {item.image_url ? (
                             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border bg-white p-0.5">
-                              <img src={item.config_image_url} alt={deviceName(item)} className="h-full w-full object-contain" />
+                              <img 
+                                src={item.image_url} 
+                                alt={deviceName(item)} 
+                                className="h-full w-full object-contain" 
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none';
+                                  const next = e.currentTarget.nextElementSibling;
+                                  if (next) next.classList.remove('hidden');
+                                  const parent = e.currentTarget.parentElement;
+                                  if (parent) {
+                                    parent.classList.add('bg-primary/10');
+                                    parent.classList.remove('bg-white', 'border', 'p-0.5');
+                                  }
+                                }}
+                              />
+                              <Smartphone className="h-5 w-5 text-primary hidden" />
                             </div>
                           ) : (
                             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
