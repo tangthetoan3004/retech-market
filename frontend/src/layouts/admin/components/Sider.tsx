@@ -50,7 +50,7 @@ export default function Sider() {
     { to: "/admin/brands", label: "Thương hiệu", icon: Star },
     { to: "/admin/orders", label: "Đơn hàng", icon: ShoppingBag },
     { to: "/admin/refunds", label: "Hoàn tiền", icon: RefreshCw },
-    { to: "/admin/tradeins", label: "Thu cũ đổi mới", icon: RefreshCw },
+    { to: "/admin/tradeins", label: "Tradeins", icon: RefreshCw },
     { to: "/admin/payments", label: "Thanh toán", icon: CreditCard },
     { to: "/admin/accounts", label: "Tài khoản", icon: Users },
     { to: "/admin/my-account", label: "Tài khoản của tôi", icon: UserCircle }
