@@ -96,149 +96,7 @@ type StatusFilter =
   | "CANCELLED"
   | "COMPLETED";
 
-const MOCK_TRADE_INS: TradeInItem[] = [
-  {
-    id: 1024,
-    user: {
-      id: 1,
-      full_name: "Nguyễn Văn An",
-      email: "an.nguyen@example.com",
-    },
-    tradein_type: "SELL",
-    status: "PENDING",
-    brand: { id: 1, name: "Apple" },
-    category: { id: 1, name: "Điện thoại" },
-    model_name: "iPhone 13 Pro Max",
-    storage: "256GB",
-    is_power_on: true,
-    screen_ok: true,
-    body_ok: false,
-    description: "Máy dùng bình thường, cạnh trái hơi trầy, chưa sửa chữa.",
-    estimated_price: 8500000,
-    final_price: "",
-    staff_note: "",
-    reject_reason: null,
-    images: [
-      {
-        id: 1,
-        image:
-          "https://images.unsplash.com/photo-1591337676887-a217a6970a8a?w=800",
-      },
-      {
-        id: 2,
-        image:
-          "https://images.unsplash.com/photo-1603891128711-11b4b03bb138?w=800",
-      },
-    ],
-    payment: null,
-    created_at: "2026-05-27T14:30:00Z",
-    updated_at: "2026-05-27T14:30:00Z",
-  },
-  {
-    id: 1025,
-    user: {
-      id: 2,
-      full_name: "Trần Minh Khoa",
-      email: "khoa.tran@example.com",
-    },
-    tradein_type: "SELL",
-    status: "APPROVED",
-    brand: { id: 1, name: "Apple" },
-    category: { id: 1, name: "Điện thoại" },
-    model_name: "iPhone 12",
-    storage: "128GB",
-    is_power_on: true,
-    screen_ok: true,
-    body_ok: true,
-    description: "Máy đẹp, pin còn tốt, muốn bán lại thiết bị.",
-    estimated_price: 6200000,
-    final_price: 5900000,
-    staff_note: "Máy còn đẹp, pin tốt. Giá thu mua xác nhận là 5.900.000đ.",
-    reject_reason: null,
-    images: [
-      {
-        id: 3,
-        image:
-          "https://images.unsplash.com/photo-1605236453806-6ff36851218e?w=800",
-      },
-    ],
-    payment: null,
-    expires_at: "2026-05-30T23:59:00Z",
-    created_at: "2026-05-26T09:15:00Z",
-    updated_at: "2026-05-27T10:00:00Z",
-  },
-  {
-    id: 1026,
-    user: {
-      id: 3,
-      full_name: "Lê Phương Mai",
-      email: "mai.le@example.com",
-    },
-    tradein_type: "SELL",
-    status: "REJECTED",
-    brand: { id: 2, name: "Samsung" },
-    category: { id: 1, name: "Điện thoại" },
-    model_name: "Samsung Galaxy S21 Ultra",
-    storage: "256GB",
-    is_power_on: false,
-    screen_ok: false,
-    body_ok: false,
-    description: "Máy rơi nước, hiện không lên nguồn.",
-    estimated_price: 2800000,
-    final_price: "",
-    staff_note: "",
-    reject_reason:
-      "Thiết bị không lên nguồn và màn hình hư nặng nên chưa đủ điều kiện thu mua.",
-    images: [
-      {
-        id: 4,
-        image:
-          "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=800",
-      },
-    ],
-    payment: null,
-    created_at: "2026-05-25T16:45:00Z",
-    updated_at: "2026-05-26T11:20:00Z",
-  },
-  {
-    id: 1027,
-    user: {
-      id: 4,
-      full_name: "Phạm Quốc Huy",
-      email: "huy.pham@example.com",
-    },
-    tradein_type: "SELL",
-    status: "COMPLETED",
-    brand: { id: 1, name: "Apple" },
-    category: { id: 2, name: "Laptop" },
-    model_name: "MacBook Air M1",
-    storage: "8GB / 256GB",
-    is_power_on: true,
-    screen_ok: true,
-    body_ok: true,
-    description: "Máy còn đẹp, sạc bình thường, ít trầy.",
-    estimated_price: 10500000,
-    final_price: 10200000,
-    staff_note: "Đã kiểm tra trực tiếp, máy hoạt động tốt.",
-    reject_reason: null,
-    images: [
-      {
-        id: 5,
-        image:
-          "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800",
-      },
-    ],
-    payment: {
-      id: 501,
-      status: "PAID",
-      amount: 10200000,
-      direction: "OUTBOUND",
-      payment_method: "BANK_TRANSFER",
-    },
-    created_at: "2026-05-23T08:10:00Z",
-    updated_at: "2026-05-24T15:30:00Z",
-  },
-];
+
 
 function normalizeList(res: any): TradeInItem[] {
   const raw =
@@ -520,26 +378,16 @@ function TradeInDetailModal({
   if (!open || !item) return null;
 
   const images = item.images || [];
-  const localPaymentStr = localStorage.getItem('tradein_payment_' + item.id);
-  const localPayment = localPaymentStr ? JSON.parse(localPaymentStr) : null;
+  const localPaymentStr = null;
+  const localPayment = null;
 
   const handleApprove = async () => {
-    const isMock = item.id >= 1000;
-    const price = Number(item.estimated_price) || 0;
+    const price = Number(item.final_price || item.estimated_price) || 0;
 
     try {
       setSubmitting(true);
-
-      if (!isMock) {
-        await approveTradeIn(item.id, price, staffNote);
-      }
-
-      toast.success(
-        isMock
-          ? "Đã nhận máy (mẫu)"
-          : "Đã cập nhật trạng thái nhận máy thành công"
-      );
-
+      await approveTradeIn(item.id, price, staffNote);
+      toast.success("Đã xác nhận nhận máy thành công");
       onApproved();
       onClose();
     } catch (err: any) {
@@ -555,21 +403,10 @@ function TradeInDetailModal({
       return;
     }
 
-    const isMock = item.id >= 1000;
-
     try {
       setSubmitting(true);
-
-      if (!isMock) {
-        await rejectTradeIn(item.id, rejectReason.trim());
-      }
-
-      toast.success(
-        isMock
-          ? "Đã từ chối mẫu giao diện"
-          : "Đã từ chối yêu cầu định giá"
-      );
-
+      await rejectTradeIn(item.id, rejectReason.trim());
+      toast.success("Đã từ chối yêu cầu định giá");
       onRejected();
       onClose();
     } catch (err: any) {
@@ -789,24 +626,22 @@ function TradeInDetailModal({
                 </div>
               </div>
 
-              {(item.bank_name || item.payment || localPayment) && (
+              {item.bank_name && (
                 <div className="rounded-2xl border bg-card p-5">
                   <h3 className="mb-4 font-semibold">Thông tin nhận tiền của khách</h3>
 
                   <div className="grid gap-3 text-sm">
                     <div>
                       <p className="text-muted-foreground">Ngân hàng</p>
-                      <p className="font-medium">{item.bank_name || (localPayment ? localPayment.bank : "Chuyển khoản")}</p>
+                      <p className="font-medium">{item.bank_name}</p>
                     </div>
 
                     <div>
                       <p className="text-muted-foreground">Tài khoản thụ hưởng</p>
                       <p className="font-medium">
-                        {item.bank_account_number 
+                        {item.bank_account_number
                           ? `${item.bank_account_number} - ${item.bank_account_name || ""}`
-                          : localPayment 
-                            ? `${localPayment.accountNumber} - ${localPayment.accountName}` 
-                            : "—"
+                          : "—"
                         }
                       </p>
                     </div>
@@ -936,23 +771,10 @@ export default function AdminTradeInsPage() {
       }
 
       const data = await getTradeIns();
-      const mapped = data.map(i => {
-         if (localStorage.getItem('tradein_payment_paid_' + i.id) === 'true') {
-             return { ...i, status: 'COMPLETED' as any };
-         }
-         return i;
-      });
-
-      // Ưu tiên dữ liệu API thật.
-      // Nếu API chưa có dữ liệu thì dùng mẫu để xem giao diện trước.
-      setItems(mapped.length > 0 ? mapped : MOCK_TRADE_INS);
+      setItems(data);
     } catch (err: any) {
-      console.warn("Trade-in API error, using mock data:", err);
-
-      // API lỗi thì vẫn hiện mẫu, không làm vỡ giao diện.
-      setItems(MOCK_TRADE_INS);
-
-      toast.warning("Đang dùng dữ liệu mẫu trade-in vì chưa tải được API thật");
+      console.error("Trade-in API error:", err);
+      toast.error("Không thể tải danh sách trade-in");
     } finally {
       setLoading(false);
       setRefreshing(false);
