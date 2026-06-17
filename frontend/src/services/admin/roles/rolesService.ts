@@ -1,36 +1,66 @@
-import { get, patch, post } from "../../../utils/request";
+import { del, get, patch, post } from "../../../utils/request";
 
-export const getRoles = async () => {
-  const result = await get("admin/roles");
-  return result;
+// ─── Normalize ────────────────────────────────────────────────────────────────
+// Backend MongoDB Role model: { title, description, permissions, deleted, ... }
+
+function normalizeRole(r: any) {
+  if (!r) return r;
+  return {
+    ...r,
+    id: r._id || r.id,
+    name: r.title || r.name || "",
+    title: r.title || r.name || "",
+    description: r.description ?? "",
+    permissions: Array.isArray(r.permissions) ? r.permissions : [],
+  };
+}
+
+// ─── Danh sách nhóm quyền ─────────────────────────────────────────────────────
+// Backend: GET /admin/roles → { records }
+
+export const getRoles = async (params?: any) => {
+  const res: any = await get("/admin/roles", { params });
+  const rawList = res?.records || res?.items || res || [];
+  const items = Array.isArray(rawList) ? rawList.map(normalizeRole) : [];
+  return { items };
 };
 
-export const getCreateRole = async () => {
-  const result = await get("admin/roles/create");
-  return result;
+// ─── Chi tiết nhóm quyền (để sửa) ─────────────────────────────────────────────
+// Backend: GET /admin/roles/edit/:id → { record }
+
+export const getRoleDetail = async (id: number | string) => {
+  const res: any = await get(`/admin/roles/edit/${id}`);
+  const item = res?.record || res;
+  return normalizeRole(item);
 };
 
-export const createRole = async (payload) => {
-  const result = await post("admin/roles/create", payload);
-  return result;
+// ─── Tạo mới nhóm quyền ───────────────────────────────────────────────────────
+// Backend: POST /admin/roles/create
+
+export const createRole = async (payload: any) => {
+  return await post("/admin/roles/create", payload);
 };
 
-export const getEditRole = async (id) => {
-  const result = await get(`admin/roles/edit/${id}`);
-  return result;
+// ─── Cập nhật nhóm quyền ──────────────────────────────────────────────────────
+// Backend: PATCH /admin/roles/edit/:id
+
+export const updateRole = async (id: number | string, payload: any) => {
+  return await patch(`/admin/roles/edit/${id}`, payload);
 };
 
-export const updateRole = async (id, payload) => {
-  const result = await patch(`admin/roles/edit/${id}`, payload);
-  return result;
+// ─── Xóa nhóm quyền ───────────────────────────────────────────────────────────
+// Backend: DELETE /admin/roles/delete/:id
+
+export const deleteRole = async (id: number | string) => {
+  return await del(`/admin/roles/delete/${id}`);
 };
 
-export const getRolesPermissions = async () => {
-  const result = await get("admin/roles/permissions");
-  return result;
-};
+// ─── Cập nhật phân quyền ──────────────────────────────────────────────────────
+// Backend: PATCH /admin/roles/permissions
+// Body: { permissions: stringified JSON array of { id, permissions } }
 
-export const updateRolesPermissions = async (payload) => {
-  const result = await patch("admin/roles/permissions", payload);
-  return result;
+export const updatePermissions = async (permissionsArray: { id: string; permissions: string[] }[]) => {
+  return await patch("/admin/roles/permissions", {
+    permissions: JSON.stringify(permissionsArray)
+  });
 };

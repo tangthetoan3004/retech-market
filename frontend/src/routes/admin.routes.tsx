@@ -5,6 +5,8 @@ import AdminLayout from "../layouts/admin/AdminLayout";
 import DashboardPage from "../pages/admin/dashboard/page";
 
 import ProductsListPage from "../pages/admin/products/list/page";
+import ProductCreatePage from "../pages/admin/products/create/page";
+import ProductEditPage from "../pages/admin/products/edit/page";
 import BrandsListPage from "../pages/admin/brands/list/page";
 
 import ProductCategoryListPage from "../pages/admin/products-category/list/page";
@@ -31,8 +33,13 @@ import AdminRefundsPage from "../pages/admin/refunds/page";
 import AdminPaymentsPage from "../pages/admin/payments/page";
 
 import RequireAdminAuth from "./admin/_guards/RequireAdminAuth";
+import AdminLoginPage from "../pages/admin/auth/login/page";
 
 export const adminRoutes: RouteObject[] = [
+  {
+    path: "/admin/auth/login",
+    element: <AdminLoginPage />,
+  },
   {
     path: "/admin",
     element: <RequireAdminAuth />,
@@ -44,6 +51,8 @@ export const adminRoutes: RouteObject[] = [
           { path: "dashboard", element: <DashboardPage /> },
 
           { path: "products", element: <ProductsListPage /> },
+          { path: "products/create", element: <ProductCreatePage /> },
+          { path: "products/edit/:id", element: <ProductEditPage /> },
           { path: "brands", element: <BrandsListPage /> },
 
           { path: "products-category", element: <ProductCategoryListPage /> },

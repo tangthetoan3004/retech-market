@@ -1,26 +1,23 @@
 import { get } from "../../../utils/request";
 
-const BACKEND_ORIGIN = import.meta.env.VITE_API_URL
-  ? String(import.meta.env.VITE_API_URL).replace(/\/+$/, "")
-  : "http://127.0.0.1:8000";
-
-function absMediaUrl(url: any) {
-  const s = String(url ?? "").trim();
-  if (!s) return "";
-  if (s.startsWith("http://") || s.startsWith("https://")) return s;
-  if (s.startsWith("/")) return `${BACKEND_ORIGIN}${s}`;
-  return `${BACKEND_ORIGIN}/${s}`;
-}
+// ─── Danh mục sản phẩm (client) ───────────────────────────────────────────────
+// Backend: Danh mục được inject qua middleware vào mọi response dưới key "categories"
+// Không có endpoint riêng cho categories phía client.
+// Gọi trang chủ GET / để lấy categories kèm theo.
 
 export const getProductCategoriesTree = async () => {
-  const list = await get("/api/products/categories/");
-  const items = (Array.isArray(list) ? list : []).map((c: any) => ({
+  const res: any = await get("/");
+
+  const items = (Array.isArray(res?.categories) ? res.categories : []).map((c: any) => ({
     ...c,
-    icon: absMediaUrl(c.icon)
+    id: c._id || c.id,
+    title: c.title || c.name || "",
+    slug: c.slug || "",
+    thumbnail: c.thumbnail || "",
   }));
 
   return {
     items,
-    settingGeneral: null
+    settingGeneral: res?.settingGeneral || null,
   };
 };

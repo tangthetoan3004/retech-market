@@ -6,7 +6,7 @@ import { GradeBadge } from "../../../components/retech/GradeBadge";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../app/store";
 import { removeFromWishlist } from "../../../features/client/wishlist/wishlistSlice";
-import { addToCart } from "../../../features/client/cart/cartSlice";
+import { addItemToCart } from "../../../features/client/cart/cartSlice";
 import { showAlert } from "../../../features/ui/uiSlice";
 import { useNavigate } from "react-router-dom";
 
@@ -18,8 +18,8 @@ export function WishlistPage() {
     const handleAddToCart = (productId: string) => {
         const product = wishlist.find((p) => p.id === productId);
         if (product) {
-            dispatch(addToCart({ id: product.id, item: product, quantity: 1 }));
-            dispatch(showAlert({ type: "success", message: `Đã thêm ${product.name} vào giỏ hàng` }));
+            dispatch(addItemToCart({ productId: product.id, quantity: 1 }) as any);
+            dispatch(showAlert({ type: "success", message: `Đã thêm ${product.name || product.title} vào giỏ hàng` }));
         }
     };
 

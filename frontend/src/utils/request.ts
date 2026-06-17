@@ -22,58 +22,7 @@ function normalizePath(path: string) {
   return String(path).replace(/^\/+/, "");
 }
 
-function unwrapApiData(payload: any) {
-  if (payload && typeof payload === "object") {
-    // Custom DRF renderer maps pagination to { status: "success", data: [...], meta: { count, next, previous } }
-    if (payload.status === "success" && "data" in payload) {
-      if (payload.meta && typeof payload.meta === "object") {
-        return {
-          items: payload.data,
-          results: payload.data,
-          ...payload.meta
-        };
-      }
-      return payload.data;
-    }
-  }
-  return payload;
-}
-
-function unwrapApiErrors(payload: any) {
-  if (payload && typeof payload === "object") {
-    if ("errors" in payload && (payload as any).errors) return (payload as any).errors;
-  }
-  return payload;
-}
-
-let isRefreshing = false;
-let refreshQueue: Array<(ok: boolean) => void> = [];
-
-async function tryRefreshToken(): Promise<boolean> {
-  if (isRefreshing) {
-    return new Promise((resolve) => refreshQueue.push(resolve));
-  }
-
-  isRefreshing = true;
-  try {
-    const res = await fetch(`${BASE_URL}/api/users/token/refresh/`, {
-      method: "POST",
-      credentials: "include",
-    });
-    const ok = res.ok;
-    refreshQueue.forEach((cb) => cb(ok));
-    refreshQueue = [];
-    return ok;
-  } catch {
-    refreshQueue.forEach((cb) => cb(false));
-    refreshQueue = [];
-    return false;
-  } finally {
-    isRefreshing = false;
-  }
-}
-
-export default async function request(path: string, options: RequestOptions = {}, _isRetry = false) {
+export default async function request(path: string, options: RequestOptions = {}) {
   const { method = "GET", params, body, headers } = options;
 
   const url = `${BASE_URL}/${normalizePath(path)}${buildQuery(params)}`;
@@ -82,12 +31,14 @@ export default async function request(path: string, options: RequestOptions = {}
 
   const init: globalThis.RequestInit = {
     method,
+    // Gửi cookie trong mọi request (backend Express.js dùng cookie-based auth)
     credentials: "include",
     headers: finalHeaders,
   };
 
   if (body !== undefined && body !== null) {
     if (body instanceof FormData) {
+      // Không set Content-Type, để browser tự thêm boundary
       init.body = body;
     } else {
       if (!finalHeaders["Content-Type"]) finalHeaders["Content-Type"] = "application/json";
@@ -96,24 +47,6 @@ export default async function request(path: string, options: RequestOptions = {}
   }
 
   const res = await fetch(url, init);
-
-  const isAuthEndpoint =
-    path.includes("/users/login") ||
-    path.includes("/users/register") ||
-    path.includes("/users/google/login");
-
-  if (res.status === 401 && !_isRetry && !path.includes("token/refresh") && !isAuthEndpoint) {
-    const refreshed = await tryRefreshToken();
-
-    if (refreshed) {
-      return request(path, options, true);
-    } else {
-      handleSessionExpired();
-      const err: any = new Error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
-      err.status = 401;
-      throw err;
-    }
-  }
 
   const contentType = res.headers.get("content-type") || "";
   const isJson = contentType.includes("application/json");
@@ -126,8 +59,13 @@ export default async function request(path: string, options: RequestOptions = {}
   }
 
   if (!res.ok) {
+    // Nếu 401, redirect về trang đăng nhập phù hợp
+    if (res.status === 401) {
+      handleSessionExpired(path);
+    }
+
     const message =
-      (rawData && (rawData.message || rawData.error || rawData.detail)) ||
+      (rawData && (rawData.message || rawData.error)) ||
       (rawData && typeof rawData === "object" ? JSON.stringify(rawData) : String(rawData || "")) ||
       `Request failed (${res.status} ${res.statusText})`;
 
@@ -137,34 +75,23 @@ export default async function request(path: string, options: RequestOptions = {}
     throw err;
   }
 
-  if (rawData && typeof rawData === "object" && "status" in rawData && rawData.status !== "success") {
-    const errors = unwrapApiErrors(rawData);
-    const message =
-      rawData.message ||
-      (errors && typeof errors === "object" ? Object.values(errors).flat()?.[0] : "") ||
-      "Request failed";
-
-    const err: any = new Error(message);
-    err.status = res.status;
-    err.data = rawData;
-    err.errors = errors;
-    throw err;
-  }
-
-  return unwrapApiData(rawData);
+  // Backend Express trả về { code, message } cho các action (không phải lỗi ứng dụng)
+  // Trả thẳng rawData để các service có thể tự xử lý
+  return rawData;
 }
 
-function handleSessionExpired() {
-  localStorage.removeItem("client_auth");
+function handleSessionExpired(path: string) {
+  // Xác định đang ở admin hay client
+  const isAdmin = path.includes("/admin/");
 
-  import("../app/store").then(({ store }) => {
-    import("../features/client/auth/clientAuthSlice").then(({ clearClientAuth }) => {
-      store.dispatch(clearClientAuth());
-    });
-  });
-
-  if (!window.location.pathname.includes("/user/login")) {
-    window.location.href = "/user/login";
+  if (isAdmin) {
+    if (!window.location.pathname.includes("/admin/auth/login")) {
+      window.location.href = "/admin/auth/login";
+    }
+  } else {
+    if (!window.location.pathname.includes("/user/login")) {
+      window.location.href = "/user/login";
+    }
   }
 }
 

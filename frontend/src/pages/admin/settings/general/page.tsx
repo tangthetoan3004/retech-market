@@ -46,13 +46,25 @@ export default function SettingsGeneralPage() {
     }
   };
 
-  if (loading) return <div>Đang tải...</div>;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+        <p className="text-muted-foreground animate-pulse font-medium">Đang tải dữ liệu...</p>
+      </div>
+    );
+  }
   if (!initialValues) return null;
 
   return (
-    <div className="space-y-3">
-      <h1 className="text-xl font-semibold">Cài đặt chung</h1>
-      <GeneralSettingForm initialValues={initialValues} onSubmit={onSubmit} submitting={submitting} />
+    <div className="min-h-screen bg-background text-foreground p-4 md:p-6 lg:p-8">
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">Cài đặt chung</h1>
+          <p className="text-muted-foreground">Quản lý cấu hình toàn cục của website</p>
+        </div>
+
+        <GeneralSettingForm initialValues={initialValues} onSubmit={onSubmit} submitting={submitting} />
+      </div>
     </div>
   );
 }

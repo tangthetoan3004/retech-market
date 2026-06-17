@@ -1,6 +1,9 @@
 import { get } from "../../../utils/request";
 
+// ─── Dashboard Admin ──────────────────────────────────────────────────────────
+// Backend: GET /admin/dashboard → { pageTitle, ... }
+
 export const dashboardService = {
-  getDashboardStats: (range: "7days" | "30days" | "6months" = "30days") => 
-    get(`api/dashboard/stats/?range=${range}`)
+  getDashboardStats: () =>
+    get("/admin/dashboard"),
 };

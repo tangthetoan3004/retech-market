@@ -1,43 +1,60 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { getCart, addToCartAPI, removeFromCartAPI, updateCartItemAPI } from "../../../services/client/cart/cartService";
 
-const loadCart = () => {
-  try {
-    const raw = localStorage.getItem("client_cart");
-    if (!raw) return [];
-    const data = JSON.parse(raw);
-    return Array.isArray(data) ? data : [];
-  } catch {
-    return [];
+export const fetchCart = createAsyncThunk("cart/fetchCart", async () => {
+  const result: any = await getCart();
+  if (result?.success && result?.data) {
+    return result.data;
   }
-};
+  return null;
+});
+
+export const addItemToCart = createAsyncThunk("cart/addItem", async ({ productId, quantity }: { productId: string; quantity: number }, { dispatch }) => {
+  await addToCartAPI(productId, quantity);
+  dispatch(fetchCart());
+});
+
+export const removeItemFromCart = createAsyncThunk("cart/removeItem", async (productId: string, { dispatch }) => {
+  await removeFromCartAPI(productId);
+  dispatch(fetchCart());
+});
+
+export const updateItemQuantity = createAsyncThunk("cart/updateQuantity", async ({ productId, quantity }: { productId: string; quantity: number }, { dispatch }) => {
+  await updateCartItemAPI(productId, quantity);
+  dispatch(fetchCart());
+});
 
 const cartSlice = createSlice({
   name: "cart",
-  initialState: loadCart(),
+  initialState: {
+    cartId: null,
+    products: [] as any[],
+    totalPrice: 0,
+    loading: false
+  },
   reducers: {
-    addToCart: (state, action) => {
-      const { id, item } = action.payload || {};
-
-      const exist = state.find((x) => x.id === id);
-      if (exist) {
-        // Vì mỗi sản phẩm là duy nhất (hàng cũ), không tăng số lượng
-        return;
-      }
-
-      state.push({
-        id,
-        info: item,
-        quantity: 1
-      });
-    },
-    deleteItem: (state, action) => {
-      return state.filter((x) => x.id !== action.payload);
-    },
-    deleteAll: () => {
-      return [];
+    deleteAll: (state) => {
+      state.products = [];
+      state.totalPrice = 0;
     }
+  },
+  extraReducers: (builder) => {
+    builder.addCase(fetchCart.pending, (state) => {
+      state.loading = true;
+    });
+    builder.addCase(fetchCart.fulfilled, (state, action) => {
+      state.loading = false;
+      if (action.payload) {
+        state.cartId = action.payload.id || action.payload._id;
+        state.products = action.payload.products || [];
+        state.totalPrice = action.payload.totalPrice || 0;
+      }
+    });
+    builder.addCase(fetchCart.rejected, (state) => {
+      state.loading = false;
+    });
   }
 });
 
-export const { addToCart, deleteItem, deleteAll } = cartSlice.actions;
+export const { deleteAll } = cartSlice.actions;
 export default cartSlice.reducer;

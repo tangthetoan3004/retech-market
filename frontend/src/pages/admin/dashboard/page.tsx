@@ -6,7 +6,9 @@ import {
   ShoppingBag,
   DollarSign,
   RefreshCw,
-  Package
+  Package,
+  Users,
+  UserCircle
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card";
 import {
@@ -52,38 +54,38 @@ export default function DashboardPage() {
 
   const stats = [
     {
-      title: "Tổng Doanh Thu",
-      value: `${data?.overview?.total_revenue?.toLocaleString() ?? 0}đ`,
-      icon: DollarSign,
+      title: "Sản phẩm",
+      value: `${data?.statistic?.product?.total ?? 0}`,
+      icon: Package,
       iconBg: "bg-blue-500/10",
       iconColor: "text-blue-500",
     },
     {
-      title: "Tổng Chi Trả",
-      value: `${data?.overview?.total_payout?.toLocaleString() ?? 0}đ`,
+      title: "Danh mục",
+      value: `${data?.statistic?.categoryProduct?.total ?? 0}`,
       icon: ShoppingBag,
       iconBg: "bg-amber-500/10",
       iconColor: "text-amber-500",
     },
     {
-      title: "Tổng Hoàn Tiền",
-      value: `${data?.overview?.total_refund?.toLocaleString() ?? 0}đ`,
-      icon: RefreshCw,
-      iconBg: "bg-red-500/10",
-      iconColor: "text-red-500",
-    },
-    {
-      title: "Lợi Nhuận Ròng",
-      value: `${data?.overview?.net_profit?.toLocaleString() ?? 0}đ`,
-      icon: TrendingUp,
+      title: "Tài khoản (Admin)",
+      value: `${data?.statistic?.account?.total ?? 0}`,
+      icon: Users,
       iconBg: "bg-emerald-500/10",
       iconColor: "text-emerald-500",
+    },
+    {
+      title: "Người dùng (Khách)",
+      value: `${data?.statistic?.user?.total ?? 0}`,
+      icon: UserCircle,
+      iconBg: "bg-purple-500/10",
+      iconColor: "text-purple-500",
     },
   ];
 
   const COLORS = ["#3b82f6", "#8b5cf6", "#22c55e", "#f59e0b", "#ef4444", "#06b6d4"];
 
-  const formatCurrency = (val: number) => `${val.toLocaleString()}đ`;
+  const formatCurrency = (val: number) => `${Number(val || 0).toLocaleString()}đ`;
 
   const renderStatusBadge = (status: string) => {
     const s = status?.toLowerCase() || '';

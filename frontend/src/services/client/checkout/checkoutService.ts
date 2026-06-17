@@ -1,20 +1,38 @@
-import { post } from "../../../utils/request";
+import { get, post } from "../../../utils/request";
 
-export const createOrder = async (options: any) => {
-  const ui = options?.userInfo || {};
-  const products = Array.isArray(options?.products) ? options.products : [];
+// ─── Lấy thông tin giỏ hàng để thanh toán ─────────────────────────────────────
+// Backend: GET /checkout → { cartDetail }
+
+export const getCheckout = async () => {
+  const result = await get("/checkout");
+  return result;
+};
+
+// ─── Đặt hàng ─────────────────────────────────────────────────────────────────
+// Backend: POST /checkout/order
+// Body: { fullName, phone, address } (userInfo từ form)
+// Backend đọc cartId từ cookie để lấy sản phẩm
+
+export const createOrder = async (options: {
+  userInfo?: { fullName?: string; phone?: string; address?: string };
+  [key: string]: any;
+}) => {
+  const ui = options?.userInfo || options || {};
 
   const payload = {
-    full_name: ui.fullName || "",
-    phone_number: ui.phone || "",
-    shipping_address: ui.address || "",
-    payment_method: options?.payment_method || "COD",
-    items: products.map((p: any) => ({
-      product_id: p.productId,
-      quantity: Number(p.quantity || 1)
-    }))
+    fullName: ui.fullName || ui.full_name || "",
+    phone: ui.phone || ui.phone_number || "",
+    address: ui.address || ui.shipping_address || "",
   };
 
-  const result = await post("/api/orders/orders/", payload);
+  const result = await post("/checkout/order", payload);
+  return result;
+};
+
+// ─── Xem đơn hàng thành công ──────────────────────────────────────────────────
+// Backend: GET /checkout/success/:orderId → { order }
+
+export const getOrderSuccess = async (orderId: string) => {
+  const result = await get(`/checkout/success/${orderId}`);
   return result;
 };

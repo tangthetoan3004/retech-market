@@ -12,7 +12,7 @@ const el = document.getElementById("root");
 if (!el) throw new Error("Root element #root not found");
 
 createRoot(el).render(
-  <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+  <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || "dummy_client_id"}>
     <Provider store={store}>
       <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
         <BrowserRouter>

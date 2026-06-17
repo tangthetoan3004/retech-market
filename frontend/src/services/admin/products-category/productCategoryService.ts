@@ -1,73 +1,89 @@
 import { del, get, patch, post } from "../../../utils/request";
 
-const API_ORIGIN =
-  (import.meta as any)?.env?.VITE_API_URL
-    ? String((import.meta as any).env.VITE_API_URL).replace(/\/+$/, "")
-    : "http://127.0.0.1:8000";
+// ─── Normalize ────────────────────────────────────────────────────────────────
+// Backend MongoDB ProductCategory model: { title, slug, thumbnail, parent_id, status, position, children }
 
-function absMediaUrl(url: any) {
-  const s = String(url ?? "").trim();
-  if (!s) return "";
-  if (s.startsWith("http://") || s.startsWith("https://")) return s;
-  if (s.startsWith("/")) return `${API_ORIGIN}${s}`;
-  return `${API_ORIGIN}/${s}`;
-}
-
-function normalizeCategory(c: any) {
+function normalizeCategory(c: any): any {
   if (!c) return c;
-  return {
+  const normalized: any = {
     ...c,
-    id: c.id,
-    name: c.name ?? "",
+    id: c._id || c.id,
+    name: c.title || c.name || "",
+    title: c.title || c.name || "",
     slug: c.slug ?? "",
-    icon: absMediaUrl(c.icon),
-    created_at: c.created_at,
+    thumbnail: c.thumbnail || "",
+    parent_id: c.parent_id || "",
+    status: c.status ?? "active",
+    position: c.position ?? 0,
+    description: c.description || "",
+    children: Array.isArray(c.children) ? c.children.map(normalizeCategory) : [],
   };
+  return normalized;
 }
 
-function buildFormData(payload: any) {
-  const fd = new FormData();
-  Object.entries(payload || {}).forEach(([k, v]) => {
-    if (v === undefined || v === null || v === "") return;
+// ─── Danh sách danh mục sản phẩm ─────────────────────────────────────────────
+// Backend: GET /admin/products-category → { records, objectPagination }
 
-    if (k === "icon") {
-      if (v instanceof File) fd.append("icon", v);
-      return;
-    }
-
-    fd.append(k, String(v));
-  });
-  return fd;
-}
-
-export type CategoryUpsertPayload = {
-  name?: string;
-  slug?: string;
-  icon?: File | null;
+export const getCategories = async (params?: any) => {
+  const res: any = await get("/admin/products-category", { params });
+  const list = res?.records || res?.items || res || [];
+  const items = Array.isArray(list) ? list.map(normalizeCategory) : [];
+  return { items, pagination: res?.objectPagination ?? null };
 };
 
-export const getCategories = async () => {
-  const res: any = await get("/api/products/categories/");
-  const list = Array.isArray(res) ? res : (res?.results || []);
-  const items = list.map(normalizeCategory);
-  return { items };
-};
+// ─── Lấy danh mục để chỉnh sửa ────────────────────────────────────────────────
+// Backend: GET /admin/products-category/edit/:id → { productCategory, records }
 
 export const getCategoryDetail = async (id: number | string) => {
-  const item: any = await get(`/api/products/categories/${id}/`);
+  const res: any = await get(`/admin/products-category/edit/${id}`);
+  const item = res?.productCategory || res;
   return normalizeCategory(item);
 };
 
-export const createCategory = async (payload: CategoryUpsertPayload) => {
-  const fd = buildFormData(payload);
-  return post("/api/products/categories/", fd);
+// ─── Danh mục dạng cây (để tạo mới) ──────────────────────────────────────────
+// Backend: GET /admin/products-category/create → { records }
+
+export const getCategoryTree = async () => {
+  const res: any = await get("/admin/products-category/create");
+  const list = res?.records || [];
+  return Array.isArray(list) ? list.map(normalizeCategory) : [];
 };
 
-export const updateCategory = async (id: number | string, payload: CategoryUpsertPayload) => {
-  const fd = buildFormData(payload);
-  return patch(`/api/products/categories/${id}/`, fd);
+// ─── Tạo danh mục mới ─────────────────────────────────────────────────────────
+// Backend: POST /admin/products-category/create (multipart, thumbnail)
+
+export const createCategory = async (payload: any) => {
+  const fd = new FormData();
+  Object.entries(payload).forEach(([k, v]) => {
+    if (v === undefined || v === null || v === "") return;
+    if (k === "thumbnail" && v instanceof File) {
+      fd.append("thumbnail", v);
+      return;
+    }
+    fd.append(k, String(v));
+  });
+  return post("/admin/products-category/create", fd);
 };
 
-export const deleteCategory = async (id: number | string) => {
-  return del(`/api/products/categories/${id}/`);
+// ─── Cập nhật danh mục ────────────────────────────────────────────────────────
+// Backend: PATCH /admin/products-category/edit/:id (multipart, thumbnail)
+
+export const updateCategory = async (id: number | string, payload: any) => {
+  const fd = new FormData();
+  Object.entries(payload).forEach(([k, v]) => {
+    if (v === undefined || v === null || v === "") return;
+    if (k === "thumbnail" && v instanceof File) {
+      fd.append("thumbnail", v);
+      return;
+    }
+    fd.append(k, String(v));
+  });
+  return patch(`/admin/products-category/edit/${id}`, fd);
+};
+
+// ─── Xóa mềm danh mục ────────────────────────────────────────────────────────
+// Backend: DELETE /admin/products-category/delete/:id
+
+export const deleteCategory = async (id: number | string): Promise<any> => {
+  return del(`/admin/products-category/delete/${id}`);
 };

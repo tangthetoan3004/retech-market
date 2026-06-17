@@ -11,9 +11,10 @@ import { Label } from "../../../components/ui/label";
 import { ShoppingBag, ChevronLeft, Shield } from "lucide-react";
 
 export default function CheckoutPage() {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
-  const cart = useSelector((s: RootState) => s.cart);
+  const cartState = useSelector((s: RootState) => s.cart);
+  const cart = cartState?.products || [];
 
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
@@ -22,9 +23,9 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
 
   const subtotal = useMemo(() => {
-    return cart.reduce((sum, x) => {
-      const price = Number(x.info?.priceNew || x.info?.price || 0);
-      return sum + price; // Mỗi máy chỉ có 1
+    return cart.reduce((sum: number, x: any) => {
+      const price = Number(x.productInfo?.priceNew || x.productInfo?.price || 0);
+      return sum + (price * (x.quantity || 1));
     }, 0);
   }, [cart]);
 
@@ -41,12 +42,8 @@ export default function CheckoutPage() {
     setLoading(true);
     try {
       const payload = {
-        userInfo: { fullName, phone, address },
+        fullName, phone, address,
         payment_method: paymentMethod,
-        products: cart.map((x: any) => ({
-          productId: x.id,
-          quantity: 1
-        }))
       };
       const data: any = await createOrder(payload);
 
@@ -195,23 +192,28 @@ export default function CheckoutPage() {
               <div className="p-6">
                 <div className="space-y-5 max-h-[350px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
                   {cart.map((item: any, idx: number) => {
-                    const price = item.info?.priceNew || item.info?.price || 0;
+                    const info = item.productInfo || {};
+                    const price = info.priceNew || info.price || 0;
+                    const quantity = item.quantity || 1;
                     return (
                       <div key={idx} className="flex gap-4">
                         <div className="w-20 h-20 rounded-lg border border-border bg-white flex-shrink-0 overflow-hidden relative">
                           <img
-                            src={item.info?.thumbnail || item.info?.image || item.info?.main_image || "https://placehold.co/150"}
-                            alt={item.info?.title || item.info?.name}
+                            src={info.thumbnail || info.image || info.main_image || "https://placehold.co/150"}
+                            alt={info.title || info.name}
                             className="w-full h-full object-cover"
                           />
+                          <div className="absolute -top-2 -right-2 w-5 h-5 bg-gray-500 text-white rounded-full flex items-center justify-center text-xs">
+                            {quantity}
+                          </div>
                         </div>
                         <div className="flex-1 min-w-0 py-1 flex flex-col justify-between">
                           <div>
                             <h4 className="font-medium text-sm line-clamp-2 leading-tight">
-                              {item.info?.title || item.info?.name || "Sản phẩm"}
+                              {info.title || info.name || "Sản phẩm"}
                             </h4>
                             <p className="text-xs text-muted-foreground mt-1 uppercase tracking-wider">
-                              {item.info?.brand || "Brand"}
+                              {info.brand || "Brand"}
                             </p>
                           </div>
                           <div className="font-semibold text-sm">

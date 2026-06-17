@@ -1,8 +1,8 @@
 import { ProductCard } from "../../../../components/retech/ProductCard";
 import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../../../../app/store";
+import { AppDispatch, RootState } from "../../../../app/store";
 import { toggleWishlist } from "../../wishlist/wishlistSlice";
-import { addToCart } from "../../cart/cartSlice";
+import { addItemToCart } from "../../cart/cartSlice";
 import { showAlert } from "../../../ui/uiSlice";
 import { useNavigate } from "react-router-dom";
 
@@ -11,16 +11,20 @@ type Props = {
 };
 
 export default function ProductGrid({ items }: Props) {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const wishlist = useSelector((state: RootState) => state.wishlist);
 
   const list = Array.isArray(items) ? items : [];
   if (list.length === 0) return null;
 
-  const handleAddToCart = (id: string, p: any) => {
-    dispatch(addToCart({ id, item: p, quantity: 1 }));
-    dispatch(showAlert({ type: "success", message: `Đã thêm ${p?.title || p?.name} vào giỏ hàng` }));
+  const handleAddToCart = async (id: string, p: any) => {
+    try {
+      await dispatch(addItemToCart({ productId: id, quantity: 1 })).unwrap();
+      dispatch(showAlert({ type: "success", message: `Đã thêm ${p?.title || p?.name} vào giỏ hàng` }));
+    } catch (error) {
+      dispatch(showAlert({ type: "error", message: `Thêm vào giỏ hàng thất bại` }));
+    }
   };
 
   const handleToggleWishlist = (id: string, p: any) => {

@@ -48,6 +48,7 @@ export default function Header({ settingGeneral }: { settingGeneral?: any; categ
   const cart = useSelector((s: any) => s.cart);
   const wishlist = useSelector((s: any) => s.wishlist);
   const user = useSelector((s: any) => s.clientAuth?.user);
+  const adminUser = useSelector((s: any) => s.auth?.user);
 
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -56,12 +57,11 @@ export default function Header({ settingGeneral }: { settingGeneral?: any; categ
   const websiteName = settingGeneral?.websiteName || "ReTech Market";
 
   const isAdmin = useMemo(() => {
-    if (!user) return false;
-    return Boolean(user.is_staff || user.is_superuser || user.role === "admin");
-  }, [user]);
+    return Boolean(adminUser);
+  }, [adminUser]);
 
   const cartItemsCount = useMemo(() => {
-    const arr = Array.isArray(cart) ? cart : [];
+    const arr = cart?.products || [];
     return arr.reduce((sum: number, item: any) => sum + (Number(item?.quantity) || 0), 0);
   }, [cart]);
 
@@ -441,10 +441,14 @@ export default function Header({ settingGeneral }: { settingGeneral?: any; categ
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="hidden rounded-full md:flex" type="button">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-[#1d4ed8] via-[#0ea5e9] to-[#14b8a6] text-white shadow-sm">
-                      <User className="h-4 w-4" />
-                    </div>
+                  <Button variant="ghost" size="icon" className="hidden rounded-full md:flex overflow-hidden border border-border" type="button">
+                    {user?.avatar ? (
+                      <img src={user.avatar} alt="Avatar" className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#1d4ed8] via-[#0ea5e9] to-[#14b8a6] text-white">
+                        <User className="h-4 w-4" />
+                      </div>
+                    )}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">

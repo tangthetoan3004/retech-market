@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { Button } from "../../../components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../components/ui/tabs";
-import { addToCart } from "../../../features/client/cart/cartSlice";
+import { addItemToCart } from "../../../features/client/cart/cartSlice";
 import { showAlert } from "../../../features/ui/uiSlice";
 import { getProductDetailBySlug } from "../../../services/client/products/productsService";
 import { GradeBadge, conditionInfo } from "../../../components/retech/GradeBadge";
@@ -131,18 +131,17 @@ export default function ProductDetailPage() {
 
   const activeImg = images[selectedImage] || product?.thumbnail || product?.image || "";
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!product || addedToCart || isSold) return;
 
     setAddedToCart(true);
-    dispatch(
-      addToCart({
-        id: product?.id || product?._id || product?.slug,
-        item: product,
-        quantity: 1,
-      })
-    );
-    dispatch(showAlert({ type: "success", message: "Đã thêm vào giỏ hàng", timeout: 1000 }));
+    try {
+      const id = product?.id || product?._id || product?.slug;
+      await dispatch(addItemToCart({ productId: id, quantity: 1 }) as any).unwrap();
+      dispatch(showAlert({ type: "success", message: "Đã thêm vào giỏ hàng", timeout: 1000 }));
+    } catch (e) {
+      dispatch(showAlert({ type: "error", message: "Thêm vào giỏ hàng thất bại", timeout: 1000 }));
+    }
     setTimeout(() => setAddedToCart(false), 2000);
   };
 

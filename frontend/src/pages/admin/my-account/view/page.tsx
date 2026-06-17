@@ -72,16 +72,23 @@ export default function MyAccountViewPage() {
                 src={account.avatar}
                 alt="avatar"
                 className="w-24 h-24 object-cover rounded-2xl border border-border"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(account.fullName || account.username || "User")}&background=random`;
+                }}
               />
             ) : (
-              <div className="w-24 h-24 rounded-2xl border border-border bg-muted/30" />
+              <img
+                src={`https://ui-avatars.com/api/?name=${encodeURIComponent(account.fullName || account.username || "User")}&background=random`}
+                alt="avatar"
+                className="w-24 h-24 object-cover rounded-2xl border border-border"
+              />
             )}
 
             <div className="space-y-2 min-w-0">
               <div className="flex flex-wrap gap-2">
                 <span className="text-sm text-muted-foreground">Họ tên:</span>
                 <span className="text-sm font-medium">
-                  {[account.first_name, account.last_name].filter(Boolean).join(" ") || account.username || "—"}
+                  {account.fullName || account.username || "—"}
                 </span>
               </div>
 
@@ -92,12 +99,12 @@ export default function MyAccountViewPage() {
 
               <div className="flex flex-wrap gap-2">
                 <span className="text-sm text-muted-foreground">SĐT:</span>
-                <span className="text-sm font-medium">{account.phone_number || account.phone || "—"}</span>
+                <span className="text-sm font-medium">{account.phone || account.phone_number || "—"}</span>
               </div>
 
               <div className="flex flex-wrap gap-2 items-center">
                 <span className="text-sm text-muted-foreground">Trạng thái:</span>
-                <StatusPill status={account.is_active ? "active" : "inactive"} />
+                <StatusPill status={account.status || (account.is_active ? "active" : "inactive")} />
               </div>
             </div>
           </div>

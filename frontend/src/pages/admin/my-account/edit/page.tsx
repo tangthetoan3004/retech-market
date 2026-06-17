@@ -50,19 +50,19 @@ export default function MyAccountEditPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 p-4 md:p-6 lg:p-8">
-        <div className="text-slate-400">Đang tải...</div>
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+        <p className="text-muted-foreground animate-pulse font-medium">Đang tải dữ liệu...</p>
       </div>
     );
   }
   if (!initialValues) return null;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-4 md:p-6 lg:p-8">
+    <div className="min-h-screen bg-background text-foreground p-4 md:p-6 lg:p-8">
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold mb-2">Chỉnh sửa tài khoản</h1>
-          <p className="text-slate-400">Cập nhật thông tin cá nhân</p>
+          <p className="text-muted-foreground">Cập nhật thông tin cá nhân</p>
         </div>
 
         <MyAccountForm initialValues={initialValues} onSubmit={onSubmit} submitting={submitting} />

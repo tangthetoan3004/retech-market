@@ -12,6 +12,7 @@ import { Label } from "../../../../components/ui/label";
 import { Checkbox } from "../../../../components/ui/checkbox";
 
 import { loginClient, googleLogin } from "../../../../services/client/auth/authService";
+import { getMyInfo } from "../../../../services/client/user/userService";
 import { setClientAuth } from "../../../../features/client/auth/clientAuthSlice";
 import { showAlert } from "../../../../features/ui/uiSlice";
 
@@ -45,8 +46,15 @@ export default function UserLoginPage() {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const data = await loginClient({ username: identifier, password });
-      dispatch(setClientAuth(data));
+      // 1. Gửi request login (backend sẽ set cookie tokenUser)
+      await loginClient({ email: identifier, password });
+      
+      // 2. Lấy thông tin user hiện tại (để header cập nhật)
+      const profileData: any = await getMyInfo();
+      
+      // 3. Lưu vào Redux
+      dispatch(setClientAuth({ user: profileData.user }));
+      
       dispatch(showAlert({ type: "success", message: "Đăng nhập thành công", timeout: 600 }));
       navigate("/", { replace: true });
     } catch (err: any) {

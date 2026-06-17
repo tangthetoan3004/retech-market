@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "motion/react";
 import {
-  ArrowLeft, Tag, Upload, X,
-  CheckCircle2, XCircle, Save, Loader2
+  ArrowLeft, Upload, X, CheckCircle2,
+  XCircle, Save, Loader2, Box, Percent, DollarSign, Package
 } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -19,37 +19,39 @@ import {
 import LoadingSpinner from "../../../../components/ui/LoadingSpinner";
 
 import {
-  getCategoryDetail,
-  getCategoryTree,
-  updateCategory,
-} from "../../../../services/admin/products-category/productCategoryService";
+  getProductForEdit,
+  updateProduct,
+} from "../../../../services/admin/products/productsService";
 
-type FlatCat = { id: string; name: string; depth: number };
+type Category = { id: string; name: string; title?: string; depth?: number; children?: Category[] };
 
-function flattenForSelect(items: any[], depth = 0): FlatCat[] {
-  const result: FlatCat[] = [];
+function flattenForSelect(items: Category[], depth = 0): { id: string; name: string; depth: number }[] {
+  const result: { id: string; name: string; depth: number }[] = [];
   for (const item of items) {
-    result.push({ id: item.id, name: item.name, depth });
+    result.push({ id: item.id, name: item.title || item.name, depth });
     if (item.children?.length) result.push(...flattenForSelect(item.children, depth + 1));
   }
   return result;
 }
 
-export default function ProductCategoryEditPage() {
+export default function ProductEditPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [loadingData, setLoadingData] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [categories, setCategories] = useState<FlatCat[]>([]);
+  const [categories, setCategories] = useState<{ id: string; name: string; depth: number }[]>([]);
 
   // Form fields
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [parentId, setParentId] = useState("none");
+  const [categoryId, setCategoryId] = useState("none");
+  const [price, setPrice] = useState("0");
+  const [discount, setDiscount] = useState("0");
+  const [stock, setStock] = useState("0");
   const [status, setStatus] = useState("active");
-  const [position, setPosition] = useState("");
+  const [featured, setFeatured] = useState("0");
   const [thumbnail, setThumbnail] = useState<File | null>(null);
   const [existingThumbnail, setExistingThumbnail] = useState("");
 
@@ -63,20 +65,20 @@ export default function ProductCategoryEditPage() {
     (async () => {
       setLoadingData(true);
       try {
-        const [detail, tree] = await Promise.all([
-          getCategoryDetail(id),
-          getCategoryTree(),
-        ]);
-        setTitle(detail?.title ?? detail?.name ?? "");
-        setDescription(detail?.description ?? "");
-        setParentId(detail?.parent_id || "none");
-        setStatus(detail?.status ?? "active");
-        setPosition(detail?.position ? String(detail.position) : "");
-        setExistingThumbnail(detail?.thumbnail ?? "");
-        // Flatten and filter out current category from parent choices
-        setCategories(flattenForSelect(tree).filter((c) => c.id !== id));
+        const data = await getProductForEdit(id);
+        const p = data.product;
+        setTitle(p?.title ?? "");
+        setDescription(p?.description ?? "");
+        setCategoryId(p?.product_category_id || "none");
+        setPrice(String(p?.price ?? 0));
+        setDiscount(String(p?.discountPercentage ?? 0));
+        setStock(String(p?.stock ?? 0));
+        setStatus(p?.status ?? "active");
+        setFeatured(p?.featured ?? "0");
+        setExistingThumbnail(p?.thumbnail ?? "");
+        setCategories(flattenForSelect(data.categories || []));
       } catch (err: any) {
-        toast.error(err?.message || "Không thể tải dữ liệu danh mục");
+        toast.error(err?.message || "Không thể tải dữ liệu sản phẩm");
       } finally {
         setLoadingData(false);
       }
@@ -86,24 +88,27 @@ export default function ProductCategoryEditPage() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!id) return;
-    if (!title.trim()) { toast.error("Vui lòng nhập tiêu đề danh mục"); return; }
+    if (!title.trim()) { toast.error("Vui lòng nhập tên sản phẩm"); return; }
 
     setSaving(true);
     try {
       const payload: any = {
         title: title.trim(),
         description: description.trim(),
-        parent_id: parentId === "none" ? "" : parentId,
+        product_category_id: categoryId === "none" ? "" : categoryId,
+        price: Number(price),
+        discountPercentage: Number(discount),
+        stock: Number(stock),
         status,
-        position: position || "",
+        featured,
       };
       if (thumbnail) payload.thumbnail = thumbnail;
 
-      await updateCategory(id, payload);
-      toast.success("Cập nhật danh mục thành công!");
-      navigate("/admin/products-category", { replace: true });
+      await updateProduct(id, payload);
+      toast.success("Cập nhật sản phẩm thành công!");
+      navigate("/admin/products", { replace: true });
     } catch (err: any) {
-      toast.error(err?.message || "Cập nhật thất bại");
+      toast.error(err?.message || "Cập nhật sản phẩm thất bại");
     } finally {
       setSaving(false);
     }
@@ -124,18 +129,18 @@ export default function ProductCategoryEditPage() {
     <div className="p-6 bg-background text-foreground min-h-screen">
       {/* Header */}
       <div className="flex items-center gap-4 mb-8">
-        <Link to="/admin/products-category">
+        <Link to="/admin/products">
           <Button variant="outline" size="icon" className="h-9 w-9 rounded-xl border-border">
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Tag className="w-5 h-5 text-indigo-500" />
-            Chỉnh sửa Danh mục
+            <Box className="w-5 h-5 text-violet-500" />
+            Chỉnh sửa Sản Phẩm
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Cập nhật thông tin cho danh mục <span className="font-semibold text-foreground">"{title}"</span>
+            Cập nhật thông tin cho <span className="font-semibold text-foreground">"{title}"</span>
           </p>
         </div>
       </div>
@@ -149,15 +154,15 @@ export default function ProductCategoryEditPage() {
               animate={{ opacity: 1, y: 0 }}
               className="bg-card border border-border rounded-2xl p-6 shadow-sm space-y-5"
             >
-              <h2 className="font-semibold text-base">Thông tin cơ bản</h2>
+              <h2 className="font-semibold text-base">Thông tin chung</h2>
 
               <div className="space-y-2">
                 <Label htmlFor="title" className="text-sm font-medium">
-                  Tiêu đề <span className="text-red-500">*</span>
+                  Tên sản phẩm <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="title"
-                  placeholder="Tiêu đề danh mục..."
+                  placeholder="Ví dụ: iPhone 15 Pro Max 256GB..."
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   className="h-11 bg-muted/40 border-transparent hover:border-border focus:bg-background transition-colors"
@@ -166,45 +171,87 @@ export default function ProductCategoryEditPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description" className="text-sm font-medium">Mô tả</Label>
-                <Textarea
-                  id="description"
-                  placeholder="Mô tả ngắn về danh mục này..."
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="bg-muted/40 border-transparent hover:border-border focus:bg-background transition-colors resize-none min-h-[90px]"
-                />
+                <Label className="text-sm font-medium">Danh mục</Label>
+                <Select value={categoryId} onValueChange={setCategoryId}>
+                  <SelectTrigger className="h-11 bg-muted/40 border-transparent hover:border-border">
+                    <SelectValue placeholder="-- Chọn danh mục --" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">-- Không có --</SelectItem>
+                    {categories.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {"\u00A0".repeat(c.depth * 4)}{c.depth > 0 ? "└ " : ""}{c.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
-              <div className="grid sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="description" className="text-sm font-medium">Mô tả sản phẩm</Label>
+                <Textarea
+                  id="description"
+                  placeholder="Mô tả chi tiết cấu hình, tính năng, điểm nổi bật..."
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="bg-muted/40 border-transparent hover:border-border focus:bg-background transition-colors resize-none min-h-[160px]"
+                />
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05 }}
+              className="bg-card border border-border rounded-2xl p-6 shadow-sm space-y-5"
+            >
+              <h2 className="font-semibold text-base">Giá & Kho</h2>
+
+              <div className="grid sm:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium">Danh mục cha</Label>
-                  <Select value={parentId} onValueChange={setParentId}>
-                    <SelectTrigger className="h-11 bg-muted/40 border-transparent hover:border-border">
-                      <SelectValue placeholder="-- Không có (Danh mục gốc) --" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">-- Không có (Danh mục gốc) --</SelectItem>
-                      {categories.map((c) => (
-                        <SelectItem key={c.id} value={c.id}>
-                          {"\u00A0".repeat(c.depth * 4)}{c.depth > 0 ? "└ " : ""}{c.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Label htmlFor="price" className="text-sm font-medium">Giá bán (VNĐ)</Label>
+                  <div className="relative">
+                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      id="price"
+                      type="number"
+                      min="0"
+                      value={price}
+                      onChange={(e) => setPrice(e.target.value)}
+                      className="h-11 pl-9 bg-muted/40 border-transparent hover:border-border focus:bg-background"
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="position" className="text-sm font-medium">Vị trí (thứ tự hiển thị)</Label>
-                  <Input
-                    id="position"
-                    type="number"
-                    min="1"
-                    placeholder="Để trống = tự động"
-                    value={position}
-                    onChange={(e) => setPosition(e.target.value)}
-                    className="h-11 bg-muted/40 border-transparent hover:border-border focus:bg-background transition-colors"
-                  />
+                  <Label htmlFor="discount" className="text-sm font-medium">Giảm giá (%)</Label>
+                  <div className="relative">
+                    <Percent className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      id="discount"
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={discount}
+                      onChange={(e) => setDiscount(e.target.value)}
+                      className="h-11 pl-9 bg-muted/40 border-transparent hover:border-border focus:bg-background"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="stock" className="text-sm font-medium">Số lượng kho</Label>
+                  <div className="relative">
+                    <Package className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      id="stock"
+                      type="number"
+                      min="0"
+                      value={stock}
+                      onChange={(e) => setStock(e.target.value)}
+                      className="h-11 pl-9 bg-muted/40 border-transparent hover:border-border focus:bg-background"
+                    />
+                  </div>
                 </div>
               </div>
             </motion.div>
@@ -216,10 +263,10 @@ export default function ProductCategoryEditPage() {
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.05 }}
+              transition={{ delay: 0.1 }}
               className="bg-card border border-border rounded-2xl p-6 shadow-sm space-y-4"
             >
-              <h2 className="font-semibold text-base">Trạng thái</h2>
+              <h2 className="font-semibold text-base">Trạng thái hiển thị</h2>
               <div className="flex flex-col gap-2">
                 <button
                   type="button"
@@ -247,10 +294,24 @@ export default function ProductCategoryEditPage() {
                 >
                   <XCircle className={`w-5 h-5 shrink-0 ${status === "inactive" ? "text-red-500" : "text-muted-foreground/40"}`} />
                   <div>
-                    <p className="font-medium text-sm">Dừng hoạt động</p>
+                    <p className="font-medium text-sm">Dừng bán</p>
                     <p className="text-xs text-muted-foreground">Ẩn khỏi website</p>
                   </div>
                 </button>
+              </div>
+
+              <div className="pt-4 border-t border-border mt-4">
+                <Label className="text-sm font-medium mb-3 block">Nổi bật</Label>
+                <div className="flex gap-4">
+                  <Label className="flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="featured" value="1" checked={featured === "1"} onChange={() => setFeatured("1")} className="w-4 h-4 accent-violet-600" />
+                    Có
+                  </Label>
+                  <Label className="flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="featured" value="0" checked={featured === "0"} onChange={() => setFeatured("0")} className="w-4 h-4 accent-violet-600" />
+                    Không
+                  </Label>
+                </div>
               </div>
             </motion.div>
 
@@ -258,10 +319,10 @@ export default function ProductCategoryEditPage() {
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
+              transition={{ delay: 0.15 }}
               className="bg-card border border-border rounded-2xl p-6 shadow-sm space-y-4"
             >
-              <h2 className="font-semibold text-base">Hình ảnh</h2>
+              <h2 className="font-semibold text-base">Hình ảnh chính</h2>
               <input
                 ref={fileInputRef}
                 type="file"
@@ -275,7 +336,7 @@ export default function ProductCategoryEditPage() {
                   <img
                     src={previewUrl}
                     alt="Preview"
-                    className="w-full aspect-square object-cover rounded-xl border border-border"
+                    className="w-full aspect-[4/3] object-cover rounded-xl border border-border bg-white"
                   />
                   <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center gap-2">
                     <button
@@ -300,14 +361,14 @@ export default function ProductCategoryEditPage() {
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full aspect-video border-2 border-dashed border-border rounded-xl flex flex-col items-center justify-center gap-3 hover:border-indigo-500 hover:bg-indigo-500/5 transition-all group"
+                  className="w-full aspect-[4/3] border-2 border-dashed border-border rounded-xl flex flex-col items-center justify-center gap-3 hover:border-violet-500 hover:bg-violet-500/5 transition-all group bg-muted/20"
                 >
-                  <div className="w-11 h-11 rounded-xl bg-muted/50 group-hover:bg-indigo-500/10 transition-colors flex items-center justify-center">
-                    <Upload className="w-5 h-5 text-muted-foreground group-hover:text-indigo-500 transition-colors" />
+                  <div className="w-11 h-11 rounded-xl bg-muted/50 group-hover:bg-violet-500/10 transition-colors flex items-center justify-center">
+                    <Upload className="w-5 h-5 text-muted-foreground group-hover:text-violet-500 transition-colors" />
                   </div>
                   <div className="text-center">
-                    <p className="text-sm font-medium group-hover:text-indigo-500 transition-colors">Chọn hình ảnh</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">PNG, JPG, WEBP tối đa 5MB</p>
+                    <p className="text-sm font-medium group-hover:text-violet-500 transition-colors">Tải ảnh lên</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">PNG, JPG tối đa 5MB</p>
                   </div>
                 </button>
               )}
@@ -320,22 +381,22 @@ export default function ProductCategoryEditPage() {
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15 }}
+              transition={{ delay: 0.2 }}
               className="flex flex-col gap-2"
             >
               <Button
                 type="submit"
                 disabled={saving}
-                className="w-full h-11 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-lg shadow-indigo-600/20 gap-2"
+                className="w-full h-11 bg-violet-600 hover:bg-violet-700 text-white font-semibold shadow-lg shadow-violet-600/20 gap-2"
               >
                 {saving ? (
                   <><Loader2 className="w-4 h-4 animate-spin" /> Đang lưu...</>
                 ) : (
-                  <><Save className="w-4 h-4" /> Lưu thay đổi</>
+                  <><Save className="w-4 h-4" /> Lưu Thay Đổi</>
                 )}
               </Button>
-              <Link to="/admin/products-category">
-                <Button type="button" variant="outline" className="w-full border-border">
+              <Link to="/admin/products">
+                <Button type="button" variant="outline" className="w-full border-border bg-background">
                   Hủy bỏ
                 </Button>
               </Link>

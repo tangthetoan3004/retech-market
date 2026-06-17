@@ -40,9 +40,9 @@ export default function ProductsPage() {
   const [sortBy, setSortBy] = useState("featured");
 
   // --- FIX: price filter auto-fit theo dữ liệu ---
-  const [priceMax, setPriceMax] = useState<number>(3000);
-  const [priceRange, setPriceRange] = useState<number[]>([0, 3000]);
-  const [appliedPriceRange, setAppliedPriceRange] = useState<number[]>([0, 3000]);
+  const [priceMax, setPriceMax] = useState<number>(100000000);
+  const [priceRange, setPriceRange] = useState<number[]>([0, 100000000]);
+  const [appliedPriceRange, setAppliedPriceRange] = useState<number[]>([0, 100000000]);
 
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
@@ -52,8 +52,8 @@ export default function ProductsPage() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   const priceStep = useMemo(() => {
-    const max = toNumber(priceMax) || 3000;
-    if (max <= 3000) return 100;
+    const max = toNumber(priceMax) || 100000000;
+    if (max <= 100000000) return 100;
     if (max <= 100000) return 1000;
     if (max <= 1000000) return 10000;
     return 100000;
@@ -75,7 +75,7 @@ export default function ProductsPage() {
         if (selectedBrands.length > 0) payload.brand = selectedBrands.join(",");
         if (selectedConditions.length > 0) payload.condition = selectedConditions.join(",");
         if (appliedPriceRange[0] > 0) payload.min_price = appliedPriceRange[0];
-        if (appliedPriceRange[1] < (priceMax || 3000)) payload.max_price = appliedPriceRange[1];
+        if (appliedPriceRange[1] < (priceMax || 100000000)) payload.max_price = appliedPriceRange[1];
 
         const data = await getProducts(payload);
         const list = Array.isArray(data?.items) ? data.items : [];
@@ -89,12 +89,12 @@ export default function ProductsPage() {
           return price > mx ? price : mx;
         }, 0);
 
-        const newMax = maxPrice > 0 ? maxPrice : 3000;
+        const newMax = maxPrice > 0 ? maxPrice : 100000000;
         // Chỉ cập nhật giới hạn tối đa của thanh trượt khi KHÔNG lọc theo giá max (nghĩa là đang lấy full)
         // Điều này giúp Slider không bị "teo lại" sau khi kéo thả.
         if (payload.max_price === undefined) {
           setPriceMax(newMax);
-          if (priceRange[1] === 3000 && newMax !== 3000) {
+          if (priceRange[1] === 100000000 && newMax !== 100000000) {
             setPriceRange([0, newMax]);
             setAppliedPriceRange([0, newMax]);
           }
@@ -147,7 +147,7 @@ export default function ProductsPage() {
     setSelectedBrands([]);
     setSelectedConditions([]);
     setSelectedCategories(params?.slug ? [String(params.slug)] : []);
-    const mx = priceMax || 3000;
+    const mx = priceMax || 100000000;
     setPriceRange([0, mx]);
     setAppliedPriceRange([0, mx]);
     setPage(1);
@@ -158,54 +158,77 @@ export default function ProductsPage() {
   const filteredProducts = useMemo(() => {
     let filtered = [...products];
 
+    // Lọc theo Brand
+    if (selectedBrands.length > 0) {
+      filtered = filtered.filter(p => {
+        const brandSlug = String(p?.brand || "apple").toLowerCase().replace(/\s+/g, "-");
+        return selectedBrands.includes(brandSlug);
+      });
+    }
+
+    // Lọc theo Condition
+    if (selectedConditions.length > 0) {
+      filtered = filtered.filter(p => {
+        const cond = String(p?.condition || "GOOD").toUpperCase();
+        return selectedConditions.includes(cond);
+      });
+    }
+
+    // Lọc theo khoảng giá
+    filtered = filtered.filter(p => {
+      const price = toNumber(p?.priceNew ?? p?.price ?? p?.salePrice);
+      return price >= appliedPriceRange[0] && price <= appliedPriceRange[1];
+    });
+
+    // Lọc theo Category
+    if (selectedCategories.length > 0) {
+      filtered = filtered.filter(p => 
+        selectedCategories.includes(p.category?.slug) || 
+        selectedCategories.includes(p.product_category_id)
+      );
+    }
+
+    // Sort
     switch (sortBy) {
       case "price-asc":
-        filtered.sort(
-          (a, b) =>
-            toNumber(a?.priceNew ?? a?.price ?? a?.salePrice) - toNumber(b?.priceNew ?? b?.price ?? b?.salePrice)
-        );
+        filtered.sort((a, b) => toNumber(a?.priceNew ?? a?.price) - toNumber(b?.priceNew ?? b?.price));
         break;
       case "price-desc":
-        filtered.sort(
-          (a, b) =>
-            toNumber(b?.priceNew ?? b?.price ?? b?.salePrice) - toNumber(a?.priceNew ?? a?.price ?? a?.salePrice)
-        );
+        filtered.sort((a, b) => toNumber(b?.priceNew ?? b?.price) - toNumber(a?.priceNew ?? a?.price));
         break;
       case "name":
         filtered.sort((a, b) => String(a?.title ?? a?.name ?? "").localeCompare(String(b?.title ?? b?.name ?? "")));
         break;
-      default:
-        break;
     }
 
     return filtered;
-  }, [products, sortBy]); // Đã xóa các biến thừa để tránh giật lag khi kéo slider
+  }, [products, sortBy, selectedBrands, selectedConditions, appliedPriceRange, selectedCategories]);
 
   const filterContentNode = (
     <div className="space-y-8">
       <div>
-        <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-muted-foreground">Brand</h3>
+        <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-muted-foreground">Danh mục</h3>
         <div className="space-y-3">
-          {brands.slice(0, showAllBrands ? brands.length : 6).map((b) => (
-            <div key={b.slug} className="group flex items-center space-x-3 transition-all hover:translate-x-1">
+          {categories.slice(0, showAllBrands ? categories.length : 6).map((c) => (
+            <div key={c.key} className="group flex items-center space-x-3 transition-all hover:translate-x-1">
               <Checkbox 
-                id={`brand-${b.slug}`} 
-                checked={selectedBrands.includes(b.slug)} 
-                onCheckedChange={() => toggleBrand(b.slug)} 
+                id={`category-${c.key}`} 
+                checked={selectedCategories.includes(c.key)} 
+                onCheckedChange={() => toggleCategory(c.key)} 
                 className="transition-colors data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
               />
-              <Label htmlFor={`brand-${b.slug}`} className="cursor-pointer text-sm font-medium transition-colors group-hover:text-blue-600">
-                {b.name}
+              <Label htmlFor={`category-${c.key}`} className="cursor-pointer text-sm font-medium transition-colors group-hover:text-blue-600">
+                {c.label}
               </Label>
             </div>
           ))}
-          {brands.length > 6 && (
+          {categories.length > 6 && (
             <button
               type="button"
               onClick={() => setShowAllBrands(!showAllBrands)}
               className="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors mt-2"
             >
-              {showAllBrands ? "Rút gọn" : `+ Xem thêm ${brands.length - 6} thương hiệu`}
+              {showAllBrands ? "Rút gọn" : `+ Xem thêm ${categories.length - 6} danh mục`}
             </button>
           )}
         </div>
@@ -246,7 +269,7 @@ export default function ProductsPage() {
         <div className="px-2">
           <Slider
             min={0}
-            max={priceMax || 3000}
+            max={priceMax || 100000000}
             step={priceStep}
             value={priceRange}
             onValueChange={(val) => setPriceRange(val)}
@@ -441,8 +464,8 @@ export default function ProductsPage() {
                         <div>
                           <div className="flex justify-between items-start gap-4">
                             <div>
-                              <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">
-                                {p?.brand || "Brand"}
+                              <div className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-1 flex items-center gap-1">
+                                <Shield className="w-3 h-3" /> ReTech Certified
                               </div>
                               <h3 className="line-clamp-2 text-lg font-bold group-hover:text-blue-600 transition-colors">
                                 {p?.title || p?.name}

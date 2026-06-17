@@ -119,7 +119,9 @@ export function ProductCard({
       {/* Content */}
       <div className="p-3 space-y-2">
         <div>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{brand}</p>
+          <p className="text-[10px] text-emerald-600 dark:text-emerald-400 uppercase tracking-wider font-bold flex items-center gap-1">
+            <Shield className="w-3 h-3" /> ReTech Certified
+          </p>
           <h3 className="text-sm font-medium text-foreground line-clamp-2 mt-0.5">{name}</h3>
         </div>
 

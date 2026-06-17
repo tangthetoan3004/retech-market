@@ -83,7 +83,7 @@ export default function TradeInsLandingPage() {
                 #tradeins-scope-wrapper .elementor-element-df480de .elementor-element-populated {
                     position: relative !important;
                 }
-                /* Badge "Nhanh chóng" – góc trên phải */
+                /* Badge "Fast" – góc trên phải */
                 #tradeins-scope-wrapper .elementor-element-a9785bb {
                     position: absolute !important;
                     top: 18% !important;
@@ -93,7 +93,7 @@ export default function TradeInsLandingPage() {
                     z-index: 10;
                     width: auto !important;
                 }
-                /* Badge "Dễ dàng" – góc trên trái */
+                /* Badge "Easy" – góc trên trái */
                 #tradeins-scope-wrapper .elementor-element-5a03b85 {
                     position: absolute !important;
                     top: 25% !important;
@@ -103,7 +103,7 @@ export default function TradeInsLandingPage() {
                     z-index: 10;
                     width: auto !important;
                 }
-                /* Badge "Siêu hời" – góc dưới phải */
+                /* Badge "Super Deal" – góc dưới phải */
                 #tradeins-scope-wrapper .elementor-element-f4beec0 {
                     position: absolute !important;
                     bottom: 30% !important;
@@ -113,7 +113,7 @@ export default function TradeInsLandingPage() {
                     z-index: 10;
                     width: auto !important;
                 }
-                /* Badge "Bảo mật" – góc dưới trái */
+                /* Badge "Secure" – góc dưới trái */
                 #tradeins-scope-wrapper .elementor-element-c36730d {
                     position: absolute !important;
                     bottom: 15% !important;
@@ -454,14 +454,14 @@ const lazyloadRunObserver = () => {
                                 <div className="elementor-element elementor-element-733afba elementor-widget elementor-widget-heading" data-element_type="widget" data-id="733afba" data-widget_type="heading.default">
                                   <div className="elementor-widget-container">
                                     <h2 className="elementor-heading-title elementor-size-default">
-                                      THU CŨ ĐỔI MỚI
+                                      TRADE-IN PROGRAM
                                     </h2>
                                   </div>
                                 </div>
                                 <div className="elementor-element elementor-element-28cbf17 elementor-widget elementor-widget-heading" data-element_type="widget" data-id="28cbf17" data-widget_type="heading.default">
                                   <div className="elementor-widget-container">
                                     <h1 className="elementor-heading-title elementor-size-default">
-                                      Cùng Retech Market
+                                      With Retech Market
                                     </h1>
                                   </div>
                                 </div>
@@ -471,11 +471,11 @@ const lazyloadRunObserver = () => {
                               <div className="elementor-widget-container">
                                 <p>
                                   <strong style={{color: "#e59e1a"}} className="mr-1">
-                                    Tự định giá 
+                                    Self-appraise 
                                   </strong>
-                                   để biết ngay kết quả trong vòng
+                                   to get results instantly in
                                   <strong style={{color: "#e59e1a"}} className="ml-1">
-                                    3 bước
+                                    3 steps
                                   </strong>
                                 </p>
                               </div>
@@ -664,7 +664,7 @@ const lazyloadRunObserver = () => {
                                             </svg>
                                           </span>
                                           <span className="elementor-button-text uael-marketing-button-title elementor-inline-editing" data-elementor-inline-editing-toolbar="none" data-elementor-setting-key="text" style={{ color: '#ffffff' }}>
-                                            Thử ngay
+                                            Try Now
                                           </span>
                                         </span>
                                       </span>
@@ -800,17 +800,17 @@ const lazyloadRunObserver = () => {
                                               <div className="uael-infobox-content">
                                                 <div className="uael-infobox-title-wrap">
                                                   <h5 className="uael-infobox-title elementor-inline-editing" data-elementor-inline-editing-toolbar="basic" data-elementor-setting-key="infobox_title">
-                                                    Bước 1
+                                                    Step 1
                                                   </h5>
                                                 </div>
                                                 <div className="uael-infobox-text-wrap">
                                                   <div className="uael-infobox-text elementor-inline-editing" data-elementor-inline-editing-toolbar="advanced" data-elementor-setting-key="infobox_description">
-                                                    Tự định giá thiết bị chỉ trong 3 phút bằng ứng dụng Retech Market.
+                                                    Self-appraise thiết bị chỉ trong 3 phút bằng ứng dụng Retech Market.
                                                   </div>
                                                   <div className="uael-infobox-cta-link-style">
                                                     <a className="uael-infobox-cta-link" href="#cta">
                                                       <span className="elementor-inline-editing" data-elementor-inline-editing-toolbar="basic" data-elementor-setting-key="infobox_link_text">
-                                                        Tải ứng dụng
+                                                        Download App
                                                       </span>
                                                       <span className="uael-infobox-link-icon uael-infobox-link-icon-after"/>
                                                     </a>
@@ -835,17 +835,17 @@ const lazyloadRunObserver = () => {
                                               <div className="uael-infobox-content">
                                                 <div className="uael-infobox-title-wrap">
                                                   <h5 className="uael-infobox-title elementor-inline-editing" data-elementor-inline-editing-toolbar="basic" data-elementor-setting-key="infobox_title">
-                                                    Bước 2
+                                                    Step 2
                                                   </h5>
                                                 </div>
                                                 <div className="uael-infobox-text-wrap">
                                                   <div className="uael-infobox-text elementor-inline-editing" data-elementor-inline-editing-toolbar="advanced" data-elementor-setting-key="infobox_description">
-                                                    Mang thiết bị đến cửa hàng gần nhất để được nhân viên hỗ trợ.
+                                                    Bring your device to the nearest store for assistance.
                                                   </div>
                                                   <div className="uael-infobox-cta-link-style">
                                                     <a className="uael-infobox-cta-link" href="#">
                                                       <span className="elementor-inline-editing" data-elementor-inline-editing-toolbar="basic" data-elementor-setting-key="infobox_link_text">
-                                                        Tìm cửa hàng
+                                                        Find a Store
                                                       </span>
                                                       <span className="uael-infobox-link-icon uael-infobox-link-icon-after"/>
                                                     </a>
@@ -870,17 +870,17 @@ const lazyloadRunObserver = () => {
                                               <div className="uael-infobox-content">
                                                 <div className="uael-infobox-title-wrap">
                                                   <h5 className="uael-infobox-title elementor-inline-editing" data-elementor-inline-editing-toolbar="basic" data-elementor-setting-key="infobox_title">
-                                                    Bước 3
+                                                    Step 3
                                                   </h5>
                                                 </div>
                                                 <div className="uael-infobox-text-wrap">
                                                   <div className="uael-infobox-text elementor-inline-editing" data-elementor-inline-editing-toolbar="advanced" data-elementor-setting-key="infobox_description">
-                                                    Lên đời máy mới siêu tiết kiệm.
+                                                    Upgrade to a new device with super savings.
                                                   </div>
                                                   <div className="uael-infobox-cta-link-style">
                                                     <a className="uael-infobox-cta-link" href="#">
                                                       <span className="elementor-inline-editing" data-elementor-inline-editing-toolbar="basic" data-elementor-setting-key="infobox_link_text">
-                                                        Xem ưu đãi
+                                                        View Offers
                                                       </span>
                                                       <span className="uael-infobox-link-icon uael-infobox-link-icon-after"/>
                                                     </a>
@@ -916,11 +916,11 @@ const lazyloadRunObserver = () => {
                                         </svg>
                                       </span>
                                       <span className="elementor-button-text uael-marketing-button-title elementor-inline-editing" data-elementor-inline-editing-toolbar="none" data-elementor-setting-key="text">
-                                        Tra cứu thiết bị
+                                        Device Lookup
                                       </span>
                                     </span>
                                     <span className="uael-marketing-button-desc elementor-inline-editing" data-elementor-inline-editing-toolbar="none" data-elementor-setting-key="desc_text">
-                                      Xem danh sách thiết bị thu cũ và các chương trình trợ giá.
+                                      View the list of eligible trade-in devices and subsidy programs.
                                     </span>
                                   </span>
                                 </a>
@@ -934,19 +934,19 @@ const lazyloadRunObserver = () => {
                     {/* JUST 3 EASY STEPS SECTION */}
                     <div className="mx-auto w-full max-w-[1200px] px-4 pt-0 pb-12 -mt-20 relative z-10">
                       <div className="text-center mb-10 scroll-animate">
-                        <div className="text-[32px] font-bold text-gray-900 mb-2 tracking-tight">Chỉ với 3 bước đơn giản</div>
-                        <p className="text-gray-500 text-[15px]">Cách nhanh chóng, dễ dàng và hoàn toàn miễn phí để thanh lý đồ công nghệ cũ.</p>
+                        <div className="text-[32px] font-bold text-gray-900 mb-2 tracking-tight">Chỉ với 3 steps đơn giản</div>
+                        <p className="text-gray-500 text-[15px]">A fast, easy, and completely free way to dispose of old tech.</p>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {/* Step 1 */}
                         <div className="scroll-animate h-full" style={{ transitionDelay: '100ms' }}>
                           <div className="bg-white h-full flex flex-col rounded-[20px] overflow-hidden border border-gray-100 shadow-[0_4px_16px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] transition-shadow">
                             <div className="px-3 pt-3 pb-0 shrink-0">
-                              <img src="/landing-assets/Trade-in.png" alt="Nhận báo giá" className="w-full h-[260px] object-cover" style={{ borderRadius: '16px' }} />
+                              <img src="/landing-assets/Trade-in.png" alt="Get a Quote" className="w-full h-[260px] object-cover" style={{ borderRadius: '16px' }} />
                             </div>
                             <div className="p-6 flex-grow flex flex-col justify-start">
-                              <div className="text-[17px] font-bold text-gray-900 mb-2">Nhận báo giá</div>
-                              <p className="text-[#6b7280] leading-relaxed text-[14px] m-0">Nhận báo giá từ chuyên gia định giá AI của chúng tôi chỉ trong khoảng 2 phút.</p>
+                              <div className="text-[17px] font-bold text-gray-900 mb-2">Get a Quote</div>
+                              <p className="text-[#6b7280] leading-relaxed text-[14px] m-0">Get a Quote từ chuyên gia định giá AI của chúng tôi chỉ trong khoảng 2 phút.</p>
                             </div>
                           </div>
                         </div>
@@ -954,11 +954,11 @@ const lazyloadRunObserver = () => {
                         <div className="scroll-animate h-full" style={{ transitionDelay: '200ms' }}>
                           <div className="bg-white h-full flex flex-col rounded-[20px] overflow-hidden border border-gray-100 shadow-[0_4px_16px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] transition-shadow">
                             <div className="px-3 pt-3 pb-0 shrink-0">
-                              <img src="/landing-assets/VanChuyen.png" alt="Vận chuyển miễn phí" className="w-full h-[260px] object-cover" style={{ borderRadius: '16px' }} />
+                              <img src="/landing-assets/VanChuyen.png" alt="Free Shipping" className="w-full h-[260px] object-cover" style={{ borderRadius: '16px' }} />
                             </div>
                             <div className="p-6 flex-grow flex flex-col justify-start">
-                              <div className="text-[17px] font-bold text-gray-900 mb-2">Vận chuyển miễn phí</div>
-                              <p className="text-[#6b7280] leading-relaxed text-[14px] m-0">Chuyển dữ liệu và gửi thiết bị của bạn hoàn toàn miễn phí trong vòng 21 ngày.</p>
+                              <div className="text-[17px] font-bold text-gray-900 mb-2">Free Shipping</div>
+                              <p className="text-[#6b7280] leading-relaxed text-[14px] m-0">Transfer data and ship your device completely free within 21 days.</p>
                             </div>
                           </div>
                         </div>
@@ -966,11 +966,11 @@ const lazyloadRunObserver = () => {
                         <div className="scroll-animate h-full" style={{ transitionDelay: '300ms' }}>
                           <div className="bg-white h-full flex flex-col rounded-[20px] overflow-hidden border border-gray-100 shadow-[0_4px_16px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] transition-shadow">
                             <div className="px-3 pt-3 pb-0 shrink-0">
-                              <img src="/landing-assets/Get_paid.png" alt="Nhận thanh toán" className="w-full h-[260px] object-cover" style={{ borderRadius: '16px' }} />
+                              <img src="/landing-assets/Get_paid.png" alt="Get Paid" className="w-full h-[260px] object-cover" style={{ borderRadius: '16px' }} />
                             </div>
                             <div className="p-6 flex-grow flex flex-col justify-start">
-                              <div className="text-[17px] font-bold text-gray-900 mb-2">Nhận thanh toán</div>
-                              <p className="text-[#6b7280] leading-relaxed text-[14px] m-0">Nhận tiền chuyển khoản trực tiếp trong vòng 5 ngày làm việc.</p>
+                              <div className="text-[17px] font-bold text-gray-900 mb-2">Get Paid</div>
+                              <p className="text-[#6b7280] leading-relaxed text-[14px] m-0">Receive direct bank transfer within 5 business days.</p>
                             </div>
                           </div>
                         </div>
@@ -985,14 +985,14 @@ const lazyloadRunObserver = () => {
                             <div className="elementor-element elementor-element-4a2d964 elementor-widget elementor-widget-heading" data-element_type="widget" data-id="4a2d964" data-widget_type="heading.default">
                               <div className="elementor-widget-container">
                                 <h6 className="elementor-heading-title elementor-size-default">
-                                  THU CŨ ĐỔI MỚI
+                                  TRADE-IN PROGRAM
                                 </h6>
                               </div>
                             </div>
                             <div className="elementor-element elementor-element-eb7c0b0 elementor-widget elementor-widget-heading" data-element_type="widget" data-id="eb7c0b0" data-widget_type="heading.default">
                               <div className="elementor-widget-container">
                                 <h3 className="elementor-heading-title elementor-size-default">
-                                  Chỉ có thể với Retech Market
+                                  Only at Retech Market
                                 </h3>
                               </div>
                             </div>
@@ -1008,7 +1008,7 @@ const lazyloadRunObserver = () => {
                                           <img alt="" className="attachment-full size-full wp-image-25287" decoding="async" height="200" loading="lazy" src="/landing-assets/extracted_image_12.svg" width="200"/>
                                         </div>
                                         <h5 className="elementor-flip-box__layer__title">
-                                          Dễ dàng
+                                          Easy
                                         </h5>
                                       </div>
                                     </div>
@@ -1017,17 +1017,17 @@ const lazyloadRunObserver = () => {
                                     <div className="elementor-flip-box__layer__overlay">
                                       <div className="elementor-flip-box__layer__inner">
                                         <div className="elementor-flip-box__layer__description">
-                                          Với Retech Market, bạn hoàn toàn có thể tự thẩm định thiết bị của mình.
+                                          With Retech Market, you can completely self-appraise your device.
                                           <br/>
                                           <ul>
                                             <li>
-                                              Quy trình nhanh gọn, giao diện thân thiện với người dùng.
+                                              Fast process, user-friendly interface.
                                             </li>
                                             <li>
-                                              Thao tác dễ dàng không đòi hỏi chuyên môn kỹ thuật.
+                                              Easy operation requiring no technical expertise.
                                             </li>
                                             <li>
-                                              Bạn vẫn không tự tin? Hãy đến cửa hàng gần nhất để được nhân viên hỗ trợ từ A đến Z.
+                                              Still not confident? Visit the nearest store for A-to-Z support from our staff.
                                             </li>
                                           </ul>
                                         </div>
@@ -1047,7 +1047,7 @@ const lazyloadRunObserver = () => {
                                           <img alt="" className="attachment-full size-full wp-image-25285" decoding="async" height="200" loading="lazy" src="/landing-assets/extracted_image_13.svg" width="201"/>
                                         </div>
                                         <h5 className="elementor-flip-box__layer__title">
-                                          Nhanh chóng
+                                          Fast
                                         </h5>
                                       </div>
                                     </div>
@@ -1056,7 +1056,7 @@ const lazyloadRunObserver = () => {
                                     <div className="elementor-flip-box__layer__overlay">
                                       <div className="elementor-flip-box__layer__inner">
                                         <div className="elementor-flip-box__layer__description">
-                                          Không còn phụ thuộc vào nhân viên kỹ thuật, bạn có thể tự thẩm định và tự định giá trong vòng 3 Bước.
+                                          No longer dependent on technicians, you can self-appraise and self-price in 3 steps.
                                         </div>
                                       </div>
                                     </div>
@@ -1074,7 +1074,7 @@ const lazyloadRunObserver = () => {
                                           <img alt="" className="attachment-full size-full wp-image-25282" decoding="async" height="201" loading="lazy" src="/landing-assets/extracted_image_14.svg" width="200"/>
                                         </div>
                                         <h5 className="elementor-flip-box__layer__title">
-                                          Siêu hời
+                                          Super Deal
                                         </h5>
                                       </div>
                                     </div>
@@ -1083,19 +1083,19 @@ const lazyloadRunObserver = () => {
                                     <div className="elementor-flip-box__layer__overlay">
                                       <div className="elementor-flip-box__layer__inner">
                                         <div className="elementor-flip-box__layer__description">
-                                          Đến với Retech Market, bạn không chỉ được hời, mà là SIÊU hời.
+                                          At Retech Market, you don't just get a good deal, you get a SUPER deal.
                                           <br/>
-                                          Vì Retech Market luôn đảm bảo cho bạn:
+                                          Because Retech Market always guarantees you:
                                           <br/>
                                           <ul>
                                             <li>
-                                              Giá thu cũ cực kỳ cạnh tranh.
+                                              Extremely competitive trade-in prices.
                                             </li>
                                             <li>
-                                              Nhiều chương trình ưu đãi, trợ giá hấp dẫn từ hãng và các đối tác
+                                              Many attractive offers and subsidies from brands and partners.
                                             </li>
                                             <li>
-                                              Lên đời một cách tiết kiệm nhất.
+                                              Upgrade in the most economical way.
                                             </li>
                                           </ul>
                                         </div>
@@ -1115,7 +1115,7 @@ const lazyloadRunObserver = () => {
                                           <img alt="" className="attachment-full size-full wp-image-24847" decoding="async" height="200" loading="lazy" src="/landing-assets/extracted_image_15.svg" width="200"/>
                                         </div>
                                         <h5 className="elementor-flip-box__layer__title">
-                                          Bảo mật
+                                          Secure
                                         </h5>
                                       </div>
                                     </div>
@@ -1124,9 +1124,9 @@ const lazyloadRunObserver = () => {
                                     <div className="elementor-flip-box__layer__overlay">
                                       <div className="elementor-flip-box__layer__inner">
                                         <div className="elementor-flip-box__layer__description">
-                                          Bạn có biết khi dùng tính năng "khôi phục cài đặc gốc" (factory reset), các dữ liệu cá nhân đều có thể được phục hồi lại?
+                                          Did you know that when using "factory reset", personal data can still be recovered?
                                           <br/>
-                                          Với Retech Market, bạn có thể an tâm vì chúng tôi sử dụng giải pháp xóa dữ liệu theo chuẩn quốc tế.
+                                          With Retech Market, you can rest assured as we use international standard data wiping solutions.
                                         </div>
                                       </div>
                                     </div>
@@ -1150,12 +1150,12 @@ const lazyloadRunObserver = () => {
                                           <div className="elementor-image-box-wrapper">
                                             <div className="elementor-image-box-content">
                                               <h3 className="elementor-image-box-title">
-                                                THỬ ĐỊNH GIÁ THIẾT BỊ
+                                                TRY PRICING YOUR DEVICE
                                                 <br/>
-                                                CỦA BẠN NGAY
+                                                RIGHT NOW
                                               </h3>
                                               <p className="elementor-image-box-description">
-                                                Tải ứng dụng Retech Market cực kỳ đơn giản và hoàn toàn miễn phí!
+                                                Download App Retech Market cực kỳ đơn giản và hoàn toàn miễn phí!
                                               </p>
                                             </div>
                                           </div>
@@ -1256,14 +1256,14 @@ const lazyloadRunObserver = () => {
                               <div className="elementor-element elementor-element-9fc6712 elementor-widget elementor-widget-heading" data-element_type="widget" data-id="9fc6712" data-widget_type="heading.default">
                                 <div className="elementor-widget-container">
                                   <h3 className="elementor-heading-title elementor-size-default">
-                                    Câu hỏi thường gặp
+                                    Frequently Asked Questions
                                   </h3>
                                 </div>
                               </div>
                               <div className="elementor-element elementor-element-1074e27 elementor-widget elementor-widget-text-editor" data-element_type="widget" data-id="1074e27" data-widget_type="text-editor.default">
                                 <div className="elementor-widget-container">
                                   <p>
-                                    Về dịch vụ Thu Cũ Đổi Mới của Retech Market
+                                    About Retech Market's Trade-in Service
                                   </p>
                                 </div>
                               </div>
@@ -1285,23 +1285,23 @@ const lazyloadRunObserver = () => {
                                           </span>
                                         </span>
                                         <a className="elementor-accordion-title" tabIndex={0}>
-                                          Thu Cũ Đổi Mới là gì?
+                                          What is Trade-in?
                                         </a>
                                       </div>
                                       <div aria-labelledby="elementor-tab-title-1031" className="elementor-tab-content elementor-clearfix" data-tab="1" id="elementor-tab-content-1031" role="region">
                                         <p>
-                                          <span data-sheets-root="1" data-sheets-userformat="{&quot;2&quot;:15233,&quot;3&quot;:{&quot;1&quot;:0},&quot;10&quot;:1,&quot;11&quot;:4,&quot;12&quot;:0,&quot;14&quot;:{&quot;1&quot;:3,&quot;3&quot;:1},&quot;15&quot;:&quot;Roboto&quot;,&quot;16&quot;:11}" data-sheets-value="{&quot;1&quot;:2,&quot;2&quot;:&quot;Thu Cũ Đổi Mới là một dịch vụ của Retech Market dành cho khách hàng đang sở hữu một (hoặc nhiều) thiết bị và muốn chuyển sang sở hữu hoặc sử dụng một thiết bị mới hơn. Thay vì phải bỏ ra một số tiền lớn để mua thiết bị mới, Retech Market hỗ trợ mua lại thiết bị cũ giúp khách hàng tiết kiệm chi phí.\n\nKhi đó,\nSố tiền bạn phải trả = Giá bán máy mới – Giá thu máy cũ – Ưu đãi/Trợ giá (nếu có).&quot;}">
-                                            Thu Cũ Đổi Mới là một dịch vụ của Retech Market dành cho khách hàng đang sở hữu một (hoặc nhiều) thiết bị và muốn chuyển sang sở hữu hoặc sử dụng một thiết bị mới hơn. Thay vì phải bỏ ra một số tiền lớn để mua thiết bị mới, Retech Market hỗ trợ mua lại thiết bị cũ giúp khách hàng tiết kiệm chi phí.
+                                          <span data-sheets-root="1" data-sheets-userformat="{&quot;2&quot;:15233,&quot;3&quot;:{&quot;1&quot;:0},&quot;10&quot;:1,&quot;11&quot;:4,&quot;12&quot;:0,&quot;14&quot;:{&quot;1&quot;:3,&quot;3&quot;:1},&quot;15&quot;:&quot;Roboto&quot;,&quot;16&quot;:11}" data-sheets-value="{&quot;1&quot;:2,&quot;2&quot;:&quot;Trade-in is a Retech Market service for customers who own one (or more) devices and want to upgrade to a newer one. Instead of spending a large amount on a new device, Retech Market buys back your old device to help you save money.\n\nThen,\nSố tiền bạn phải trả = Giá bán máy mới – Giá thu máy cũ – Ưu đãi/Trợ giá (nếu có).&quot;}">
+                                            Trade-in is a Retech Market service for customers who own one (or more) devices and want to upgrade to a newer one. Instead of spending a large amount on a new device, Retech Market buys back your old device to help you save money.
                                             <br/>
                                             <br/>
-                                            Khi đó,
+                                            Then,
                                             <br/>
                                             <em>
-                                              Số tiền bạn phải trả = Giá bán máy mới – Giá thu máy cũ – Ưu đãi/ Trợ giá (nếu có).
+                                              Amount to pay = New device price - Old device value - Offers/Subsidies (if any).
                                             </em>
                                             <br/>
                                             <br/>
-                                            Với quy trình thủ tục nhanh gọn, chúng tôi đảm bảo bạn sẽ có trải nghiệm lên đời máy tuyệt vời nhất.
+                                            With a quick process, we ensure you have the best upgrade experience.
                                           </span>
                                         </p>
                                       </div>
@@ -1321,16 +1321,16 @@ const lazyloadRunObserver = () => {
                                           </span>
                                         </span>
                                         <a className="elementor-accordion-title" tabIndex={0}>
-                                          Các loại thiết bị nào có thể tham gia Thu Cũ Đổi Mới?
+                                          What devices are eligible for Trade-in?
                                         </a>
                                       </div>
                                       <div aria-labelledby="elementor-tab-title-1032" className="elementor-tab-content elementor-clearfix" data-tab="2" id="elementor-tab-content-1032" role="region">
                                         <p>
-                                          <span data-sheets-root="1" data-sheets-textstyleruns="{&quot;1&quot;:0}{&quot;1&quot;:267,&quot;2&quot;:{&quot;9&quot;:1}}{&quot;1&quot;:274}" data-sheets-userformat="{&quot;2&quot;:15235,&quot;3&quot;:{&quot;1&quot;:0},&quot;4&quot;:{&quot;1&quot;:2,&quot;2&quot;:16776960},&quot;10&quot;:1,&quot;11&quot;:4,&quot;12&quot;:0,&quot;14&quot;:{&quot;1&quot;:3,&quot;3&quot;:1},&quot;15&quot;:&quot;Roboto&quot;,&quot;16&quot;:11}" data-sheets-value="{&quot;1&quot;:2,&quot;2&quot;:&quot;Retech Market sẵn sàng hỗ trợ thu mua hơn 900 dòng điện thoại thông minh, máy tính bảng, đồng hồ thông minh, tai nghe bluetooth thuộc hầu hết các hãng như Apple, Samsung, Oppo, Vivo, Xiaomi, Garmin, v.v.\n\nBạn có thể tham khảo danh sách các dòng thiết bị và giá thu dự kiến TẠI ĐÂY.&quot;}">
-                                            Retech Market sẵn sàng hỗ trợ thu mua hơn 900 dòng điện thoại thông minh, máy tính bảng, đồng hồ thông minh, tai nghe bluetooth thuộc hầu hết các hãng như Apple, Samsung, Oppo, Vivo, Xiaomi, Garmin, v.v.
+                                          <span data-sheets-root="1" data-sheets-textstyleruns="{&quot;1&quot;:0}{&quot;1&quot;:267,&quot;2&quot;:{&quot;9&quot;:1}}{&quot;1&quot;:274}" data-sheets-userformat="{&quot;2&quot;:15235,&quot;3&quot;:{&quot;1&quot;:0},&quot;4&quot;:{&quot;1&quot;:2,&quot;2&quot;:16776960},&quot;10&quot;:1,&quot;11&quot;:4,&quot;12&quot;:0,&quot;14&quot;:{&quot;1&quot;:3,&quot;3&quot;:1},&quot;15&quot;:&quot;Roboto&quot;,&quot;16&quot;:11}" data-sheets-value="{&quot;1&quot;:2,&quot;2&quot;:&quot;Retech Market supports trade-ins for over 900 models of smartphones, tablets, smartwatches, and bluetooth headsets from most brands like Apple, Samsung, Oppo, Vivo, Xiaomi, Garmin, etc.\n\nBạn có thể tham khảo danh sách các dòng thiết bị và giá thu dự kiến TẠI ĐÂY.&quot;}">
+                                            Retech Market supports trade-ins for over 900 models of smartphones, tablets, smartwatches, and bluetooth headsets from most brands like Apple, Samsung, Oppo, Vivo, Xiaomi, Garmin, etc.
                                             <br/>
                                             <br/>
-                                            Nếu không tìm thấy dòng máy của bạn, vui lòng liên hệ hotline để được tư vấn thêm.
+                                            If you cannot find your model, please contact our hotline for further advice.
                                           </span>
                                         </p>
                                       </div>
@@ -1350,13 +1350,13 @@ const lazyloadRunObserver = () => {
                                           </span>
                                         </span>
                                         <a className="elementor-accordion-title" tabIndex={0}>
-                                          Tôi có cần cung cấp phụ kiện thiết bị của mình cho Retech Market không?
+                                          Do I need to provide accessories with my device?
                                         </a>
                                       </div>
                                       <div aria-labelledby="elementor-tab-title-1033" className="elementor-tab-content elementor-clearfix" data-tab="3" id="elementor-tab-content-1033" role="region">
                                         <p>
                                           <span data-sheets-root="1" data-sheets-userformat="{&quot;2&quot;:15233,&quot;3&quot;:{&quot;1&quot;:0},&quot;10&quot;:1,&quot;11&quot;:4,&quot;12&quot;:0,&quot;14&quot;:{&quot;1&quot;:3,&quot;3&quot;:1},&quot;15&quot;:&quot;Roboto&quot;,&quot;16&quot;:11}" data-sheets-value="{&quot;1&quot;:2,&quot;2&quot;:&quot;Không cần. Bạn chỉ cần cung cấp thiết bị của bạn cho Retech Market mà không cần kèm theo phụ kiện.&quot;}">
-                                            Không cần. Bạn chỉ cần cung cấp thiết bị của bạn cho Retech Market mà không cần kèm theo phụ kiện. Việc thiếu phụ kiện không làm ảnh hưởng đến giá trị thu mua thiết bị của bạn.
+                                            No. You only need to provide your device without accessories. Missing accessories will not affect your device's trade-in value.
                                           </span>
                                         </p>
                                       </div>
@@ -1376,29 +1376,29 @@ const lazyloadRunObserver = () => {
                                           </span>
                                         </span>
                                         <a className="elementor-accordion-title" tabIndex={0}>
-                                          Điện thoại thông minh và máy tính bảng cần đáp ứng những yêu cầu nào khi tham gia Thu Cũ Đổi Mới của Retech Market?
+                                          What are the requirements for smartphones and tablets to participate in Trade-in?
                                         </a>
                                       </div>
                                       <div aria-labelledby="elementor-tab-title-1034" className="elementor-tab-content elementor-clearfix" data-tab="4" id="elementor-tab-content-1034" role="region">
                                         <ol>
                                           <li>
-                                            <span data-sheets-root="1" data-sheets-textstyleruns="{&quot;1&quot;:0}{&quot;1&quot;:174,&quot;2&quot;:{&quot;5&quot;:1}}{&quot;1&quot;:180}" data-sheets-userformat="{&quot;2&quot;:15235,&quot;3&quot;:{&quot;1&quot;:0},&quot;4&quot;:{&quot;1&quot;:2,&quot;2&quot;:16776960},&quot;10&quot;:1,&quot;11&quot;:4,&quot;12&quot;:0,&quot;14&quot;:{&quot;1&quot;:3,&quot;3&quot;:1},&quot;15&quot;:&quot;Roboto&quot;,&quot;16&quot;:11}" data-sheets-value="{&quot;1&quot;:2,&quot;2&quot;:&quot;1. Bạn phải là chủ sở hữu hợp pháp của thiết bị đó.\n2. Thiết bị phải lên nguồn.\n3. Màn hình thiết bị không nhấp nháy, chập chờn hoặc bị treo logo, treo màn hình.\n4. Thiết bị không (a) bị khóa tài khoản iCloud hoặc (b) bị báo mất cắp hoặc (c) làm giả hàng chính hãng.&quot;}">
-                                              Bạn phải là chủ sở hữu hợp pháp của thiết bị đó.
+                                            <span data-sheets-root="1" data-sheets-textstyleruns="{&quot;1&quot;:0}{&quot;1&quot;:174,&quot;2&quot;:{&quot;5&quot;:1}}{&quot;1&quot;:180}" data-sheets-userformat="{&quot;2&quot;:15235,&quot;3&quot;:{&quot;1&quot;:0},&quot;4&quot;:{&quot;1&quot;:2,&quot;2&quot;:16776960},&quot;10&quot;:1,&quot;11&quot;:4,&quot;12&quot;:0,&quot;14&quot;:{&quot;1&quot;:3,&quot;3&quot;:1},&quot;15&quot;:&quot;Roboto&quot;,&quot;16&quot;:11}" data-sheets-value="{&quot;1&quot;:2,&quot;2&quot;:&quot;1. You must be the legal owner of the device.\n2. The device must power on.\n3. The screen must not flicker, glitch, or be stuck on the logo.\n4. Thiết bị không (a) bị khóa tài khoản iCloud hoặc (b) bị báo mất cắp hoặc (c) làm giả hàng chính hãng.&quot;}">
+                                              You must be the legal owner of the device.
                                             </span>
                                           </li>
                                           <li>
-                                            <span data-sheets-root="1" data-sheets-textstyleruns="{&quot;1&quot;:0}{&quot;1&quot;:174,&quot;2&quot;:{&quot;5&quot;:1}}{&quot;1&quot;:180}" data-sheets-userformat="{&quot;2&quot;:15235,&quot;3&quot;:{&quot;1&quot;:0},&quot;4&quot;:{&quot;1&quot;:2,&quot;2&quot;:16776960},&quot;10&quot;:1,&quot;11&quot;:4,&quot;12&quot;:0,&quot;14&quot;:{&quot;1&quot;:3,&quot;3&quot;:1},&quot;15&quot;:&quot;Roboto&quot;,&quot;16&quot;:11}" data-sheets-value="{&quot;1&quot;:2,&quot;2&quot;:&quot;1. Bạn phải là chủ sở hữu hợp pháp của thiết bị đó.\n2. Thiết bị phải lên nguồn.\n3. Màn hình thiết bị không nhấp nháy, chập chờn hoặc bị treo logo, treo màn hình.\n4. Thiết bị không (a) bị khóa tài khoản iCloud hoặc (b) bị báo mất cắp hoặc (c) làm giả hàng chính hãng.&quot;}">
-                                              Thiết bị phải lên nguồn.
+                                            <span data-sheets-root="1" data-sheets-textstyleruns="{&quot;1&quot;:0}{&quot;1&quot;:174,&quot;2&quot;:{&quot;5&quot;:1}}{&quot;1&quot;:180}" data-sheets-userformat="{&quot;2&quot;:15235,&quot;3&quot;:{&quot;1&quot;:0},&quot;4&quot;:{&quot;1&quot;:2,&quot;2&quot;:16776960},&quot;10&quot;:1,&quot;11&quot;:4,&quot;12&quot;:0,&quot;14&quot;:{&quot;1&quot;:3,&quot;3&quot;:1},&quot;15&quot;:&quot;Roboto&quot;,&quot;16&quot;:11}" data-sheets-value="{&quot;1&quot;:2,&quot;2&quot;:&quot;1. You must be the legal owner of the device.\n2. The device must power on.\n3. The screen must not flicker, glitch, or be stuck on the logo.\n4. Thiết bị không (a) bị khóa tài khoản iCloud hoặc (b) bị báo mất cắp hoặc (c) làm giả hàng chính hãng.&quot;}">
+                                              The device must power on.
                                             </span>
                                           </li>
                                           <li>
-                                            <span data-sheets-root="1" data-sheets-textstyleruns="{&quot;1&quot;:0}{&quot;1&quot;:174,&quot;2&quot;:{&quot;5&quot;:1}}{&quot;1&quot;:180}" data-sheets-userformat="{&quot;2&quot;:15235,&quot;3&quot;:{&quot;1&quot;:0},&quot;4&quot;:{&quot;1&quot;:2,&quot;2&quot;:16776960},&quot;10&quot;:1,&quot;11&quot;:4,&quot;12&quot;:0,&quot;14&quot;:{&quot;1&quot;:3,&quot;3&quot;:1},&quot;15&quot;:&quot;Roboto&quot;,&quot;16&quot;:11}" data-sheets-value="{&quot;1&quot;:2,&quot;2&quot;:&quot;1. Bạn phải là chủ sở hữu hợp pháp của thiết bị đó.\n2. Thiết bị phải lên nguồn.\n3. Màn hình thiết bị không nhấp nháy, chập chờn hoặc bị treo logo, treo màn hình.\n4. Thiết bị không (a) bị khóa tài khoản iCloud hoặc (b) bị báo mất cắp hoặc (c) làm giả hàng chính hãng.&quot;}">
-                                              Màn hình thiết bị không nhấp nháy, chập chờn hoặc bị treo logo, treo màn hình.
+                                            <span data-sheets-root="1" data-sheets-textstyleruns="{&quot;1&quot;:0}{&quot;1&quot;:174,&quot;2&quot;:{&quot;5&quot;:1}}{&quot;1&quot;:180}" data-sheets-userformat="{&quot;2&quot;:15235,&quot;3&quot;:{&quot;1&quot;:0},&quot;4&quot;:{&quot;1&quot;:2,&quot;2&quot;:16776960},&quot;10&quot;:1,&quot;11&quot;:4,&quot;12&quot;:0,&quot;14&quot;:{&quot;1&quot;:3,&quot;3&quot;:1},&quot;15&quot;:&quot;Roboto&quot;,&quot;16&quot;:11}" data-sheets-value="{&quot;1&quot;:2,&quot;2&quot;:&quot;1. You must be the legal owner of the device.\n2. The device must power on.\n3. The screen must not flicker, glitch, or be stuck on the logo.\n4. Thiết bị không (a) bị khóa tài khoản iCloud hoặc (b) bị báo mất cắp hoặc (c) làm giả hàng chính hãng.&quot;}">
+                                              The screen must not flicker, glitch, or be stuck on the logo.
                                             </span>
                                           </li>
                                           <li>
-                                            <span data-sheets-root="1" data-sheets-textstyleruns="{&quot;1&quot;:0}{&quot;1&quot;:174,&quot;2&quot;:{&quot;5&quot;:1}}{&quot;1&quot;:180}" data-sheets-userformat="{&quot;2&quot;:15235,&quot;3&quot;:{&quot;1&quot;:0},&quot;4&quot;:{&quot;1&quot;:2,&quot;2&quot;:16776960},&quot;10&quot;:1,&quot;11&quot;:4,&quot;12&quot;:0,&quot;14&quot;:{&quot;1&quot;:3,&quot;3&quot;:1},&quot;15&quot;:&quot;Roboto&quot;,&quot;16&quot;:11}" data-sheets-value="{&quot;1&quot;:2,&quot;2&quot;:&quot;1. Bạn phải là chủ sở hữu hợp pháp của thiết bị đó.\n2. Thiết bị phải lên nguồn.\n3. Màn hình thiết bị không nhấp nháy, chập chờn hoặc bị treo logo, treo màn hình.\n4. Thiết bị không (a) bị khóa tài khoản iCloud hoặc (b) bị báo mất cắp hoặc (c) làm giả hàng chính hãng.&quot;}">
-                                              Thiết bị không bị khóa tài khoản iCloud hoặc bị báo mất cắp hoặc làm giả hàng chính hãng. Chúng tôi luôn kiểm tra kỹ lưỡng để đảm bảo quyền lợi cho cả hai bên.
+                                            <span data-sheets-root="1" data-sheets-textstyleruns="{&quot;1&quot;:0}{&quot;1&quot;:174,&quot;2&quot;:{&quot;5&quot;:1}}{&quot;1&quot;:180}" data-sheets-userformat="{&quot;2&quot;:15235,&quot;3&quot;:{&quot;1&quot;:0},&quot;4&quot;:{&quot;1&quot;:2,&quot;2&quot;:16776960},&quot;10&quot;:1,&quot;11&quot;:4,&quot;12&quot;:0,&quot;14&quot;:{&quot;1&quot;:3,&quot;3&quot;:1},&quot;15&quot;:&quot;Roboto&quot;,&quot;16&quot;:11}" data-sheets-value="{&quot;1&quot;:2,&quot;2&quot;:&quot;1. You must be the legal owner of the device.\n2. The device must power on.\n3. The screen must not flicker, glitch, or be stuck on the logo.\n4. Thiết bị không (a) bị khóa tài khoản iCloud hoặc (b) bị báo mất cắp hoặc (c) làm giả hàng chính hãng.&quot;}">
+                                              The device must not be iCloud locked, reported stolen, or counterfeit. We thoroughly check to protect both parties.
                                             </span>
                                           </li>
                                         </ol>
@@ -1419,29 +1419,29 @@ const lazyloadRunObserver = () => {
                                           </span>
                                         </span>
                                         <a className="elementor-accordion-title" tabIndex={0}>
-                                          Đồng hồ thông minh cần đáp ứng những yêu cầu nào khi tham gia Thu Cũ Đổi Mới của Retech Market?
+                                          What are the requirements for smartwatches to participate in Trade-in?
                                         </a>
                                       </div>
                                       <div aria-labelledby="elementor-tab-title-1035" className="elementor-tab-content elementor-clearfix" data-tab="5" id="elementor-tab-content-1035" role="region">
                                         <ol>
                                           <li>
-                                            <span data-sheets-root="1" data-sheets-textstyleruns="{&quot;1&quot;:0}{&quot;1&quot;:144,&quot;2&quot;:{&quot;5&quot;:1}}{&quot;1&quot;:149}" data-sheets-userformat="{&quot;2&quot;:15235,&quot;3&quot;:{&quot;1&quot;:0},&quot;4&quot;:{&quot;1&quot;:2,&quot;2&quot;:16776960},&quot;10&quot;:1,&quot;11&quot;:4,&quot;12&quot;:0,&quot;14&quot;:{&quot;1&quot;:3,&quot;3&quot;:1},&quot;15&quot;:&quot;Roboto&quot;,&quot;16&quot;:11}" data-sheets-value="{&quot;1&quot;:2,&quot;2&quot;:&quot;1. Bạn phải là chủ sở hữu hợp pháp của thiết bị đó.\n2. Màn hình cảm ứng và chức năng thiết bị vẫn hoạt động tốt.\n3. Mặt đèn cảm biến (mặt lưng) không bị trầy mờ hoặc bể vỡ.\n4. Thiết bị nhận sạc bình thường.&quot;}">
-                                              Bạn phải là chủ sở hữu hợp pháp của thiết bị đó.
+                                            <span data-sheets-root="1" data-sheets-textstyleruns="{&quot;1&quot;:0}{&quot;1&quot;:144,&quot;2&quot;:{&quot;5&quot;:1}}{&quot;1&quot;:149}" data-sheets-userformat="{&quot;2&quot;:15235,&quot;3&quot;:{&quot;1&quot;:0},&quot;4&quot;:{&quot;1&quot;:2,&quot;2&quot;:16776960},&quot;10&quot;:1,&quot;11&quot;:4,&quot;12&quot;:0,&quot;14&quot;:{&quot;1&quot;:3,&quot;3&quot;:1},&quot;15&quot;:&quot;Roboto&quot;,&quot;16&quot;:11}" data-sheets-value="{&quot;1&quot;:2,&quot;2&quot;:&quot;1. You must be the legal owner of the device.\n2. Touch screen and device functions still work well.\n3. The sensor light face (back) is not scratched, blurred, or broken.\n4. The device charges normally.&quot;}">
+                                              You must be the legal owner of the device.
                                             </span>
                                           </li>
                                           <li>
-                                            <span data-sheets-root="1" data-sheets-textstyleruns="{&quot;1&quot;:0}{&quot;1&quot;:144,&quot;2&quot;:{&quot;5&quot;:1}}{&quot;1&quot;:149}" data-sheets-userformat="{&quot;2&quot;:15235,&quot;3&quot;:{&quot;1&quot;:0},&quot;4&quot;:{&quot;1&quot;:2,&quot;2&quot;:16776960},&quot;10&quot;:1,&quot;11&quot;:4,&quot;12&quot;:0,&quot;14&quot;:{&quot;1&quot;:3,&quot;3&quot;:1},&quot;15&quot;:&quot;Roboto&quot;,&quot;16&quot;:11}" data-sheets-value="{&quot;1&quot;:2,&quot;2&quot;:&quot;1. Bạn phải là chủ sở hữu hợp pháp của thiết bị đó.\n2. Màn hình cảm ứng và chức năng thiết bị vẫn hoạt động tốt.\n3. Mặt đèn cảm biến (mặt lưng) không bị trầy mờ hoặc bể vỡ.\n4. Thiết bị nhận sạc bình thường.&quot;}">
-                                              Màn hình cảm ứng và chức năng thiết bị vẫn hoạt động tốt.
+                                            <span data-sheets-root="1" data-sheets-textstyleruns="{&quot;1&quot;:0}{&quot;1&quot;:144,&quot;2&quot;:{&quot;5&quot;:1}}{&quot;1&quot;:149}" data-sheets-userformat="{&quot;2&quot;:15235,&quot;3&quot;:{&quot;1&quot;:0},&quot;4&quot;:{&quot;1&quot;:2,&quot;2&quot;:16776960},&quot;10&quot;:1,&quot;11&quot;:4,&quot;12&quot;:0,&quot;14&quot;:{&quot;1&quot;:3,&quot;3&quot;:1},&quot;15&quot;:&quot;Roboto&quot;,&quot;16&quot;:11}" data-sheets-value="{&quot;1&quot;:2,&quot;2&quot;:&quot;1. You must be the legal owner of the device.\n2. Touch screen and device functions still work well.\n3. The sensor light face (back) is not scratched, blurred, or broken.\n4. The device charges normally.&quot;}">
+                                              Touch screen and device functions still work well.
                                             </span>
                                           </li>
                                           <li>
-                                            <span data-sheets-root="1" data-sheets-textstyleruns="{&quot;1&quot;:0}{&quot;1&quot;:144,&quot;2&quot;:{&quot;5&quot;:1}}{&quot;1&quot;:149}" data-sheets-userformat="{&quot;2&quot;:15235,&quot;3&quot;:{&quot;1&quot;:0},&quot;4&quot;:{&quot;1&quot;:2,&quot;2&quot;:16776960},&quot;10&quot;:1,&quot;11&quot;:4,&quot;12&quot;:0,&quot;14&quot;:{&quot;1&quot;:3,&quot;3&quot;:1},&quot;15&quot;:&quot;Roboto&quot;,&quot;16&quot;:11}" data-sheets-value="{&quot;1&quot;:2,&quot;2&quot;:&quot;1. Bạn phải là chủ sở hữu hợp pháp của thiết bị đó.\n2. Màn hình cảm ứng và chức năng thiết bị vẫn hoạt động tốt.\n3. Mặt đèn cảm biến (mặt lưng) không bị trầy mờ hoặc bể vỡ.\n4. Thiết bị nhận sạc bình thường.&quot;}">
-                                              Mặt đèn cảm biến (mặt lưng) không bị trầy mờ hoặc bể vỡ.
+                                            <span data-sheets-root="1" data-sheets-textstyleruns="{&quot;1&quot;:0}{&quot;1&quot;:144,&quot;2&quot;:{&quot;5&quot;:1}}{&quot;1&quot;:149}" data-sheets-userformat="{&quot;2&quot;:15235,&quot;3&quot;:{&quot;1&quot;:0},&quot;4&quot;:{&quot;1&quot;:2,&quot;2&quot;:16776960},&quot;10&quot;:1,&quot;11&quot;:4,&quot;12&quot;:0,&quot;14&quot;:{&quot;1&quot;:3,&quot;3&quot;:1},&quot;15&quot;:&quot;Roboto&quot;,&quot;16&quot;:11}" data-sheets-value="{&quot;1&quot;:2,&quot;2&quot;:&quot;1. You must be the legal owner of the device.\n2. Touch screen and device functions still work well.\n3. The sensor light face (back) is not scratched, blurred, or broken.\n4. The device charges normally.&quot;}">
+                                              The sensor light face (back) is not scratched, blurred, or broken.
                                             </span>
                                           </li>
                                           <li>
-                                            <span data-sheets-root="1" data-sheets-textstyleruns="{&quot;1&quot;:0}{&quot;1&quot;:144,&quot;2&quot;:{&quot;5&quot;:1}}{&quot;1&quot;:149}" data-sheets-userformat="{&quot;2&quot;:15235,&quot;3&quot;:{&quot;1&quot;:0},&quot;4&quot;:{&quot;1&quot;:2,&quot;2&quot;:16776960},&quot;10&quot;:1,&quot;11&quot;:4,&quot;12&quot;:0,&quot;14&quot;:{&quot;1&quot;:3,&quot;3&quot;:1},&quot;15&quot;:&quot;Roboto&quot;,&quot;16&quot;:11}" data-sheets-value="{&quot;1&quot;:2,&quot;2&quot;:&quot;1. Bạn phải là chủ sở hữu hợp pháp của thiết bị đó.\n2. Màn hình cảm ứng và chức năng thiết bị vẫn hoạt động tốt.\n3. Mặt đèn cảm biến (mặt lưng) không bị trầy mờ hoặc bể vỡ.\n4. Thiết bị nhận sạc bình thường.&quot;}">
-                                              Thiết bị nhận sạc bình thường. Hãy đảm bảo bạn mang theo cáp sạc khi đến kiểm tra nếu cần thiết.
+                                            <span data-sheets-root="1" data-sheets-textstyleruns="{&quot;1&quot;:0}{&quot;1&quot;:144,&quot;2&quot;:{&quot;5&quot;:1}}{&quot;1&quot;:149}" data-sheets-userformat="{&quot;2&quot;:15235,&quot;3&quot;:{&quot;1&quot;:0},&quot;4&quot;:{&quot;1&quot;:2,&quot;2&quot;:16776960},&quot;10&quot;:1,&quot;11&quot;:4,&quot;12&quot;:0,&quot;14&quot;:{&quot;1&quot;:3,&quot;3&quot;:1},&quot;15&quot;:&quot;Roboto&quot;,&quot;16&quot;:11}" data-sheets-value="{&quot;1&quot;:2,&quot;2&quot;:&quot;1. You must be the legal owner of the device.\n2. Touch screen and device functions still work well.\n3. The sensor light face (back) is not scratched, blurred, or broken.\n4. The device charges normally.&quot;}">
+                                              The device charges normally. Please bring the charging cable when checking if necessary.
                                             </span>
                                           </li>
                                         </ol>
@@ -1462,13 +1462,13 @@ const lazyloadRunObserver = () => {
                                           </span>
                                         </span>
                                         <a className="elementor-accordion-title" tabIndex={0}>
-                                          Nếu thiết bị của tôi không nằm trong danh sách thu mua của Retech Market?
+                                          What if my device is not in the trade-in list?
                                         </a>
                                       </div>
                                       <div aria-labelledby="elementor-tab-title-1036" className="elementor-tab-content elementor-clearfix" data-tab="6" id="elementor-tab-content-1036" role="region">
                                         <p>
                                           <span data-sheets-root="1" data-sheets-userformat="{&quot;2&quot;:15235,&quot;3&quot;:{&quot;1&quot;:0},&quot;4&quot;:{&quot;1&quot;:2,&quot;2&quot;:16776960},&quot;10&quot;:1,&quot;11&quot;:4,&quot;12&quot;:0,&quot;14&quot;:{&quot;1&quot;:3,&quot;3&quot;:1},&quot;15&quot;:&quot;Roboto&quot;,&quot;16&quot;:11}" data-sheets-value="{&quot;1&quot;:2,&quot;2&quot;:&quot;Vui lòng liên hệ Zalo để được Retech Market hỗ trợ trực tiếp.&quot;}">
-                                            Bạn đừng lo lắng, chúng tôi luôn cố gắng hỗ trợ thu mua nhiều loại thiết bị nhất có thể. Đội ngũ kỹ thuật viên sẽ đánh giá tình trạng thực tế và đưa ra mức giá phù hợp nhất. Vui lòng liên hệ Zalo để được Retech Market hỗ trợ trực tiếp.
+                                            Don't worry, we try to support as many devices as possible. Our technicians will assess its condition and offer the best price. Please contact Zalo for direct support.
                                           </span>
                                         </p>
                                       </div>
@@ -1488,13 +1488,13 @@ const lazyloadRunObserver = () => {
                                           </span>
                                         </span>
                                         <a className="elementor-accordion-title" tabIndex={0}>
-                                          Tôi có thể bán thiết bị của mình mà không cần lên đời không?
+                                          Can I sell my device without upgrading?
                                         </a>
                                       </div>
                                       <div aria-labelledby="elementor-tab-title-1037" className="elementor-tab-content elementor-clearfix" data-tab="7" id="elementor-tab-content-1037" role="region">
                                         <p>
                                           <span data-sheets-root="1" data-sheets-userformat="{&quot;2&quot;:15235,&quot;3&quot;:{&quot;1&quot;:0},&quot;4&quot;:{&quot;1&quot;:2,&quot;2&quot;:16776960},&quot;10&quot;:1,&quot;11&quot;:4,&quot;12&quot;:0,&quot;14&quot;:{&quot;1&quot;:3,&quot;3&quot;:1},&quot;15&quot;:&quot;Roboto&quot;,&quot;16&quot;:11}" data-sheets-value="{&quot;1&quot;:2,&quot;2&quot;:&quot;Vui lòng liên hệ Zalo để được Retech Market hỗ trợ trực tiếp.&quot;}">
-                                            Có, bạn hoàn toàn có thể bán thiết bị của mình mà không cần phải mua máy mới. Retech Market luôn hỗ trợ thu mua thiết bị cũ với giá cao nhất thị trường. Vui lòng liên Zalo để được hỗ trợ.
+                                            Yes, you can sell your device without buying a new one. Retech Market always supports buying old devices at the highest market price. Please contact Zalo for support.
                                           </span>
                                         </p>
                                       </div>
