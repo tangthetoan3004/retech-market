@@ -26,6 +26,18 @@ function toNumber(v: any) {
   return Number.isFinite(n) ? n : 0;
 }
 
+type Category = { id: string; name: string; title?: string; depth?: number; children?: Category[], slug?: string };
+
+function flattenForSelect(items: Category[], depth = 0): { id: string; name: string; depth: number, slug: string }[] {
+  const result: { id: string; name: string; depth: number, slug: string }[] = [];
+  for (const item of items) {
+    const slug = item.slug || String(item.id);
+    result.push({ id: item.id, name: item.title || item.name, depth, slug });
+    if (item.children?.length) result.push(...flattenForSelect(item.children, depth + 1));
+  }
+  return result;
+}
+
 export default function ProductsPage() {
   const dispatch = useDispatch();
   const params = useParams();
@@ -45,7 +57,6 @@ export default function ProductsPage() {
   const [appliedPriceRange, setAppliedPriceRange] = useState<number[]>([0, 100000000]);
 
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
-  const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
     params?.slug ? [String(params.slug)] : []
   );
@@ -73,7 +84,6 @@ export default function ProductsPage() {
         else if (selectedCategories.length > 0) payload.category = selectedCategories.join(",");
         
         if (selectedBrands.length > 0) payload.brand = selectedBrands.join(",");
-        if (selectedConditions.length > 0) payload.condition = selectedConditions.join(",");
         if (appliedPriceRange[0] > 0) payload.min_price = appliedPriceRange[0];
         if (appliedPriceRange[1] < (priceMax || 100000000)) payload.max_price = appliedPriceRange[1];
 
@@ -106,9 +116,9 @@ export default function ProductsPage() {
       }
     };
     run();
-  }, [dispatch, params?.slug, page, selectedBrands, selectedConditions, appliedPriceRange, selectedCategories]);
+  }, [dispatch, params?.slug, page, selectedBrands, appliedPriceRange, selectedCategories]);
 
-  const [categories, setCategories] = useState<{key: string, label: string}[]>([]);
+  const [categories, setCategories] = useState<{slug: string, name: string, depth: number}[]>([]);
   const [brands, setBrands] = useState<{slug: string, name: string}[]>([]);
   const [showAllBrands, setShowAllBrands] = useState(false);
 
@@ -119,7 +129,7 @@ export default function ProductsPage() {
           getProductCategories(),
           getProductBrands()
         ]);
-        setCategories(cats.map((c: any) => ({ key: c.slug || c.name, label: c.name })));
+        setCategories(flattenForSelect(cats));
         setBrands(brs.map((b: any) => ({ slug: b.slug, name: b.name })));
       } catch (err) {
         console.error("Failed to load filter options", err);
@@ -133,11 +143,6 @@ export default function ProductsPage() {
     setPage(1);
   };
 
-  const toggleCondition = (cond: string) => {
-    setSelectedConditions((prev) => (prev.includes(cond) ? prev.filter((c) => c !== cond) : [...prev, cond]));
-    setPage(1);
-  };
-
   const toggleCategory = (category: string) => {
     setSelectedCategories((prev) => (prev.includes(category) ? prev.filter((c) => c !== category) : [...prev, category]));
     setPage(1);
@@ -145,7 +150,6 @@ export default function ProductsPage() {
 
   const clearFilters = () => {
     setSelectedBrands([]);
-    setSelectedConditions([]);
     setSelectedCategories(params?.slug ? [String(params.slug)] : []);
     const mx = priceMax || 100000000;
     setPriceRange([0, mx]);
@@ -153,7 +157,7 @@ export default function ProductsPage() {
     setPage(1);
   };
 
-  const activeFiltersCount = selectedBrands.length + selectedConditions.length + selectedCategories.length;
+  const activeFiltersCount = selectedBrands.length + selectedCategories.length;
 
   const filteredProducts = useMemo(() => {
     let filtered = [...products];
@@ -163,14 +167,6 @@ export default function ProductsPage() {
       filtered = filtered.filter(p => {
         const brandSlug = String(p?.brand || "apple").toLowerCase().replace(/\s+/g, "-");
         return selectedBrands.includes(brandSlug);
-      });
-    }
-
-    // Lọc theo Condition
-    if (selectedConditions.length > 0) {
-      filtered = filtered.filter(p => {
-        const cond = String(p?.condition || "GOOD").toUpperCase();
-        return selectedConditions.includes(cond);
       });
     }
 
@@ -202,23 +198,23 @@ export default function ProductsPage() {
     }
 
     return filtered;
-  }, [products, sortBy, selectedBrands, selectedConditions, appliedPriceRange, selectedCategories]);
+  }, [products, sortBy, selectedBrands, appliedPriceRange, selectedCategories]);
 
   const filterContentNode = (
     <div className="space-y-8">
       <div>
-        <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-muted-foreground">Danh mục</h3>
+        <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-muted-foreground">Hãng Sản Xuất</h3>
         <div className="space-y-3">
           {categories.slice(0, showAllBrands ? categories.length : 6).map((c) => (
-            <div key={c.key} className="group flex items-center space-x-3 transition-all hover:translate-x-1">
+            <div key={c.slug} className="group flex items-center space-x-3 transition-all hover:translate-x-1" style={{ paddingLeft: `${c.depth * 16}px` }}>
               <Checkbox 
-                id={`category-${c.key}`} 
-                checked={selectedCategories.includes(c.key)} 
-                onCheckedChange={() => toggleCategory(c.key)} 
+                id={`category-${c.slug}`} 
+                checked={selectedCategories.includes(c.slug)} 
+                onCheckedChange={() => toggleCategory(c.slug)} 
                 className="transition-colors data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
               />
-              <Label htmlFor={`category-${c.key}`} className="cursor-pointer text-sm font-medium transition-colors group-hover:text-blue-600">
-                {c.label}
+              <Label htmlFor={`category-${c.slug}`} className="cursor-pointer text-sm font-medium transition-colors group-hover:text-blue-600">
+                {c.depth > 0 ? "└ " : ""}{c.name}
               </Label>
             </div>
           ))}
@@ -235,33 +231,8 @@ export default function ProductsPage() {
       </div>
 
       <div>
-        <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-muted-foreground">Condition</h3>
-        <div className="space-y-3">
-          {[
-            { value: "NEW", label: "New (100%)" },
-            { value: "LIKE_NEW", label: "Like New (99%)" },
-            { value: "GOOD", label: "Good (95%)" },
-            { value: "FAIR", label: "Fair (90%)" },
-            { value: "POOR", label: "Poor (<90%)" },
-          ].map((c) => (
-            <div key={c.value} className="group flex items-center space-x-3 transition-all hover:translate-x-1">
-              <Checkbox 
-                id={`condition-${c.value}`} 
-                checked={selectedConditions.includes(c.value)} 
-                onCheckedChange={() => toggleCondition(c.value)}
-                className="transition-colors data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
-              />
-              <Label htmlFor={`condition-${c.value}`} className="cursor-pointer text-sm font-medium transition-colors group-hover:text-blue-600">
-                {c.label}
-              </Label>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div>
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Price</h3>
+          <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Mức Giá</h3>
           <span className="text-xs font-semibold text-blue-600 bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded-full">
             {priceRange[0].toLocaleString("vi-VN")}₫ - {priceRange[1].toLocaleString("vi-VN")}₫
           </span>
@@ -464,9 +435,11 @@ export default function ProductsPage() {
                         <div>
                           <div className="flex justify-between items-start gap-4">
                             <div>
-                              <div className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-1 flex items-center gap-1">
-                                <Shield className="w-3 h-3" /> ReTech Certified
-                              </div>
+                              {p?.brand && (
+                                <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">
+                                  {p.brand}
+                                </div>
+                              )}
                               <h3 className="line-clamp-2 text-lg font-bold group-hover:text-blue-600 transition-colors">
                                 {p?.title || p?.name}
                               </h3>
@@ -496,10 +469,12 @@ export default function ProductsPage() {
                                 <span className="font-semibold text-foreground">{p.storage}</span>
                               </div>
                             )}
-                            <div className="flex items-center gap-1.5 bg-muted/50 px-2.5 py-1 rounded-lg">
-                              <Shield className="h-3.5 w-3.5 text-green-500" />
-                              <span className="font-semibold text-foreground">{p?.warranty || 0} Tháng</span>
-                            </div>
+                            {p?.warranty && (
+                              <div className="flex items-center gap-1.5 bg-muted/50 px-2.5 py-1 rounded-lg">
+                                <Shield className="h-3.5 w-3.5 text-green-500" />
+                                <span className="font-semibold text-foreground">{p.warranty}</span>
+                              </div>
+                            )}
                           </div>
                         </div>
 

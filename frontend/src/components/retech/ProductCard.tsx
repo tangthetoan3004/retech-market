@@ -48,7 +48,7 @@ export function ProductCard({
     if (!inStock) return;
     setAddedToCart(true);
     onAddToCart?.(id);
-    toast.success("Added to cart", {
+    toast.success("Đã thêm vào giỏ hàng", {
       description: name,
     });
     setTimeout(() => setAddedToCart(false), 2000);
@@ -86,7 +86,7 @@ export function ProductCard({
             onClick={() => onQuickView?.(id)}
           >
             <Eye className="h-4 w-4 mr-1" />
-            Quick View
+            Xem nhanh
           </Button>
         </motion.div>
 
@@ -102,15 +102,17 @@ export function ProductCard({
         </button>
 
         {/* Grade Badge */}
-        <div className="absolute top-3 left-3">
-          <GradeBadge condition={condition} showTooltip={false} />
-        </div>
+        {condition && (
+          <div className="absolute top-3 left-3">
+            <GradeBadge condition={condition} showTooltip={false} />
+          </div>
+        )}
 
         {/* Out of stock overlay */}
         {!inStock && (
           <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
             <span className="bg-white text-foreground px-4 py-2 rounded-lg font-medium">
-              Out of Stock
+              Hết hàng
             </span>
           </div>
         )}
@@ -119,9 +121,7 @@ export function ProductCard({
       {/* Content */}
       <div className="p-3 space-y-2">
         <div>
-          <p className="text-[10px] text-emerald-600 dark:text-emerald-400 uppercase tracking-wider font-bold flex items-center gap-1">
-            <Shield className="w-3 h-3" /> ReTech Certified
-          </p>
+          {brand && <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">{brand}</p>}
           <h3 className="text-sm font-medium text-foreground line-clamp-2 mt-0.5">{name}</h3>
         </div>
 
@@ -137,10 +137,12 @@ export function ProductCard({
               <span className="font-medium text-foreground">{storage}</span>
             </div>
           )}
-          <div className="flex items-center gap-1">
-            <Shield className="h-3 w-3" />
-            <span>{warranty}</span>
-          </div>
+          {warranty && (
+            <div className="flex items-center gap-1">
+              <Shield className="h-3 w-3" />
+              <span>{warranty}</span>
+            </div>
+          )}
         </div>
 
         {/* Price */}
@@ -176,12 +178,12 @@ export function ProductCard({
           {addedToCart ? (
             <>
               <Check className="h-4 w-4 mr-2" />
-              Added
+              Đã thêm
             </>
           ) : (
             <>
               <ShoppingCart className="h-4 w-4 mr-2" />
-              Add to Cart
+              Thêm vào giỏ
             </>
           )}
         </Button>

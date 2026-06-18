@@ -36,7 +36,7 @@ export default function ProductGrid({ items }: Props) {
         brand: p?.brand || "Unknown",
         price: p?.priceNew ?? p?.price ?? 0,
         originalPrice: p?.original_price ?? p?.price,
-        condition: p?.condition || "GOOD",
+        condition: p?.condition || "",
         image: p?.thumbnail || p?.main_image || p?.image || "",
         warranty: p?.warranty || "12 Months",
         batteryHealth: p?.batteryHealth,
@@ -56,12 +56,12 @@ export default function ProductGrid({ items }: Props) {
             key={id}
             id={id}
             name={p?.title || p?.name || "Unnamed product"}
-            brand={p?.brand || "Brand"}
+            brand={p?.category?.title || p?.category?.name || p?.brand || "Điện Thoại"}
             price={p?.priceNew ?? p?.price ?? 0}
             originalPrice={p?.original_price ?? p?.price}
-            condition={p?.condition || "GOOD"}
+            condition={p?.condition || ""}
             image={p?.thumbnail || p?.main_image || p?.image || ""}
-            warranty={p?.warranty || "12 Months"}
+            warranty={p?.warranty}
             ram={p?.ram}
             storage={p?.storage}
             inStock={p?.inStock ?? true}

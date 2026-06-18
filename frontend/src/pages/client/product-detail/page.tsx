@@ -17,11 +17,11 @@ import {
   ChevronLeft,
 } from "lucide-react";
 import { Button } from "../../../components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../components/ui/tabs";
 import { addItemToCart } from "../../../features/client/cart/cartSlice";
 import { showAlert } from "../../../features/ui/uiSlice";
 import { getProductDetailBySlug } from "../../../services/client/products/productsService";
-import { GradeBadge, conditionInfo } from "../../../components/retech/GradeBadge";
+import { GradeBadge } from "../../../components/retech/GradeBadge";
+import { ChevronDown } from "lucide-react";
 
 function num(v: any) {
   const n = Number(v);
@@ -57,6 +57,71 @@ function safeImages(p: any) {
 
   const all = [thumb, ...list].filter(Boolean);
   return Array.from(new Set(all)).slice(0, 8);
+}
+
+// --- Component Thông số kỹ thuật ---
+function SpecsSection({ specs, ram, storage, condition, warranty }: any) {
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
+    "Thông tin cơ bản": true,
+    "Thông số kỹ thuật": true,
+  });
+
+  const toggle = (key: string) =>
+    setOpenGroups((prev) => ({ ...prev, [key]: !prev[key] }));
+
+  // Nhóm 1: thông tin cơ bản từ các field trực tiếp
+  const basicRows = [
+    ram && { label: "RAM", value: ram },
+    storage && { label: "Bộ nhớ trong", value: storage },
+    condition && { label: "Tình trạng máy", value: condition },
+    warranty && { label: "Bảo hành", value: warranty },
+  ].filter(Boolean) as { label: string; value: string }[];
+
+  // Nhóm 2: từ object specs
+  const specRows = Object.entries(specs || {}).map(([label, value]) => ({
+    label,
+    value: String(value),
+  }));
+
+  const groups = [
+    { title: "Thông tin cơ bản", rows: basicRows },
+    { title: "Thông số kỹ thuật", rows: specRows },
+  ].filter((g) => g.rows.length > 0);
+
+  return (
+    <div className="space-y-3">
+      {groups.map((group) => (
+        <div key={group.title} className="overflow-hidden rounded-2xl border border-border/60 bg-card">
+          {/* Header */}
+          <button
+            type="button"
+            onClick={() => toggle(group.title)}
+            className="flex w-full items-center justify-between px-6 py-4 text-left transition-colors hover:bg-muted/30"
+          >
+            <span className="text-sm font-bold tracking-tight">{group.title}</span>
+            <ChevronDown
+              className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${openGroups[group.title] ? "rotate-180" : ""}`}
+            />
+          </button>
+
+          {/* Rows */}
+          {openGroups[group.title] && (
+            <div className="border-t border-border/60">
+              {group.rows.map((row, i) => (
+                <div
+                  key={row.label}
+                  className={`grid grid-cols-2 gap-4 px-6 py-3 text-sm ${i % 2 === 0 ? "bg-muted/20" : "bg-transparent"}`}
+                >
+                  <span className="text-muted-foreground">{row.label}</span>
+                  <span className="font-medium text-foreground">{row.value}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
 }
 
 export default function ProductDetailPage() {
@@ -110,9 +175,8 @@ export default function ProductDetailPage() {
   }
 
   const title = product?.title || product?.name || "";
-  const brand = product?.brand || "ReTech Market";
-  const condition = product?.condition ? String(product.condition).toUpperCase() : "GOOD";
-  const condData = conditionInfo[condition] || conditionInfo.GOOD;
+  const brand = product?.brand || "";
+  const condition = product?.condition ? String(product.condition).toUpperCase() : "";
 
   const price = num(product?.priceNew ?? product?.price ?? 0);
   const originalPrice = num(product?.priceOld ?? (product?.priceNew ? product?.price : 0) ?? 0);
@@ -127,7 +191,7 @@ export default function ProductDetailPage() {
   const storage = product?.storage ?? null;
   const ram = product?.ram ?? null;
   const screen = product?.screen ?? product?.display ?? null;
-  const warranty = product?.warranty || "12 Months";
+  const warranty = product?.warranty || "";
 
   const activeImg = images[selectedImage] || product?.thumbnail || product?.image || "";
 
@@ -205,9 +269,11 @@ export default function ProductDetailPage() {
               <p className="mb-2 text-sm uppercase tracking-wider text-muted-foreground">{brand}</p>
               <h1 className="mb-4 text-3xl font-bold">{title}</h1>
 
-              <div className="flex items-center gap-3">
-                <GradeBadge condition={condition} />
-              </div>
+              {condition && (
+                <div className="flex items-center gap-3">
+                  <GradeBadge condition={condition} />
+                </div>
+              )}
             </div>
 
             <div className="border-y border-border py-6">
@@ -268,7 +334,8 @@ export default function ProductDetailPage() {
                     <p className="font-semibold">{screen}</p>
                   </div>
                 </div>
-              ) : (
+              ) : null}
+              {warranty ? (
                 <div className="flex items-center gap-3 rounded-lg bg-muted/50 p-4">
                   <Shield className="h-5 w-5 text-[var(--accent-blue)]" />
                   <div>
@@ -276,14 +343,10 @@ export default function ProductDetailPage() {
                     <p className="font-semibold">{warranty}</p>
                   </div>
                 </div>
-              )}
+              ) : null}
             </div>
 
             <div className="space-y-3">
-              <div className="flex items-center gap-3 text-sm">
-                <Check className="h-5 w-5 text-[var(--status-success)]" />
-                <span>Fully tested and certified</span>
-              </div>
               <div className="flex items-center gap-3 text-sm">
                 <Truck className="h-5 w-5 text-[var(--status-success)]" />
                 <span>Free shipping on all orders</span>
@@ -346,137 +409,28 @@ export default function ProductDetailPage() {
           </div>
         </div>
 
-        <div className="mt-16">
-          <Tabs defaultValue="description" className="w-full">
-            <TabsList className="inline-flex h-14 items-center justify-start sm:justify-center overflow-x-auto rounded-xl bg-muted/50 p-1 text-muted-foreground w-full sm:w-auto mb-8 border border-border/50">
-              <TabsTrigger
-                value="description"
-                className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-6 sm:px-8 py-2.5 sm:py-3 text-sm font-semibold transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
-              >
-                Description
-              </TabsTrigger>
-              <TabsTrigger
-                value="specs"
-                className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-6 sm:px-8 py-2.5 sm:py-3 text-sm font-semibold transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
-              >
-                Specifications
-              </TabsTrigger>
-              <TabsTrigger
-                value="condition"
-                className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-6 sm:px-8 py-2.5 sm:py-3 text-sm font-semibold transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
-              >
-                Condition Report
-              </TabsTrigger>
-            </TabsList>
+        <div className="mt-16 space-y-6">
 
-            <TabsContent value="description" className="mt-8">
-              <div className="grid gap-8 lg:grid-cols-3">
-                <div className="lg:col-span-2">
-                  <div className="prose prose-blue max-w-none rounded-2xl bg-card p-6 md:p-8 shadow-sm border border-border/50">
-                    {product?.description ? (
-                      <div dangerouslySetInnerHTML={{ __html: String(product.description) }} className="text-base leading-relaxed text-foreground/80 [&>p]:mb-4 [&>h3]:mt-6 [&>h3]:mb-3 [&>h3]:text-lg [&>h3]:font-bold [&>ul]:list-disc [&>ul]:pl-5 [&>ul>li]:mb-2" />
-                    ) : (
-                      <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
-                        <div className="mb-4 rounded-full bg-muted p-4">
-                          <Check className="h-8 w-8 opacity-50" />
-                        </div>
-                        <p className="text-lg font-medium">No description available</p>
-                        <p className="text-sm">Information about this product will be updated soon.</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="space-y-6">
-                  <div className="rounded-2xl bg-gradient-to-b from-muted/50 to-muted/10 p-6 border border-border/50 shadow-sm">
-                    <h3 className="mb-5 text-lg font-bold flex items-center gap-2">
-                      <Shield className="h-5 w-5 text-[var(--accent-blue)]" />
-                      What's Included
-                    </h3>
-                    <ul className="space-y-4">
-                      <li className="flex items-start gap-3">
-                        <div className="rounded-full bg-[var(--status-success)]/10 p-1 mt-0.5">
-                          <Check className="h-4 w-4 text-[var(--status-success)]" />
-                        </div>
-                        <span className="text-sm leading-relaxed text-muted-foreground">Device in excellent working condition</span>
-                      </li>
-                      <li className="flex items-start gap-3">
-                        <div className="rounded-full bg-[var(--status-success)]/10 p-1 mt-0.5">
-                          <Check className="h-4 w-4 text-[var(--status-success)]" />
-                        </div>
-                        <span className="text-sm leading-relaxed text-muted-foreground">Original charging cable and adapter</span>
-                      </li>
-                      <li className="flex items-start gap-3">
-                        <div className="rounded-full bg-[var(--status-success)]/10 p-1 mt-0.5">
-                          <Check className="h-4 w-4 text-[var(--status-success)]" />
-                        </div>
-                        <span className="text-sm leading-relaxed text-muted-foreground">12-month warranty certificate</span>
-                      </li>
-                      <li className="flex items-start gap-3">
-                        <div className="rounded-full bg-[var(--status-success)]/10 p-1 mt-0.5">
-                          <Check className="h-4 w-4 text-[var(--status-success)]" />
-                        </div>
-                        <span className="text-sm leading-relaxed text-muted-foreground">Quality inspection report</span>
-                      </li>
-                    </ul>
-                  </div>
-
-                  <div className="rounded-2xl bg-[var(--accent-blue)]/5 p-6 border border-[var(--accent-blue)]/10 shadow-sm">
-                    <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-[var(--accent-blue)]">ReTech Promise</h3>
-                    <p className="text-sm text-foreground/80 leading-relaxed">
-                      Every device undergoes a rigorous 45-point inspection process by our certified technicians to ensure top-notch quality and reliability.
-                    </p>
-                  </div>
-                </div>
+          {/* Mô tả sản phẩm */}
+          {product?.description && (
+            <div className="rounded-2xl border border-border/60 bg-card overflow-hidden">
+              <div className="border-b border-border/60 px-6 py-4">
+                <h2 className="text-base font-bold tracking-tight">Mô tả sản phẩm</h2>
               </div>
-            </TabsContent>
+              <div
+                className="px-6 py-5 text-sm leading-7 text-foreground/80
+                  [&>p]:mb-3 [&>h3]:mt-5 [&>h3]:mb-2 [&>h3]:text-sm [&>h3]:font-bold
+                  [&>ul]:list-disc [&>ul]:pl-5 [&>ul>li]:mb-1"
+                dangerouslySetInnerHTML={{ __html: String(product.description) }}
+              />
+            </div>
+          )}
 
-            <TabsContent value="specs" className="mt-6">
-              <div className="grid gap-4 md:grid-cols-2">
-                {product?.specs && typeof product.specs === "object" ? (
-                  Object.entries(product.specs).map(([key, value]: any) => (
-                    <div key={key} className="flex justify-between border-b border-border py-3">
-                      <span className="text-muted-foreground">{key}</span>
-                      <span className="text-right font-medium">{String(value)}</span>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-muted-foreground">No specifications available.</div>
-                )}
-              </div>
-            </TabsContent>
+          {/* Thông số kỹ thuật */}
+          {product?.specs && typeof product.specs === "object" && Object.keys(product.specs).length > 0 && (
+            <SpecsSection specs={product.specs} ram={ram} storage={storage} condition={condition} warranty={warranty} />
+          )}
 
-            <TabsContent value="condition" className="mt-6">
-              <div className="space-y-4">
-                <div className="rounded-lg bg-muted/50 p-6">
-                  <h3 className="mb-4 font-semibold">{condData.label} Condition</h3>
-                  <p className="mb-4">{condData.description}</p>
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div>
-                      <p className="mb-2 text-sm font-medium">✓ Checked Items:</p>
-                      <ul className="space-y-1 text-sm text-muted-foreground">
-                        <li>• Screen quality and touch response</li>
-                        <li>• Camera functionality</li>
-                        <li>• Speaker and microphone</li>
-                        <li>• Battery performance</li>
-                        <li>• All ports and buttons</li>
-                      </ul>
-                    </div>
-                    <div>
-                      <p className="mb-2 text-sm font-medium">Cosmetic Condition:</p>
-                      <ul className="space-y-1 text-sm text-muted-foreground">
-                        <li>
-                          • {condData.label}: {condData.description}
-                        </li>
-                        <li>• All original features intact</li>
-                        <li>• Professionally cleaned and sanitized</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </TabsContent>
-          </Tabs>
         </div>
       </div>
     </div>

@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
-  MoreVertical, Plus, Search, RefreshCw, Box,
-  Trash2, Pencil, CheckCircle2, XCircle, Tag, Eye
+  MoreVertical, Plus, Search, RefreshCw, Smartphone,
+  Trash2, Pencil, CheckCircle2, XCircle, Eye
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
@@ -22,12 +22,17 @@ import {
   AlertDialogContent, AlertDialogDescription,
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "../../../../components/ui/alert-dialog";
+import {
+  Select, SelectContent, SelectItem,
+  SelectTrigger, SelectValue,
+} from "../../../../components/ui/select";
 import LoadingSpinner from "../../../../components/ui/LoadingSpinner";
 
 import {
   deleteProduct,
   getProducts,
-  changeProductStatus
+  changeProductStatus,
+  getCategories
 } from "../../../../services/admin/products/productsService";
 
 type Product = {
@@ -39,12 +44,37 @@ type Product = {
   stock: number;
   status: string;
   slug: string;
+  product_category_id: string;
+  condition?: string;
+  ram?: string;
+  storage?: string;
+  warranty?: string;
+};
+
+type Category = { id: string; name: string; title?: string; depth?: number; children?: Category[] };
+
+function flattenForSelect(items: Category[], depth = 0): { id: string; name: string; depth: number }[] {
+  const result: { id: string; name: string; depth: number }[] = [];
+  for (const item of items) {
+    result.push({ id: item.id, name: item.title || item.name, depth });
+    if (item.children?.length) result.push(...flattenForSelect(item.children, depth + 1));
+  }
+  return result;
+}
+
+const conditionBadge: Record<string, { label: string; cls: string }> = {
+  NEW:      { label: "Mới",      cls: "bg-blue-500/10 text-blue-600 dark:text-blue-400" },
+  LIKE_NEW: { label: "Like New", cls: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" },
+  GOOD:     { label: "Good",     cls: "bg-amber-500/10 text-amber-600 dark:text-amber-400" },
+  FAIR:     { label: "Fair",     cls: "bg-orange-500/10 text-orange-600 dark:text-orange-400" },
 };
 
 export default function ProductListPage() {
   const [loading, setLoading] = useState(false);
   const [items, setItems] = useState<Product[]>([]);
   const [search, setSearch] = useState("");
+  const [categoryId, setCategoryId] = useState("all");
+  const [categories, setCategories] = useState<{ id: string; name: string; depth: number }[]>([]);
   const [deleteConfirm, setDeleteConfirm] = useState<Product | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
@@ -60,15 +90,24 @@ export default function ProductListPage() {
     }
   };
 
-  useEffect(() => { fetchList(); }, []);
+  useEffect(() => {
+    fetchList();
+    getCategories()
+      .then((tree) => setCategories(flattenForSelect(tree)))
+      .catch(() => {});
+  }, []);
 
   const filtered = useMemo(() => {
+    let result = items;
+    if (categoryId !== "all") {
+      result = result.filter(p => p.product_category_id === categoryId);
+    }
     const q = search.trim().toLowerCase();
-    if (!q) return items;
-    return items.filter((p) =>
-      `${p.title} ${p.slug}`.toLowerCase().includes(q)
+    if (!q) return result;
+    return result.filter((p) =>
+      `${p.title} ${p.slug} ${p.ram ?? ""} ${p.storage ?? ""}`.toLowerCase().includes(q)
     );
-  }, [items, search]);
+  }, [items, search, categoryId]);
 
   const confirmDelete = async () => {
     if (!deleteConfirm) return;
@@ -91,12 +130,13 @@ export default function ProductListPage() {
       await changeProductStatus(p.id, newStatus);
       toast.success("Đã cập nhật trạng thái");
       fetchList();
-    } catch (error: any) {
+    } catch {
       toast.error("Cập nhật trạng thái thất bại");
     }
   };
 
-  const formatCurrency = (val: number) => `${Number(val || 0).toLocaleString()}đ`;
+  const formatCurrency = (val: number) =>
+    `${Number(val || 0).toLocaleString("vi-VN")}đ`;
 
   return (
     <div className="p-6 space-y-6 bg-background text-foreground min-h-screen">
@@ -105,11 +145,13 @@ export default function ProductListPage() {
         <div>
           <h1 className="text-3xl font-bold mb-1 flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-violet-500/10 flex items-center justify-center">
-              <Box className="w-5 h-5 text-violet-500" />
+              <Smartphone className="w-5 h-5 text-violet-500" />
             </div>
-            Sản Phẩm
+            Điện Thoại
           </h1>
-          <p className="text-muted-foreground ml-[52px]">Quản lý danh sách sản phẩm cửa hàng</p>
+          <p className="text-muted-foreground ml-[52px]">
+            {items.length} sản phẩm đang quản lý
+          </p>
         </div>
         <Link to="/admin/products/create">
           <Button className="bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-600/20 gap-2">
@@ -120,23 +162,36 @@ export default function ProductListPage() {
       </div>
 
       {/* Toolbar */}
-      <div className="flex items-center gap-3">
-        <div className="relative flex-1 max-w-sm">
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="relative flex-1 min-w-[200px] max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Tìm theo tên sản phẩm..."
+            placeholder="Tìm theo tên, RAM, bộ nhớ..."
             className="pl-9 bg-muted/40 border-transparent"
           />
         </div>
+        <Select value={categoryId} onValueChange={setCategoryId}>
+          <SelectTrigger className="w-[180px] h-10 bg-muted/40 border-transparent hover:border-border">
+            <SelectValue placeholder="Hãng" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">-- Tất cả hãng --</SelectItem>
+            {categories.map((c) => (
+              <SelectItem key={c.id} value={c.id}>
+                {"\u00A0".repeat(c.depth * 4)}{c.depth > 0 ? "└ " : ""}{c.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <Button variant="outline" onClick={fetchList} disabled={loading} className="gap-2 shrink-0">
           <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
           Làm mới
         </Button>
-        <div className="text-sm text-muted-foreground shrink-0 hidden sm:block">
-          {filtered.length} sản phẩm
-        </div>
+        <span className="text-sm text-muted-foreground shrink-0 hidden sm:block">
+          Hiển thị {filtered.length} / {items.length}
+        </span>
       </div>
 
       {/* Table */}
@@ -144,17 +199,18 @@ export default function ProductListPage() {
         <Table>
           <TableHeader>
             <TableRow className="border-border bg-muted/30 hover:bg-muted/30">
-              <TableHead className="font-semibold py-4">Sản phẩm</TableHead>
+              <TableHead className="font-semibold py-4 w-[38%]">Sản phẩm</TableHead>
+              <TableHead className="font-semibold">Cấu hình</TableHead>
+              <TableHead className="font-semibold">Tình trạng</TableHead>
               <TableHead className="font-semibold text-right">Giá bán</TableHead>
-              <TableHead className="font-semibold text-center">Tồn kho</TableHead>
               <TableHead className="font-semibold text-center">Trạng thái</TableHead>
-              <TableHead className="font-semibold text-right">Thao tác</TableHead>
+              <TableHead className="font-semibold text-right w-16"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={5} className="py-24 text-center">
+                <TableCell colSpan={6} className="py-24 text-center">
                   <div className="flex flex-col items-center justify-center gap-4">
                     <LoadingSpinner />
                     <p className="text-muted-foreground animate-pulse font-medium">Đang tải dữ liệu...</p>
@@ -163,10 +219,10 @@ export default function ProductListPage() {
               </TableRow>
             ) : filtered.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="py-24 text-center">
+                <TableCell colSpan={6} className="py-24 text-center">
                   <div className="flex flex-col items-center justify-center gap-3">
                     <div className="w-14 h-14 rounded-2xl bg-muted/50 flex items-center justify-center">
-                      <Box className="w-7 h-7 text-muted-foreground" />
+                      <Smartphone className="w-7 h-7 text-muted-foreground" />
                     </div>
                     <p className="text-muted-foreground font-medium">Chưa có sản phẩm nào</p>
                   </div>
@@ -176,6 +232,8 @@ export default function ProductListPage() {
               <AnimatePresence>
                 {filtered.map((p, idx) => {
                   const finalPrice = p.price - (p.price * (p.discountPercentage || 0)) / 100;
+                  const condKey = (p.condition || "").toUpperCase();
+                  const cond = conditionBadge[condKey] ?? null;
 
                   return (
                     <motion.tr
@@ -183,36 +241,64 @@ export default function ProductListPage() {
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, x: -20 }}
-                      transition={{ delay: (idx % 10) * 0.03 }}
+                      transition={{ delay: (idx % 15) * 0.025 }}
                       className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors group"
                     >
-                      {/* Product Name */}
+                      {/* Product */}
                       <TableCell className="py-3">
                         <div className="flex items-center gap-3">
                           {p.thumbnail ? (
                             <img
                               src={p.thumbnail}
                               alt={p.title}
-                              className="w-12 h-12 rounded-xl object-cover border border-border shrink-0 bg-muted/20"
+                              className="w-14 h-14 rounded-xl object-cover border border-border shrink-0 bg-muted/20"
                             />
                           ) : (
-                            <div className="w-12 h-12 rounded-xl border border-border bg-muted/30 flex items-center justify-center shrink-0">
-                              <Box className="w-5 h-5 text-muted-foreground/50" />
+                            <div className="w-14 h-14 rounded-xl border border-border bg-muted/30 flex items-center justify-center shrink-0">
+                              <Smartphone className="w-6 h-6 text-muted-foreground/40" />
                             </div>
                           )}
                           <div className="min-w-0">
-                            <p className="font-semibold truncate text-sm">{p.title}</p>
-                            <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-                              <Tag className="w-3 h-3" /> {p.slug || "—"}
-                            </p>
+                            <p className="font-semibold text-sm leading-snug line-clamp-2">{p.title}</p>
+                            <p className="text-xs text-muted-foreground mt-0.5 font-mono">{p.slug || "—"}</p>
                           </div>
                         </div>
+                      </TableCell>
+
+                      {/* Specs */}
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1.5">
+                          {p.ram && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-muted/60 text-xs font-medium">
+                              {p.ram}
+                            </span>
+                          )}
+                          {p.storage && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-muted/60 text-xs font-medium">
+                              {p.storage}
+                            </span>
+                          )}
+                          {!p.ram && !p.storage && (
+                            <span className="text-xs text-muted-foreground">—</span>
+                          )}
+                        </div>
+                      </TableCell>
+
+                      {/* Condition */}
+                      <TableCell>
+                        {cond ? (
+                          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${cond.cls}`}>
+                            {cond.label}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        )}
                       </TableCell>
 
                       {/* Price */}
                       <TableCell className="text-right">
                         <div className="flex flex-col items-end">
-                          <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                          <span className="font-semibold text-sm text-emerald-600 dark:text-emerald-400">
                             {formatCurrency(finalPrice)}
                           </span>
                           {p.discountPercentage > 0 && (
@@ -223,18 +309,7 @@ export default function ProductListPage() {
                         </div>
                       </TableCell>
 
-                      {/* Stock */}
-                      <TableCell className="text-center">
-                        <span className={`inline-flex items-center justify-center min-w-[2.5rem] h-8 px-2 rounded-lg text-sm font-semibold ${
-                          p.stock > 10 ? 'bg-muted/50 text-foreground' :
-                          p.stock > 0 ? 'bg-amber-500/10 text-amber-600' :
-                          'bg-red-500/10 text-red-600'
-                        }`}>
-                          {p.stock}
-                        </span>
-                      </TableCell>
-
-                      {/* Status */}
+                      {/* Status toggle */}
                       <TableCell className="text-center">
                         <button
                           onClick={() => toggleStatus(p)}
@@ -244,7 +319,9 @@ export default function ProductListPage() {
                               : "bg-red-500/10 text-red-600 dark:text-red-400"
                           }`}
                         >
-                          {p.status === "active" ? <CheckCircle2 className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />}
+                          {p.status === "active"
+                            ? <CheckCircle2 className="w-3.5 h-3.5" />
+                            : <XCircle className="w-3.5 h-3.5" />}
                           {p.status === "active" ? "Hoạt động" : "Dừng"}
                         </button>
                       </TableCell>
@@ -261,7 +338,7 @@ export default function ProductListPage() {
                               <MoreVertical className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="bg-popover border-border w-40">
+                          <DropdownMenuContent align="end" className="bg-popover border-border w-44">
                             <DropdownMenuItem asChild>
                               <a
                                 href={`/products/detail/${p.slug}`}

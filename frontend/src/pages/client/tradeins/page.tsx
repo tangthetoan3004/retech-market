@@ -106,7 +106,7 @@ export default function TradeInsPage() {
 
   // Form State
   const [form, setForm] = useState({
-    brandId: 0,
+    brandId: "" as string | number,
     brandName: "",
     model: "",
     ram: "",
@@ -154,7 +154,7 @@ export default function TradeInsPage() {
     else if (step === 'brand') navigate(-1);
   };
 
-  const handleBrandSelect = async (brandId: number, brandName: string) => {
+  const handleBrandSelect = async (brandId: string | number, brandName: string) => {
     setForm(p => ({ ...p, brandId, brandName, model: "", ram: "", storage: "" }));
     setLoading(true);
     try {
@@ -345,16 +345,18 @@ export default function TradeInsPage() {
       <div key="brand" className="animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col items-start w-full max-w-[480px]">
         <div className="inline-block bg-[#d4ff00] text-black px-2 py-0.5 text-sm font-semibold rounded mb-6">Thương hiệu</div>
         <h1 className="text-2xl md:text-3xl font-bold text-slate-800 mb-6 text-left">Điện thoại của bạn thuộc thương hiệu nào?</h1>
-        <CustomSelect
-            value={form.brandId || ""}
-            options={brandOptions}
-            placeholder="Chọn thương hiệu"
-            onChange={(val: any) => {
-                const id = Number(val);
-                const name = brands.find(b => b.id === id)?.name || "";
-                handleBrandSelect(id, name);
-            }}
-        />
+          <div className="mb-4 w-full">
+              <CustomSelect
+                  value={form.brandId}
+                  options={brandOptions}
+                  placeholder="Chọn thương hiệu"
+                  onChange={(val: any) => {
+                      const id = val;
+                      const name = brands.find(b => String(b.id) === String(id))?.name || "";
+                      handleBrandSelect(id, name);
+                  }}
+              />
+          </div>
       </div>
     );
   };
