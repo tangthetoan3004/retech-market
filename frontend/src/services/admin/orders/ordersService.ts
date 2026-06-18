@@ -55,7 +55,7 @@ function normalizeOrder(o: any): AdminOrder {
 }
 
 export async function getOrders(params: GetOrdersParams = {}) {
-  const res: any = await get("/api/orders/orders/", { params });
+  const res: any = await get("/admin/orders/", { params });
 
   const rawList =
     (Array.isArray(res) && res) ||
@@ -74,10 +74,10 @@ export async function getOrders(params: GetOrdersParams = {}) {
 
 
 export async function getOrderDetail(id: number | string) {
-  const res = await get(`/api/orders/orders/${id}/`);
+  const res = await get(`/admin/orders/detail/${id}`);
   return normalizeOrder(res);
 }
 
 export async function updateOrderStatus(id: number | string, status: string) {
-  return patch(`/api/orders/orders/${id}/`, { status });
+  return patch(`/admin/orders/change-status/${id}`, { status });
 }
