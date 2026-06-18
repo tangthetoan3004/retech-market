@@ -114,7 +114,7 @@ function normalizeList(res: any): TradeInItem[] {
 }
 
 async function getTradeIns(params?: Record<string, any>) {
-  const res = await get("/api/tradein/", { params });
+  const res = await get("/admin/tradein/", { params });
   return normalizeList(res);
 }
 
@@ -123,14 +123,14 @@ async function approveTradeIn(
   final_price: number,
   staff_note: string
 ) {
-  return post(`/api/tradein/${id}/approve/`, {
+  return post(`/admin/tradein/${id}/approve/`, {
     final_price,
     staff_note,
   });
 }
 
 async function rejectTradeIn(id: number | string, reject_reason: string) {
-  return post(`/api/tradein/${id}/reject/`, {
+  return post(`/admin/tradein/${id}/reject/`, {
     reject_reason,
   });
 }
