@@ -87,11 +87,13 @@ const CustomSelect = ({ value, options, onChange, placeholder }: any) => {
 };
 
 type Step = 'brand' | 'model' | 'ram' | 'storage' | 'functional' | 'appearance' | 'upload' | 'quote' | 'bank_account' | 'success';
+type LoadingContext = 'brand' | 'model' | 'storage' | 'ram' | 'upload' | 'bank' | null;
 
 export default function TradeInsPage() {
   const navigate = useNavigate();
   const [step, setStep] = useState<Step>('brand');
   const [loading, setLoading] = useState(false);
+  const [loadingContext, setLoadingContext] = useState<LoadingContext>(null);
   const [quotePrice, setQuotePrice] = useState(0);
 
   // Dynamic Options State
@@ -157,6 +159,7 @@ export default function TradeInsPage() {
   const handleBrandSelect = async (brandId: string | number, brandName: string) => {
     setForm(p => ({ ...p, brandId, brandName, model: "", ram: "", storage: "" }));
     setLoading(true);
+    setLoadingContext('brand');
     try {
       const res: any = await getTradeInModels({ category_id: DEFAULT_CATEGORY_ID, brand_id: brandId });
       setModels(Array.isArray(res) ? res : []);
@@ -165,12 +168,14 @@ export default function TradeInsPage() {
       toast.error("Không thể tải dòng máy");
     } finally {
       setLoading(false);
+      setLoadingContext(null);
     }
   };
 
   const handleModelSelect = async (model: string) => {
     setForm(p => ({ ...p, model, ram: "", storage: "" }));
     setLoading(true);
+    setLoadingContext('model');
     try {
       const res: any = await getTradeInStorages({ category_id: DEFAULT_CATEGORY_ID, brand_id: form.brandId, model_name: model });
       setStorages(Array.isArray(res) ? res : []);
@@ -179,12 +184,14 @@ export default function TradeInsPage() {
       toast.error("Không thể tải dung lượng");
     } finally {
       setLoading(false);
+      setLoadingContext(null);
     }
   };
 
   const handleStorageSelect = async (storage: string) => {
     setForm(p => ({ ...p, storage, ram: "" }));
     setLoading(true);
+    setLoadingContext('storage');
     try {
       const res: any = await getTradeInRams({ 
           category_id: DEFAULT_CATEGORY_ID, 
@@ -205,6 +212,7 @@ export default function TradeInsPage() {
       goNext('functional');
     } finally {
       setLoading(false);
+      setLoadingContext(null);
     }
   };
 
@@ -215,6 +223,7 @@ export default function TradeInsPage() {
     }
 
     setLoading(true);
+    setLoadingContext('upload');
     try {
       // 1. Upload ảnh tạm
       const uploadPromises = form.images.map(file => uploadTradeInTempImage(sessionKey, file));
@@ -289,8 +298,10 @@ export default function TradeInsPage() {
 
   const handleProceedToBank = () => {
       setLoading(true);
+      setLoadingContext('bank');
       loadBankAccounts().finally(() => {
           setLoading(false);
+          setLoadingContext(null);
           goNext('bank_account');
       });
   };
@@ -877,11 +888,10 @@ export default function TradeInsPage() {
         
       </div>
 
-      {/* Full-screen Loading Overlay for AI Analysis */}
-      {loading && step === 'upload' && (
-        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm">
+      {/* Full-screen Loading Overlay */}
+      {loading && loadingContext && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-white/80 backdrop-blur-sm">
           <LoadingSpinner />
-          <p className="mt-8 text-lg font-medium text-slate-700 animate-pulse">Hệ thống đang phân tích...</p>
         </div>
       )}
     </div>
