@@ -75,8 +75,8 @@ export async function getTradeIns(params: GetTradeInsParams = {}) {
   return { items };
 }
 
-export async function approveTradeIn(id: number | string, final_price: number, staff_note: string = "") {
-  return post(`/admin/tradein/${id}/approve/`, { final_price, staff_note });
+export async function approveTradeIn(id: number | string, staff_note: string = "") {
+  return post(`/admin/tradein/${id}/approve/`, { staff_note });
 }
 
 export async function rejectTradeIn(id: number | string, reject_reason: string) {

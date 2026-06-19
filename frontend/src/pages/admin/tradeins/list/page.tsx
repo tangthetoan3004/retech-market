@@ -68,8 +68,7 @@ type TradeInItem = {
   body_ok?: boolean;
 
   description?: string;
-  estimated_price?: number | string;
-  final_price?: number | string;
+  estimated_price: number;
 
   target_product?: any;
   expires_at?: string | null;
@@ -123,11 +122,9 @@ async function getTradeIns(params?: Record<string, any>) {
 
 async function approveTradeIn(
   id: number | string,
-  final_price: number,
   staff_note: string
 ) {
   return post(`/admin/tradein/${id}/approve/`, {
-    final_price,
     staff_note,
   });
 }
@@ -388,8 +385,8 @@ function TradeInDetailModal({
   const handleApprove = async () => {
     try {
       setSubmitting(true);
-      await approveTradeIn(item.id, undefined, staffNote);
-      toast.success("Đã xác nhận nhận máy thành công");
+      await approveTradeIn(item.id, staffNote);
+      toast.success("Duyệt đơn thành công!");
       onApproved();
       onClose();
     } catch (err: any) {
@@ -582,17 +579,17 @@ function TradeInDetailModal({
                   </h3>
 
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                    {images.map((img) => (
+                    {images.map((img: string, idx: number) => (
                       <a
-                        key={img.id}
-                        href={img.image}
+                        key={idx}
+                        href={img}
                         target="_blank"
                         rel="noreferrer"
                         className="aspect-square overflow-hidden rounded-xl border bg-muted"
                       >
                         <img
-                          src={img.image}
-                          alt={`Trade-in ${img.id}`}
+                          src={img}
+                          alt={`Trade-in ${idx + 1}`}
                           className="h-full w-full object-cover transition-transform hover:scale-105"
                         />
                       </a>
@@ -965,11 +962,6 @@ export default function AdminTradeInsPage() {
 
               <tbody>
                 {filtered.map((item) => {
-                  const hasFinal =
-                    item.final_price !== null &&
-                    item.final_price !== undefined &&
-                    item.final_price !== "";
-
                   return (
                     <tr key={item.id} className="border-b last:border-b-0 hover:bg-muted/30">
                       <td className="px-5 py-4">
