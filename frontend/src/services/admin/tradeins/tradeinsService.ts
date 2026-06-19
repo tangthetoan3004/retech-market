@@ -3,7 +3,7 @@ import { get, post } from "../../../utils/request";
 export type AdminTradeInStatus = "PENDING" | "SUBMITTED" | "APPROVED";
 
 export type AdminTradeIn = {
-  id: number;
+  id: string | number;
   user: number;
 
   device_name: string;
@@ -43,7 +43,7 @@ function toNum(v: any, fallback = 0) {
 
 function normalizeTradeIn(x: any): AdminTradeIn {
   return {
-    id: toNum(x?.id, 0),
+    id: x?._id || x?.id || 0,
     user: toNum(x?.user, 0),
 
     device_name: String(x?.device_name ?? x?.deviceName ?? ""),

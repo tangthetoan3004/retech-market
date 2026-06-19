@@ -101,6 +101,8 @@ export type TradeInCreatePayload = {
     bank_name: string;
     bank_account_name: string;
     bank_account_number: string;
+    estimated_price?: number;
+    image_url?: string;
 };
 
 export async function createTradeInRequest(payload: TradeInCreatePayload) {

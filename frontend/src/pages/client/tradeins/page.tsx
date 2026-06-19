@@ -119,6 +119,7 @@ export default function TradeInsPage() {
     bank_account_name: "",
     bank_account_number: "",
     save_bank: true, 
+    uploaded_image_urls: [] as string[],
   });
 
   const [showNewBankForm, setShowNewBankForm] = useState(false);
@@ -218,7 +219,8 @@ export default function TradeInsPage() {
     try {
       // 1. Upload ảnh tạm
       const uploadPromises = form.images.map(file => uploadTradeInTempImage(sessionKey, file));
-      await Promise.all(uploadPromises);
+      const uploadResults: any[] = await Promise.all(uploadPromises);
+      const uploadedImageUrls = uploadResults.map(r => r?.image_url).filter(Boolean);
 
       // 2. Predict Damage qua AI bằng tất cả ảnh
       let screenStatus = "good";
@@ -229,7 +231,7 @@ export default function TradeInsPage() {
         console.error("Lỗi AI dự đoán màn hình, fallback về good", aiErr);
       }
       
-      setForm(p => ({ ...p, screen_status: screenStatus }));
+      setForm(p => ({ ...p, screen_status: screenStatus, uploaded_image_urls: uploadedImageUrls }));
 
       // 3. Ước tính giá
       const payload = {
@@ -267,15 +269,16 @@ export default function TradeInsPage() {
   const loadBankAccounts = async () => {
     try {
       const res: any = await getUserBankAccounts();
-      const accounts = Array.isArray(res) ? res : res?.results || [];
+      let accounts = Array.isArray(res) ? res : res?.results || [];
+      accounts = accounts.filter((a: any) => a.bank_name && a.bank_account_number);
       setBankAccounts(accounts);
       if (accounts.length > 0) {
           // Auto select first
           setForm(p => ({
               ...p,
               bank_name: accounts[0].bank_name,
-              bank_account_name: accounts[0].account_name,
-              bank_account_number: accounts[0].account_number
+              bank_account_name: accounts[0].bank_account_name,
+              bank_account_number: accounts[0].bank_account_number
           }));
           setShowNewBankForm(false);
       } else {
@@ -326,7 +329,9 @@ export default function TradeInsPage() {
         session_key: sessionKey,
         bank_name: form.bank_name,
         bank_account_name: form.bank_account_name,
-        bank_account_number: form.bank_account_number
+        bank_account_number: form.bank_account_number,
+        estimated_price: quotePrice,
+        images: form.uploaded_image_urls
       };
       await createTradeInRequest(payload);
       
@@ -743,21 +748,21 @@ export default function TradeInsPage() {
                                   setForm(p => ({
                                       ...p, 
                                       bank_name: acc.bank_name, 
-                                      bank_account_name: acc.account_name, 
-                                      bank_account_number: acc.account_number
+                                      bank_account_name: acc.bank_account_name, 
+                                      bank_account_number: acc.bank_account_number
                                   }));
                               }}
                               className={`p-4 rounded-xl border cursor-pointer transition-all flex items-center justify-between ${
-                                  form.bank_account_number === acc.account_number && form.bank_name === acc.bank_name 
+                                  form.bank_account_number === acc.bank_account_number && form.bank_name === acc.bank_name 
                                   ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500' 
                                   : 'border-slate-200 bg-white hover:border-slate-300'
                               }`}
                           >
                               <div>
                                   <div className="font-semibold text-slate-800">{acc.bank_name}</div>
-                                  <div className="text-sm text-slate-500">{acc.account_name} • {acc.account_number}</div>
+                                  <div className="text-sm text-slate-500">{acc.bank_account_name} • {acc.bank_account_number}</div>
                               </div>
-                              {form.bank_account_number === acc.account_number && form.bank_name === acc.bank_name && (
+                              {form.bank_account_number === acc.bank_account_number && form.bank_name === acc.bank_name && (
                                   <CheckCircle2 className="text-blue-600 w-5 h-5" />
                               )}
                           </div>

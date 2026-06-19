@@ -89,14 +89,20 @@ function canCancel(status?: string) {
 function normalizeList(res: any): TradeInDetail[] {
     const raw =
         (Array.isArray(res) && res) ||
+        res?.tradeins ||
         res?.items ||
         res?.results ||
+        res?.data?.tradeins ||
         res?.data?.items ||
         res?.data?.results ||
         res?.data ||
         [];
 
-    return Array.isArray(raw) ? raw : [];
+    if (!Array.isArray(raw)) return [];
+    return raw.map((item: any) => ({
+        ...item,
+        id: item._id || item.id,
+    }));
 }
 
 function deviceName(item: TradeInDetail) {
@@ -370,17 +376,17 @@ function TradeInItemCard({
                                         Ảnh thiết bị đã gửi
                                     </h3>
                                     <div className="grid grid-cols-4 gap-3">
-                                        {images.map((img) => (
+                                        {images.map((img: string, idx: number) => (
                                             <a
-                                                key={img.id}
-                                                href={img.image}
+                                                key={idx}
+                                                href={img}
                                                 target="_blank"
                                                 rel="noreferrer"
                                                 className="aspect-square overflow-hidden rounded-xl border bg-muted"
                                             >
                                                 <img
-                                                    src={img.image}
-                                                    alt={`Trade-in ${img.id}`}
+                                                    src={img}
+                                                    alt={`Trade-in ${idx + 1}`}
                                                     className="h-full w-full object-cover transition-transform hover:scale-105"
                                                 />
                                             </a>

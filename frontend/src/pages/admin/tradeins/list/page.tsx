@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { motion } from "motion/react";
-import { confirmPayment } from "../../../../services/admin/payments/paymentService";
 import LoadingSpinner from "../../../../components/ui/LoadingSpinner";
 import {
   AlertCircle,
@@ -110,7 +109,11 @@ function normalizeList(res: any): TradeInItem[] {
     res?.data ||
     [];
 
-  return Array.isArray(raw) ? raw : [];
+  if (!Array.isArray(raw)) return [];
+  return raw.map((item: any) => ({
+    ...item,
+    id: item._id || item.id,
+  }));
 }
 
 async function getTradeIns(params?: Record<string, any>) {
@@ -383,11 +386,9 @@ function TradeInDetailModal({
   const hasBankInfo = !!(item.bank_name && item.bank_account_number);
 
   const handleApprove = async () => {
-    const price = Number(item.final_price || item.estimated_price) || 0;
-
     try {
       setSubmitting(true);
-      await approveTradeIn(item.id, price, staffNote);
+      await approveTradeIn(item.id, undefined, staffNote);
       toast.success("Đã xác nhận nhận máy thành công");
       onApproved();
       onClose();
@@ -418,13 +419,9 @@ function TradeInDetailModal({
   };
 
   const handlePaymentConfirm = async () => {
-    if (!item.payment?.id) {
-      toast.error("Không tìm thấy thông tin thanh toán cho yêu cầu này!");
-      return;
-    }
     try {
       setSubmitting(true);
-      await confirmPayment(item.payment.id, { payment_method: "ZALOPAY" });
+      await post(`/admin/tradein/${item.id}/complete`);
       toast.success("Đã xác nhận chuyển khoản thành công!");
       onApproved();
       onClose();
@@ -737,7 +734,7 @@ function TradeInDetailModal({
                       variant="destructive"
                       className="mt-3 w-full"
                       onClick={handleReject}
-                      disabled={submitting}
+                      disabled={!rejectReason.trim() || submitting}
                     >
                       <XCircle className="mr-2 h-4 w-4" />
                       {submitting ? "Đang từ chối..." : "Từ chối yêu cầu"}

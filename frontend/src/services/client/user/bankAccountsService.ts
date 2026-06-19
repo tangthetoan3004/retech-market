@@ -8,13 +8,13 @@ export type BankAccount = {
 };
 
 export async function getUserBankAccounts() {
-    return get("/api/users/bank-accounts/");
+    return get("/user/bank-accounts");
 }
 
 export async function createUserBankAccount(data: BankAccount) {
-    return post("/api/users/bank-accounts/", data);
+    return post("/user/bank-accounts", data);
 }
 
 export async function deleteUserBankAccount(id: number | string) {
-    return del(`/api/users/bank-accounts/${id}/`);
+    return del(`/user/bank-accounts/${id}`);
 }

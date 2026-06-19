@@ -1,4 +1,4 @@
-import { get, patch, post } from "../../../utils/request";
+import { get, patch, post, del } from "../../../utils/request";
 
 // ─── Đăng ký ───────────────────────────────────────────────────────────────────
 // Backend: POST /user/register — body: { fullName, email, password }
@@ -77,14 +77,17 @@ export const changePassword = async (_options: { old_password: string; new_passw
   throw new Error("Chức năng đổi mật khẩu chưa được hỗ trợ.");
 };
 
+// [GET] /user/bank-accounts
 export const getBankAccounts = async (): Promise<any> => {
-  throw new Error("Chức năng tài khoản ngân hàng chưa được hỗ trợ.");
+  return await get("/user/bank-accounts");
 };
 
-export const createBankAccount = async (_payload: any): Promise<any> => {
-  throw new Error("Chức năng tài khoản ngân hàng chưa được hỗ trợ.");
+// [POST] /user/bank-accounts
+export const createBankAccount = async (payload: any): Promise<any> => {
+  return await post("/user/bank-accounts", payload);
 };
 
-export const deleteBankAccount = async (_id: string | number): Promise<any> => {
-  throw new Error("Chức năng tài khoản ngân hàng chưa được hỗ trợ.");
+// [DELETE] /user/bank-accounts/:id
+export const deleteBankAccount = async (id: string | number): Promise<any> => {
+  return await del(`/user/bank-accounts/${id}`);
 };
