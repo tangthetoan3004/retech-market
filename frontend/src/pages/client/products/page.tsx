@@ -1,4 +1,5 @@
 import { motion } from "motion/react";
+import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useParams } from "react-router-dom";
@@ -360,20 +361,8 @@ export default function ProductsPage() {
             </div>
 
             {isLoading ? (
-              <div className={viewMode === "grid" ? "grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3" : "flex flex-col gap-4"}>
-                {Array.from({ length: viewMode === "grid" ? 6 : 4 }).map((_, i) => (
-                  <div key={i} className={`animate-pulse overflow-hidden rounded-2xl border border-border/50 bg-card shadow-sm ${viewMode === "list" ? "flex p-4 gap-6" : ""}`}>
-                    <div className={`${viewMode === "grid" ? "aspect-[4/3] w-full" : "h-32 w-40 rounded-xl"} bg-muted/60`} />
-                    <div className={`space-y-4 ${viewMode === "grid" ? "p-5" : "flex-1 py-2"}`}>
-                      <div className="h-5 w-3/4 rounded-md bg-muted/60" />
-                      <div className="h-4 w-1/2 rounded-md bg-muted/60" />
-                      <div className="pt-2 flex justify-between items-center">
-                        <div className="h-7 w-1/3 rounded-md bg-muted/60" />
-                        {viewMode === "list" && <div className="h-10 w-32 rounded-lg bg-muted/60" />}
-                      </div>
-                    </div>
-                  </div>
-                ))}
+              <div className="flex justify-center items-center py-24">
+                <LoadingSpinner />
               </div>
             ) : filteredProducts.length === 0 ? (
               <motion.div 
