@@ -242,15 +242,7 @@ export default function CartPage() {
                   Tiếp tục mua sắm
                 </Button>
               </div>
-              
-              <div className="mt-6 pt-6 border-t border-border flex flex-wrap justify-center gap-2">
-                {/* Trust badges placeholders */}
-                <div className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider w-full text-center mb-2">Thanh toán an toàn</div>
-                <div className="h-8 w-12 bg-muted/50 rounded border flex items-center justify-center text-xs font-bold">VISA</div>
-                <div className="h-8 w-12 bg-muted/50 rounded border flex items-center justify-center text-xs font-bold">MASTER</div>
-                <div className="h-8 w-14 bg-muted/50 rounded border flex items-center justify-center text-xs font-bold text-blue-600">ZaloPay</div>
-                <div className="h-8 w-12 bg-muted/50 rounded border flex items-center justify-center text-xs font-bold">COD</div>
-              </div>
+
             </div>
           </div>
           

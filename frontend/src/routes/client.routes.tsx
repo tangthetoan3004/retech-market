@@ -8,7 +8,6 @@ import ProductDetailPage from "../pages/client/product-detail/page";
 import SearchPage from "../pages/client/search/page";
 import CartPage from "../pages/client/cart/page";
 import CheckoutPage from "../pages/client/checkout/page";
-import CheckoutSuccessPage from "../pages/client/checkout-success/page";
 import { WishlistPage } from "../pages/client/wishlist/page";
 import TradeInsPage from "../pages/client/tradeins/page";
 import TradeInsLandingPage from "../pages/client/tradeins/landing";
@@ -43,7 +42,6 @@ export const clientRoutes: RouteObject[] = [
       { path: "cart", element: <CartPage /> },
       { path: "wishlist", element: <WishlistPage /> },
       { path: "checkout", element: <CheckoutPage /> },
-      { path: "checkout/success", element: <CheckoutSuccessPage /> },
       { path: "tradeins", element: <TradeInsLandingPage /> },
       { path: "tradeins/form", element: <TradeInsPage /> },
 

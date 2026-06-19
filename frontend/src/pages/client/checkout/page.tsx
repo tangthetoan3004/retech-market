@@ -8,7 +8,7 @@ import { RootState } from "../../../app/store";
 import { Button } from "../../../components/ui/button";
 import { Input } from "../../../components/ui/input";
 import { Label } from "../../../components/ui/label";
-import { ShoppingBag, ChevronLeft, Shield } from "lucide-react";
+import { ShoppingBag, ChevronLeft } from "lucide-react";
 
 export default function CheckoutPage() {
   const dispatch = useDispatch<AppDispatch>();
@@ -47,15 +47,8 @@ export default function CheckoutPage() {
       };
       const data: any = await createOrder(payload);
 
-      // Nếu là ZaloPay và backend trả về order_url → redirect sang trang thanh toán
-      if (paymentMethod === "ZALOPAY" && data?.order_url) {
-        dispatch(deleteAll());
-        window.location.href = data.order_url;
-        return;
-      }
-
       dispatch(deleteAll());
-      navigate("/checkout/success", { state: { order: data?.order || data } });
+      navigate("/user/orders");
     } catch (err: any) {
       dispatch(showAlert({ type: "error", message: err.message || "Đặt hàng thất bại", timeout: 1000 }));
     } finally {
@@ -156,24 +149,6 @@ export default function CheckoutPage() {
                       />
                       <div className="flex-1 text-sm font-medium">Thanh toán khi nhận hàng (COD)</div>
                     </label>
-
-                    <label
-                      className={`flex items-center p-4 border rounded-lg cursor-pointer transition-colors ${paymentMethod === "ZALOPAY" ? "border-blue-500 bg-blue-50/50 dark:bg-blue-950/20" : "border-border hover:bg-muted/50"
-                        }`}
-                    >
-                      <input
-                        type="radio"
-                        name="paymentMethod"
-                        value="ZALOPAY"
-                        checked={paymentMethod === "ZALOPAY"}
-                        onChange={(e) => setPaymentMethod(e.target.value)}
-                        className="mr-3 w-4 h-4 text-blue-600 focus:ring-blue-500"
-                      />
-                      <div className="flex-1 flex items-center justify-between text-sm font-medium">
-                        <span>Thanh toán qua ZaloPay</span>
-                        <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 rounded font-bold">ZaloPay</span>
-                      </div>
-                    </label>
                   </div>
                 </div>
 
@@ -252,10 +227,6 @@ export default function CheckoutPage() {
                   >
                     {loading ? "Đang xử lý..." : `Xác nhận đặt hàng - ${total.toLocaleString()}đ`}
                   </Button>
-                  <p className="text-xs text-center text-muted-foreground mt-4 flex items-center justify-center">
-                    <Shield className="h-3.5 w-3.5 mr-1" />
-                    Thanh toán an toàn & bảo mật
-                  </p>
                 </div>
               </div>
             </div>
