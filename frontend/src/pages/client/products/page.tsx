@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import LoadingSpinner from "../../../components/ui/LoadingSpinner";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useParams } from "react-router-dom";
 import { Filter, SortAsc, Grid3x3, List, X, ShoppingCart, Heart, Shield } from "lucide-react";
@@ -45,6 +45,7 @@ export default function ProductsPage() {
 
   const [products, setProducts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const isInitialized = useRef(false);
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const PAGE_SIZE = 10;
@@ -78,7 +79,7 @@ export default function ProductsPage() {
 
   useEffect(() => {
     const run = async () => {
-      setIsLoading(true);
+      if (!isInitialized.current) setIsLoading(true);
       try {
         const payload: any = { page };
         if (params?.slug) payload.category = String(params.slug);
@@ -113,6 +114,7 @@ export default function ProductsPage() {
       } catch (e: any) {
         dispatch(showAlert({ type: "error", message: e?.message || "Không tải được sản phẩm", timeout: 1000 }));
       } finally {
+        isInitialized.current = true;
         setIsLoading(false);
       }
     };
