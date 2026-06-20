@@ -65,12 +65,13 @@ export default function UserLoginPage() {
   };
 
   const handleGoogleLogin = useGoogleLogin({
-    flow: "auth-code",
-    onSuccess: async ({ code }) => {
+    onSuccess: async (tokenResponse) => {
       setIsLoading(true);
       try {
-        const data = await googleLogin(code);
-        dispatch(setClientAuth(data));
+        await googleLogin(tokenResponse.access_token);
+        const profileData: any = await getMyInfo();
+        dispatch(setClientAuth({ user: profileData.user }));
+        
         dispatch(showAlert({ type: "success", message: "Đăng nhập thành công", timeout: 600 }));
         navigate("/", { replace: true });
       } catch (err: any) {

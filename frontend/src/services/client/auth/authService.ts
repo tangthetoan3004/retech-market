@@ -22,8 +22,8 @@ export const logoutClient = async () => {
 // Backend Express chưa hỗ trợ Google OAuth. Giữ lại stub để tránh lỗi import.
 // TODO: Thêm endpoint /user/auth/google khi backend hỗ trợ.
 
-export const googleLogin = async (_code: string): Promise<any> => {
-  throw new Error("Chức năng đăng nhập Google chưa được hỗ trợ.");
+export const googleLogin = async (accessToken: string): Promise<any> => {
+  return post("/user/login-google", { accessToken });
 };
 
 // ─── Register ─────────────────────────────────────────────────────────────────
