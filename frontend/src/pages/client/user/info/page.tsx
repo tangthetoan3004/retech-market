@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "motion/react";
-import { User, Mail, Phone, MapPin, Save, Lock, Eye, EyeOff, CreditCard, Trash2, Plus } from "lucide-react";
+import { User, Mail, Phone, MapPin, Save, Lock, Eye, EyeOff, CreditCard, Trash2, Plus, Camera } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import React from "react";
 
@@ -46,10 +46,13 @@ export default function UserInfoPage() {
 
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
+  const [authType, setAuthType] = useState("local");
 
   const [fullName, setFullName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [address, setAddress] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState("");
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
 
   // ── Change Password State ──
   const [cpOld, setCpOld] = useState("");
@@ -103,9 +106,11 @@ export default function UserInfoPage() {
 
         setUsername(user?.username || "");
         setEmail(user?.email || "");
+        setAuthType(user?.authType || "local");
         setFullName(name || user?.fullName || "");
         setPhoneNumber(user?.phone_number || user?.phoneNumber || "");
         setAddress(user?.address || "");
+        setAvatarUrl(user?.avatar || "");
       } catch (err: any) {
         dispatch(showAlert({ type: "error", message: err?.message || "Không tải được thông tin", timeout: 1000 }));
       } finally {
@@ -120,16 +125,15 @@ export default function UserInfoPage() {
 
     setSaving(true);
     try {
-      const { first_name, last_name } = splitName(fullName);
+      const formData = new FormData();
+      formData.append("fullName", fullName);
+      formData.append("phone", phoneNumber || "");
+      formData.append("address", address || "");
+      if (avatarFile) {
+        formData.append("avatar", avatarFile);
+      }
 
-      const payload: any = {
-        first_name,
-        last_name,
-        phone_number: phoneNumber || "",
-        address: address || "",
-      };
-
-      const data = await updateMyInfo(payload);
+      const data = await updateMyInfo(formData);
       const user = data?.user || data;
 
       dispatch(
@@ -199,11 +203,11 @@ export default function UserInfoPage() {
     }
   };
 
-  const onDeleteBankAccount = async (id: number) => {
+  const onDeleteBankAccount = async (id: string | number) => {
     if (!window.confirm("Bạn có chắc muốn xóa tài khoản ngân hàng này?")) return;
     try {
       await deleteBankAccount(id);
-      setBankAccounts(bankAccounts.filter(b => b.id !== id));
+      setBankAccounts(bankAccounts.filter(b => (b._id || b.id) !== id));
       dispatch(showAlert({ type: "success", message: "Đã xóa tài khoản", timeout: 1000 }));
     } catch (err: any) {
       dispatch(showAlert({ type: "error", message: err?.message || "Xóa thất bại", timeout: 1000 }));
@@ -277,6 +281,36 @@ export default function UserInfoPage() {
           </div>
 
           <form onSubmit={onSubmit} className="p-5 space-y-4">
+            <div className="flex justify-center mb-6">
+              <div className="relative group">
+                <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-muted/30 relative bg-muted flex items-center justify-center">
+                  {(avatarFile ? URL.createObjectURL(avatarFile) : avatarUrl) ? (
+                    <img 
+                      src={avatarFile ? URL.createObjectURL(avatarFile) : avatarUrl} 
+                      alt="Avatar" 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <User className="w-12 h-12 text-muted-foreground/50" />
+                  )}
+                  <label htmlFor="avatar-upload" className="absolute inset-0 bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
+                    <Camera className="w-6 h-6" />
+                  </label>
+                </div>
+                <input 
+                  id="avatar-upload" 
+                  type="file" 
+                  accept="image/*" 
+                  className="hidden" 
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      setAvatarFile(e.target.files[0]);
+                    }
+                  }}
+                />
+              </div>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="fullName">Họ và tên</Label>
               <div className="relative">
@@ -345,6 +379,7 @@ export default function UserInfoPage() {
         </motion.div>
 
         {/* ── Change Password ── */}
+        {authType !== "google" && (
         <motion.div variants={itemVariants} className="rounded-xl border bg-card overflow-hidden">
           <div className="px-5 py-4 border-b bg-muted/30">
             <div className="font-semibold">Đổi mật khẩu</div>
@@ -439,6 +474,7 @@ export default function UserInfoPage() {
             </div>
           </form>
         </motion.div>
+        )}
 
         {/* ── Bank Accounts ── */}
         <motion.div variants={itemVariants} className="rounded-xl border bg-card overflow-hidden">
@@ -496,14 +532,17 @@ export default function UserInfoPage() {
             )}
 
             {bankAccounts.length === 0 && !showBankForm ? (
-              <div className="text-center py-6 text-muted-foreground">
-                <CreditCard className="w-12 h-12 mx-auto mb-3 opacity-20" />
+              <div className="text-center py-8 text-muted-foreground bg-muted/20 border border-dashed rounded-xl">
+                <CreditCard className="w-12 h-12 mx-auto mb-3 opacity-30 text-blue-500" />
                 <p>Bạn chưa thêm tài khoản ngân hàng nào.</p>
+                <Button size="sm" onClick={() => setShowBankForm(true)} className="mt-4 bg-blue-600 hover:bg-blue-600/90 text-white" type="button">
+                  <Plus className="w-4 h-4 mr-1" /> Thêm tài khoản
+                </Button>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {bankAccounts.map((bank) => (
-                  <div key={bank.id} className="relative p-4 rounded-lg border bg-background shadow-sm hover:border-blue-200 transition-colors group">
+                  <div key={bank._id || bank.id} className="relative p-4 rounded-lg border bg-background shadow-sm hover:border-blue-200 transition-colors group">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 rounded-lg">
@@ -511,13 +550,13 @@ export default function UserInfoPage() {
                         </div>
                         <div>
                           <div className="font-bold text-lg">{bank.bank_name}</div>
-                          <div className="text-sm font-medium">{bank.account_number}</div>
-                          <div className="text-xs text-muted-foreground">{bank.account_name}</div>
+                          <div className="text-sm font-medium">{(bank.bank_account_number || bank.account_number || "").replace(/(\d{4})/g, '$1 ')}</div>
+                          <div className="text-xs text-muted-foreground uppercase">{bank.bank_account_name || bank.account_name}</div>
                         </div>
                       </div>
                       <button 
                         type="button" 
-                        onClick={() => onDeleteBankAccount(bank.id)}
+                        onClick={() => onDeleteBankAccount(bank._id || bank.id)}
                         className="p-2 text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 rounded opacity-0 group-hover:opacity-100 transition-all focus:opacity-100"
                         title="Xóa tài khoản"
                       >
