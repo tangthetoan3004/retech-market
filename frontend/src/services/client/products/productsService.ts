@@ -118,16 +118,39 @@ export const getProductBrands = async () => {
   const seen = new Set<string>();
 
   rawList.forEach((p: any) => {
-    // MongoDB Product model có field "featured" nhưng không có field brand riêng
-    // Brand được lưu dưới dạng string trong một số setup.
-    const name = String(p?.brand || p?.brand_name || "").trim();
+    let name = String(p?.brand || p?.brand_name || "").trim();
+    
+    // Nếu không có field brand, cố gắng trích xuất từ tên
+    if (!name) {
+      const titleLower = String(p?.title || p?.name || "").toLowerCase();
+      
+      if (titleLower.includes("apple") || titleLower.includes("iphone") || titleLower.includes("macbook") || titleLower.includes("ipad") || titleLower.includes("airpods")) name = "Apple";
+      else if (titleLower.includes("samsung") || titleLower.includes("galaxy")) name = "Samsung";
+      else if (titleLower.includes("xiaomi") || titleLower.includes("redmi") || titleLower.includes("poco")) name = "Xiaomi";
+      else if (titleLower.includes("oppo") || titleLower.includes("reno") || titleLower.includes("find x")) name = "Oppo";
+      else if (titleLower.includes("asus") || titleLower.includes("rog") || titleLower.includes("zenbook")) name = "Asus";
+      else if (titleLower.includes("dell") || titleLower.includes("alienware") || titleLower.includes("xps")) name = "Dell";
+      else if (titleLower.includes("lenovo") || titleLower.includes("thinkpad") || titleLower.includes("legion")) name = "Lenovo";
+      else if (titleLower.includes("hp") || titleLower.includes("pavilion") || titleLower.includes("envy")) name = "HP";
+      else if (titleLower.includes("acer") || titleLower.includes("predator") || titleLower.includes("nitro")) name = "Acer";
+      else if (titleLower.includes("msi")) name = "MSI";
+      else if (titleLower.includes("vivo")) name = "Vivo";
+      else if (titleLower.includes("realme")) name = "Realme";
+      else if (titleLower.includes("sony") || titleLower.includes("xperia")) name = "Sony";
+      else if (titleLower.includes("nokia")) name = "Nokia";
+      else if (titleLower.includes("lg")) name = "LG";
+    }
+
     if (name && !seen.has(name)) {
       seen.add(name);
       brands.push({ slug: name.toLowerCase().replace(/\s+/g, "-"), name });
     }
   });
 
-  // Fallback brands if none exist in DB so the UI filter isn't empty
+  // Sort brands alphabetically
+  brands.sort((a, b) => a.name.localeCompare(b.name));
+
+  // Fallback brands if db is completely empty
   if (brands.length === 0) {
     return [
       { slug: "apple", name: "Apple" },
@@ -135,7 +158,10 @@ export const getProductBrands = async () => {
       { slug: "xiaomi", name: "Xiaomi" },
       { slug: "oppo", name: "Oppo" },
       { slug: "asus", name: "Asus" },
-      { slug: "dell", name: "Dell" }
+      { slug: "dell", name: "Dell" },
+      { slug: "lenovo", name: "Lenovo" },
+      { slug: "hp", name: "HP" },
+      { slug: "acer", name: "Acer" }
     ];
   }
 

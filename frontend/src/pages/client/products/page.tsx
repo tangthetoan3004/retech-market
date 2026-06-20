@@ -47,7 +47,6 @@ export default function ProductsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const isInitialized = useRef(false);
   const [page, setPage] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
   const PAGE_SIZE = 10;
 
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -93,7 +92,6 @@ export default function ProductsPage() {
         const list = Array.isArray(data?.items) ? data.items : [];
 
         setProducts(list);
-        setTotalCount(data?.count || 0);
 
         // --- FIX: tính max price từ list rồi set range ---
         const maxPrice = list.reduce((mx: number, p: any) => {
@@ -168,8 +166,15 @@ export default function ProductsPage() {
     // Lọc theo Brand
     if (selectedBrands.length > 0) {
       filtered = filtered.filter(p => {
-        const brandSlug = String(p?.brand || "apple").toLowerCase().replace(/\s+/g, "-");
-        return selectedBrands.includes(brandSlug);
+        const pStr = JSON.stringify(p).toLowerCase();
+        return selectedBrands.some(brand => {
+          if (pStr.includes(brand)) return true;
+          // Fallback keywords for popular brands if brand name is not in the string
+          if (brand === "apple" && (pStr.includes("iphone") || pStr.includes("macbook") || pStr.includes("ipad") || pStr.includes("airpods"))) return true;
+          if (brand === "samsung" && pStr.includes("galaxy")) return true;
+          if (brand === "xiaomi" && (pStr.includes("redmi") || pStr.includes("poco"))) return true;
+          return false;
+        });
       });
     }
 
@@ -181,9 +186,12 @@ export default function ProductsPage() {
 
     // Lọc theo Category
     if (selectedCategories.length > 0) {
+      const selectedCategoryIds = categories
+        .filter(c => selectedCategories.includes(c.slug))
+        .map(c => c.id);
+
       filtered = filtered.filter(p => 
-        selectedCategories.includes(p.category?.slug) || 
-        selectedCategories.includes(p.product_category_id)
+        selectedCategoryIds.includes(p.product_category_id) || selectedCategories.includes(p.product_category_id)
       );
     }
 
@@ -201,33 +209,41 @@ export default function ProductsPage() {
     }
 
     return filtered;
-  }, [products, sortBy, selectedBrands, appliedPriceRange, selectedCategories]);
+  }, [products, sortBy, selectedBrands, appliedPriceRange, selectedCategories, categories]);
+
+  const paginatedProducts = useMemo(() => {
+    const startIndex = (page - 1) * PAGE_SIZE;
+    return filteredProducts.slice(startIndex, startIndex + PAGE_SIZE);
+  }, [filteredProducts, page]);
+
+  const totalFilteredCount = filteredProducts.length;
+  const totalPages = Math.ceil(totalFilteredCount / PAGE_SIZE);
 
   const filterContentNode = (
     <div className="space-y-8">
       <div>
-        <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-muted-foreground">Hãng Sản Xuất</h3>
+        <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-muted-foreground">Thương Hiệu</h3>
         <div className="space-y-3">
-          {categories.slice(0, showAllBrands ? categories.length : 6).map((c) => (
-            <div key={c.slug} className="group flex items-center space-x-3 transition-all hover:translate-x-1" style={{ paddingLeft: `${c.depth * 16}px` }}>
+          {brands.slice(0, showAllBrands ? brands.length : 6).map((b) => (
+            <div key={b.slug} className="group flex items-center space-x-3 transition-all hover:translate-x-1">
               <Checkbox 
-                id={`category-${c.slug}`} 
-                checked={selectedCategories.includes(c.slug)} 
-                onCheckedChange={() => toggleCategory(c.slug)} 
+                id={`brand-${b.slug}`} 
+                checked={selectedBrands.includes(b.slug)} 
+                onCheckedChange={() => toggleBrand(b.slug)} 
                 className="transition-colors data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
               />
-              <Label htmlFor={`category-${c.slug}`} className="cursor-pointer text-sm font-medium transition-colors group-hover:text-blue-600">
-                {c.depth > 0 ? "└ " : ""}{c.name}
+              <Label htmlFor={`brand-${b.slug}`} className="cursor-pointer text-sm font-medium transition-colors group-hover:text-blue-600">
+                {b.name}
               </Label>
             </div>
           ))}
-          {categories.length > 6 && (
+          {brands.length > 6 && (
             <button
               type="button"
               onClick={() => setShowAllBrands(!showAllBrands)}
               className="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors mt-2"
             >
-              {showAllBrands ? "Rút gọn" : `+ Xem thêm ${categories.length - 6} danh mục`}
+              {showAllBrands ? "Rút gọn" : `+ Xem thêm ${brands.length - 6} thương hiệu`}
             </button>
           )}
         </div>
@@ -384,10 +400,10 @@ export default function ProductsPage() {
                 </div>
               </motion.div>
             ) : viewMode === "grid" ? (
-              <ProductGrid items={filteredProducts} />
+              <ProductGrid items={paginatedProducts} />
             ) : (
               <div className="flex flex-col gap-5">
-                {filteredProducts.map((p: any, index: number) => {
+                {paginatedProducts.map((p: any, index: number) => {
                   const priceNew = p?.priceNew ?? p?.price ?? 0;
                   const priceOld = p?.originalPrice ?? p?.original_price ?? null;
                   
@@ -486,7 +502,7 @@ export default function ProductsPage() {
               </div>
             )}
 
-            {totalCount > PAGE_SIZE && (
+            {totalPages > 1 && (
               <div className="mt-8">
                 <Pagination>
                   <PaginationContent>
@@ -498,15 +514,15 @@ export default function ProductsPage() {
                     </PaginationItem>
 
                     <PaginationItem>
-                      <span className="px-4 text-sm">
-                        Page {page} of {Math.ceil(totalCount / PAGE_SIZE)}
+                      <span className="px-4 text-sm font-medium">
+                        Page {page} of {totalPages}
                       </span>
                     </PaginationItem>
 
                     <PaginationItem>
                       <PaginationNext
-                        onClick={() => setPage((p) => p + 1)}
-                        className={page >= Math.ceil(totalCount / PAGE_SIZE) ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                        onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                        className={page >= totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
                       />
                     </PaginationItem>
                   </PaginationContent>
